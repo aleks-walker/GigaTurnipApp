@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GigaTurnip</string>
+    <string name="campaigns_list">Campaigns List</string>
+    <string name="tasks_list">Tasks list</string>
+    <string name="finished">Finished</string>
+    <string name="pending">Pending</string>
+</resources>
