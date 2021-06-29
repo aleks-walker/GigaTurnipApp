@@ -4,4 +4,5 @@
     <string name="tasks_list">Tasks list</string>
     <string name="finished">Finished</string>
     <string name="pending">Pending</string>
+    <string name="details">Details</string>
 </resources>
