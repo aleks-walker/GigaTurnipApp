@@ -3,6 +3,7 @@ package kg.kloop.android.gigaturnip.ui.tasks
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kg.kloop.android.gigaturnip.models.Task
 
 class TasksViewModel : ViewModel() {
     private val tasks: MutableLiveData<List<Task>> = MutableLiveData<List<Task>>(generateTasks())

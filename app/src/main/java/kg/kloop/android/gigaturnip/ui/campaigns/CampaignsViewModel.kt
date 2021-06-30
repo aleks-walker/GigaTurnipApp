@@ -3,14 +3,24 @@ package kg.kloop.android.gigaturnip.ui.campaigns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kg.kloop.android.gigaturnip.models.Campaign
+import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
+import javax.inject.Inject
 
-class CampaignsViewModel: ViewModel() {
+@HiltViewModel
+class CampaignsViewModel @Inject constructor(
+    private val repository: GigaTurnipRepository
+): ViewModel() {
 
-    private val campaigns = MutableLiveData<List<Campaign>>(generateCampaigns())
-
-    fun getCampaigns(): LiveData<List<Campaign>>{
-        return campaigns
+    val campaigns = liveData {
+        emit(repository.getCampaignsList())
     }
+
+//    fun getCampaigns(): LiveData<List<Campaign>>{
+//        return campaigns
+//    }
 
     private fun generateCampaigns(): List<Campaign> {
         val result = mutableListOf<Campaign>()

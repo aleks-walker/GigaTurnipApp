@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import kg.kloop.android.gigaturnip.R
+import kg.kloop.android.gigaturnip.models.Task
 
 private val TAG = TasksScreen::class.java.simpleName
 

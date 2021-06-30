@@ -13,16 +13,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import dagger.hilt.android.AndroidEntryPoint
 import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
+import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsViewModel
 import kg.kloop.android.gigaturnip.ui.tasks.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.TasksScreenView
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             GigaTurnipTheme {
                 MainScreen()

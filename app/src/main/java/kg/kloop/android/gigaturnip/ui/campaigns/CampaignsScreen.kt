@@ -15,8 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import kg.kloop.android.gigaturnip.models.Campaign
 import kg.kloop.android.gigaturnip.ui.tasks.TasksScreen
+import timber.log.Timber
 
 
 sealed class CampaignsScreen(val route: String) {
@@ -24,9 +27,10 @@ sealed class CampaignsScreen(val route: String) {
 }
 
 @Composable
-fun CampaignsScreenView(navController: NavHostController) {
-    val viewModel = CampaignsViewModel()
-    val campaigns: List<Campaign> by viewModel.getCampaigns().observeAsState(listOf())
+fun CampaignsScreenView(navController: NavHostController,
+                        viewModel: CampaignsViewModel = hiltViewModel()) {
+    val campaigns: List<Campaign> by viewModel.campaigns.observeAsState(listOf())
+    Timber.d(campaigns.joinToString())
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +58,7 @@ fun CampaignItem(campaign: Campaign, onClick: () -> Unit) {
         shape = MaterialTheme.shapes.medium
     ) {
         Text(
-            text = campaign.title,
+            text = campaign.name,
                 modifier = Modifier
                     .wrapContentSize(),
             textAlign = TextAlign.Center,

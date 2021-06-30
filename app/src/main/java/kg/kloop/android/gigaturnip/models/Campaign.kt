@@ -1,7 +1,7 @@
-package kg.kloop.android.gigaturnip.ui.campaigns
+package kg.kloop.android.gigaturnip.models
 
 data class Campaign(
     val id: String,
-    val title: String,
+    val name: String,
     val description: String = ""
 )

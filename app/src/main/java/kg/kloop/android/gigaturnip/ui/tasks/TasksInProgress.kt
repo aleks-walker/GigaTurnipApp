@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kg.kloop.android.gigaturnip.models.Task
 
 @Composable
 fun TasksInProgress(navController: NavHostController, tasks: List<Task>) {
