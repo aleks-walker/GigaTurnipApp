@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import kg.kloop.android.gigaturnip.models.Campaign
+import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.ui.tasks.TasksScreen
 import timber.log.Timber
 
@@ -58,7 +58,7 @@ fun CampaignItem(campaign: Campaign, onClick: () -> Unit) {
         shape = MaterialTheme.shapes.medium
     ) {
         Text(
-            text = campaign.name,
+            text = campaign.title,
                 modifier = Modifier
                     .wrapContentSize(),
             textAlign = TextAlign.Center,

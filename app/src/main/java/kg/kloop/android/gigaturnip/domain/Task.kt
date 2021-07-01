@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.models
+package kg.kloop.android.gigaturnip.domain
 
 data class Task(
     val id: String,

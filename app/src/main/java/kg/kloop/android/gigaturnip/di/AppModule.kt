@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kg.kloop.android.gigaturnip.data.models.CampaignDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.util.Constants.BASE_URL
@@ -19,7 +20,7 @@ object AppModule {
     @Provides
     fun providesGigaTurnipRepository(
         api: GigaTurnipApi
-    ) = GigaTurnipRepository(api)
+    ) = GigaTurnipRepository(api, CampaignDtoMapper())
 
     @Singleton
     @Provides
@@ -30,5 +31,11 @@ object AppModule {
             .build()
             .create(GigaTurnipApi::class.java)
 
+    }
+
+    @Singleton
+    @Provides
+    fun provideCampaignDtoMapper(): CampaignDtoMapper {
+        return CampaignDtoMapper()
     }
 }
