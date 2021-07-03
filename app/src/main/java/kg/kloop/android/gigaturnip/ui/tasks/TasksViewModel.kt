@@ -1,23 +1,18 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kg.kloop.android.gigaturnip.domain.Task
+import androidx.lifecycle.liveData
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
+import javax.inject.Inject
 
-class TasksViewModel : ViewModel() {
-    private val tasks: MutableLiveData<List<Task>> = MutableLiveData<List<Task>>(generateTasks())
+@HiltViewModel
+class TasksViewModel @Inject constructor(
+    private val repository: GigaTurnipRepository
+) : ViewModel() {
 
-    fun getTasks(): LiveData<List<Task>> {
-        return tasks
-    }
-
-    private fun generateTasks(): List<Task> {
-        return arrayListOf(
-            Task("1", "First task", "Description"),
-            Task("2", "Second task", "Description"),
-            Task("3", "Third task", "Description")
-        )
+    val tasks = liveData {
+        emit(repository.getTasksList().data.orEmpty())
     }
 
 }

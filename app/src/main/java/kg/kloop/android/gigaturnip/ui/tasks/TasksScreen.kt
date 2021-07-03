@@ -13,7 +13,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -26,7 +26,9 @@ private val TAG = TasksScreen::class.java.simpleName
 
 sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val icon: ImageVector) {
     object TasksList : TasksScreen("tasks_list", R.string.tasks_list, Icons.Filled.Home)
-    object InProgress : TasksScreen("tasks_in_progress", R.string.in_progress, Icons.Filled.ArrowForward)
+    object InProgress :
+        TasksScreen("tasks_in_progress", R.string.in_progress, Icons.Filled.ArrowForward)
+
     object Finished : TasksScreen("tasks_finished", R.string.finished, Icons.Filled.Done)
     object Pending : TasksScreen("tasks_pending", R.string.pending, Icons.Filled.DateRange)
     object Details : TasksScreen("task_details", R.string.details, Icons.Filled.ArrowDropDown)
@@ -34,7 +36,9 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
 
 
 @Composable
-fun TasksScreenView() {
+fun TasksScreenView(
+    viewModel: TasksViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
     val items = listOf(
         TasksScreen.InProgress,
@@ -47,8 +51,7 @@ fun TasksScreenView() {
         }
     )
     { innerPadding ->
-        val viewModel: TasksViewModel = viewModel()
-        val tasks: List<Task> by viewModel.getTasks().observeAsState(listOf())
+        val tasks: List<Task> by viewModel.tasks.observeAsState(listOf())
         NavHost(
             navController,
             startDestination = TasksScreen.InProgress.route,

@@ -13,12 +13,8 @@ class CampaignsViewModel @Inject constructor(
 ): ViewModel() {
 
     val campaigns = liveData {
-        emit(repository.getCampaignsList().data!!)
+        emit(repository.getCampaignsList().data.orEmpty() )
     }
-
-//    fun getCampaigns(): LiveData<List<Campaign>>{
-//        return campaigns
-//    }
 
     private fun generateCampaigns(): List<Campaign> {
         val result = mutableListOf<Campaign>()

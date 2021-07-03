@@ -3,7 +3,9 @@ buildscript {
     val compose_version by extra("1.0.0-beta09")
     repositories {
         google()
+//        maven { url = uri("https://jitpack.io") }
         mavenCentral()
+        maven(url = "https://jitpack.io")
     }
     dependencies {
         classpath("com.android.tools.build:gradle:7.1.0-alpha02")

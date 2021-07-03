@@ -36,14 +36,14 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        useIR = true
+//        useIR = true
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = rootProject.extra["compose_version"] as String
-        kotlinCompilerVersion = "1.4.32"
+//        kotlinCompilerVersion = "1.4.32"
     }
 }
 
@@ -74,8 +74,8 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.2")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
 
     // Timber
     implementation("com.jakewharton.timber:timber:4.7.1")
@@ -90,14 +90,19 @@ dependencies {
 
     // LiveData
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
-    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-beta09")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-rc01")
 
     //Dagger - Hilt
-    implementation("com.google.dagger:hilt-android:2.35")
-    kapt("com.google.dagger:hilt-android-compiler:2.35")
+    implementation("com.google.dagger:hilt-android:2.37")
+    kapt("com.google.dagger:hilt-android-compiler:2.37")
     implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha03")
 
     implementation("com.android.support:palette-v7:28.0.0")
+
+    //File compression
+//    implementation("com.github.AbedElazizShe:LightCompressor:0.9.2")
+    implementation("com.iceteck.silicompressorr:silicompressor:2.2.4")
+    implementation("com.googlecode.mp4parser:isoparser:1.1.22")
 }

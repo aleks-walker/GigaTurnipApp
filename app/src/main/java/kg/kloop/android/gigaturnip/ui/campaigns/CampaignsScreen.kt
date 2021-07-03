@@ -30,7 +30,7 @@ sealed class CampaignsScreen(val route: String) {
 fun CampaignsScreenView(navController: NavHostController,
                         viewModel: CampaignsViewModel = hiltViewModel()) {
     val campaigns: List<Campaign> by viewModel.campaigns.observeAsState(listOf())
-    Timber.d(campaigns.joinToString())
+    Timber.d("campaigns to display: ${campaigns.joinToString()}")
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
