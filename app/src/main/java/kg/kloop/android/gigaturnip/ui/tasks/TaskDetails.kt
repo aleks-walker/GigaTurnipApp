@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -21,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import timber.log.Timber
 
 @Composable
 fun TaskDetails(
@@ -61,13 +61,16 @@ fun TaskDetails(
             onClick = { launcher.launch("video/*") }) {
             Text(text = "Compress")
         }
+        val fileDestination by viewModel.compressedFilePath.observeAsState()
+        val compressionProgress: Int by viewModel.compressionProgress.observeAsState(0)
         result.value?.let { uri ->
-            val fileDestination: String by viewModel.getCompressedFilePath(uri, "download/")
-                .observeAsState("compression in progress")
-            SelectionContainer() {
+            Timber.d("compression function called")
+            if (compressionProgress == 0 ) viewModel.compressInTheBackground(uri, "")
+            Column() {
                 Text(text = uri.toString())
+                Text(text = fileDestination ?: "Compressing . . .")
+                Text(text = "Progress: $compressionProgress%")
             }
-            Text(text = fileDestination)
         }
 
     }

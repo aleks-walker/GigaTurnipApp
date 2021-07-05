@@ -66,4 +66,5 @@ object AppModule {
     fun provideVideoCompressor(@ApplicationContext context: Context): SiliCompressor {
         return SiliCompressor.with(context)
     }
+
 }

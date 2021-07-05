@@ -3,6 +3,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -71,6 +72,10 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.4.0-alpha03")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha08")
 
+    //Firebase
+    implementation("com.google.firebase:firebase-auth:21.0.1")
+    implementation("com.firebaseui:firebase-ui-auth:7.2.0")
+
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -99,10 +104,8 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:1.0.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha03")
 
-    implementation("com.android.support:palette-v7:28.0.0")
-
     //File compression
-//    implementation("com.github.AbedElazizShe:LightCompressor:0.9.2")
+    implementation("com.github.AbedElazizShe:LightCompressor:0.9.3")
     implementation("com.iceteck.silicompressorr:silicompressor:2.2.4")
     implementation("com.googlecode.mp4parser:isoparser:1.1.22")
 }

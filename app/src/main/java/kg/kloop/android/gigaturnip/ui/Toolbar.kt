@@ -2,6 +2,8 @@ package kg.kloop.android.gigaturnip.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -9,10 +11,14 @@ import androidx.compose.ui.unit.dp
 import kg.kloop.android.gigaturnip.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 @Composable
-fun Toolbar(title: String, drawerState: DrawerState, scope: CoroutineScope) {
+fun Toolbar(
+    title: String,
+    drawerState: DrawerState,
+    scope: CoroutineScope,
+    onLogOutClick: () -> Unit
+) {
     TopAppBar(
         title = {
             Text(text = title, style = MaterialTheme.typography.h5)
@@ -25,5 +31,10 @@ fun Toolbar(title: String, drawerState: DrawerState, scope: CoroutineScope) {
                     modifier = Modifier.padding(16.dp)
                 )
             }
+        }, actions = {
+            IconButton(onClick = onLogOutClick) {
+                Icon(Icons.Filled.Logout, contentDescription = null)
+            }
         })
+
 }
