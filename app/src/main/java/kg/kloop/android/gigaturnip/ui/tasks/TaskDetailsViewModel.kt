@@ -30,8 +30,8 @@ class TaskDetailsViewModel @Inject constructor(
     private val _formData = MutableLiveData<String>()
     val formData: LiveData<String> = _formData
 
-    fun setFormData(value: String) {
-        _formData.value = value
+    fun postFormData(value: String) {
+        _formData.postValue(value)
     }
 
 

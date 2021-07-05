@@ -10,8 +10,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -41,7 +41,9 @@ fun TaskDetails(
     Column(
         modifier = Modifier
             .padding(16.dp)
-            .fillMaxSize(),
+            .size(1500.dp),
+//            .fillMaxSize(),
+//            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -61,9 +63,13 @@ fun TaskDetails(
         val formData by viewModel.formData.observeAsState("Initial")
         Text(text = formData)
         WebPageScreen(
-            urlToRender = "",
+            modifier = Modifier.size(500.dp),
+            urlToRender = "http://10.0.2.2:3000/",
+            jsonSchema = taskStage?.jsonSchema.toString(),
+            uiSchema = taskStage?.uiSchema.toString(),
             formData = formData,
-            onValueChange = { viewModel.setFormData(it) })
+            launcher = launcher,
+            onValueChange = { viewModel.postFormData(it) })
 
     }
 }
@@ -108,8 +114,17 @@ private fun TaskStageDetails(
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun WebPageScreen(urlToRender: String, formData: String, onValueChange : (String) -> Unit) {
-    AndroidView(factory = {context ->
+fun WebPageScreen(
+    modifier: Modifier,
+    urlToRender: String,
+    jsonSchema: String,
+    uiSchema: String,
+    formData: String,
+    onValueChange: (String) -> Unit,
+    launcher: ManagedActivityResultLauncher<String, Uri>
+) {
+    Timber.d("schemas sent: $jsonSchema, $uiSchema, $formData")
+    AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -125,20 +140,46 @@ fun WebPageScreen(urlToRender: String, formData: String, onValueChange : (String
                     return true
                 }
             }
-            addJavascriptInterface(WebAppInterface(onValueChange = onValueChange), "Android")
+            addJavascriptInterface(
+                WebAppInterface(
+                    onValueChange = onValueChange,
+                    launcher = launcher
+                ), "Android"
+            )
             loadUrl(urlToRender)
+            Timber.d("evaluate after load")
+            evaluateJavascript(
+                "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();") {}
         }
     }, update = {
+        Timber.d("formData: $formData")
         it.evaluateJavascript(
-            "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {detail: '$formData'})); })();"
-        ) { }
+            "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();"
+//            """(function() { window.dispatchEvent(new CustomEvent('android_formdata_event',
+//                {
+//                    formData: '$formData',
+//                    jsonSchema: '$jsonSchema',
+//                    uiSchema: '$uiSchema',
+//                })); })();""".trimMargin()
+        ) { Timber.d("evaluate javascrtipt")}
+        Timber.d("update javascrtipt")
     })
 }
 
-class WebAppInterface(private val onValueChange : (String) -> Unit) {
+class WebAppInterface(
+    private val onValueChange: (String) -> Unit,
+    private val launcher: ManagedActivityResultLauncher<String, Uri>
+) {
 
     @JavascriptInterface
-    fun setFormData(toast: String) {
-        onValueChange(toast)
+    fun setFormData(data: String) {
+        Timber.d("set form data: $data")
+        onValueChange(data)
+    }
+
+    @JavascriptInterface
+    fun pickVideo() {
+        Timber.d("pick video")
+        launcher.launch("video/*")
     }
 }
