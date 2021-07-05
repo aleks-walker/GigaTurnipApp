@@ -7,7 +7,6 @@ import com.abedelazizshe.lightcompressorlibrary.CompressionListener
 import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
 import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
-import com.iceteck.silicompressorr.SiliCompressor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kg.kloop.android.gigaturnip.domain.TaskStage
@@ -23,16 +22,18 @@ import javax.inject.Inject
 class TaskDetailsViewModel @Inject constructor(
     private val repository: GigaTurnipRepository,
     @ApplicationContext val context: Context,
-    private val fileCompressor: SiliCompressor
 ) : ViewModel() {
 
     fun getTaskStage(id: Int): LiveData<TaskStage> = liveData {
         repository.getTaskStage(id).data?.let { emit(it) }
     }
+    private val _formData = MutableLiveData<String>()
+    val formData: LiveData<String> = _formData
 
-//    fun getCompressedFilePath(uri: Uri, destination: String): LiveData<String> = liveData {
-//        fileCompressor.compressVideo(uri, destination)
-//    }
+    fun setFormData(value: String) {
+        _formData.value = value
+    }
+
 
     private val _compressedFilePath = MutableLiveData<String>()
     val compressedFilePath: LiveData<String> = _compressedFilePath
@@ -43,11 +44,11 @@ class TaskDetailsViewModel @Inject constructor(
     fun compressInTheBackground(uri: Uri, destination: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-//                val destPath = uri.toString().substringBeforeLast("/")
                 val destPath = File(context.filesDir, "compressed_file").absolutePath
                 Timber.d("Compressing in the background, destPath: $destPath")
 
-                VideoCompressor.start(context,
+                VideoCompressor.start(
+                    context,
                     srcUri = uri,
                     srcPath = null,
                     destPath = destPath,
@@ -80,13 +81,6 @@ class TaskDetailsViewModel @Inject constructor(
 //                        videoBitrate = 3677198 /*Int, ignore, or null*/
                     )
                 )
-//                    fileCompressor.compressVideo(
-//                        uri,
-//                        destination,
-//                        1280,
-//                        720,
-//                        500_000
-//                    )
             }
         }
     }

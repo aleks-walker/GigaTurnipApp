@@ -1,11 +1,8 @@
 package kg.kloop.android.gigaturnip.di
 
-import android.content.Context
-import com.iceteck.silicompressorr.SiliCompressor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kg.kloop.android.gigaturnip.data.models.CampaignDtoMapper
 import kg.kloop.android.gigaturnip.data.models.TaskDtoMapper
@@ -59,12 +56,6 @@ object AppModule {
     @Provides
     fun provideTaskStageDtoMapper(): TaskStageDtoMapper {
         return TaskStageDtoMapper()
-    }
-
-    @Singleton
-    @Provides
-    fun provideVideoCompressor(@ApplicationContext context: Context): SiliCompressor {
-        return SiliCompressor.with(context)
     }
 
 }
