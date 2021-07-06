@@ -127,7 +127,6 @@ fun WebPageScreen(
     onValueChange: (String) -> Unit,
     launcher: ManagedActivityResultLauncher<String, Uri>
 ) {
-    Timber.d("schemas sent: $jsonSchema, $uiSchema, $formData")
     AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -153,20 +152,18 @@ fun WebPageScreen(
             loadUrl(urlToRender)
         }
     }, update = {
-        Timber.d("Webview update triggered")
-        Timber.d("formData: $formData")
-        it.evaluateJavascript(
-//            "(function() { console.log('simple eval')})();"
-//            "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();"
-            """(function() { window.dispatchEvent(new CustomEvent('android_formdata_event',
-                {
-                    formData: 'passed formdata',
-                    jsonSchema: 'passed json schema',
-                    uiSchema: 'ui schema',
-                })); })();""".trimMargin()
-        ) { Timber.d("evaluate javascrtipt")}
-        Timber.d("update javascrtipt")
+        evaluateJs(it, jsonSchema, "android_json_event")
+        evaluateJs(it, uiSchema, "android_ui_event")
+        evaluateJs(it, formData, "android_data_event")
     })
+}
+
+private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
+    Timber.d("Event name: '$eventName'")
+    webView.evaluateJavascript(
+        "(function() { window.dispatchEvent(new CustomEvent(\'$eventName\', " +
+                                                    "{detail: '$detail'})); })();"
+    ) {}
 }
 
 class WebAppInterface(
@@ -176,18 +173,11 @@ class WebAppInterface(
 
     @JavascriptInterface
     fun setFormData(data: String) {
-        Timber.d("set form data: $data")
         onValueChange(data)
     }
 
     @JavascriptInterface
     fun pickVideo() {
-        Timber.d("pick video")
         launcher.launch("video/*")
-    }
-
-    @JavascriptInterface
-    fun getFormData(): String {
-        return "FormData from function"
     }
 }
