@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import timber.log.Timber
+import kotlin.random.Random
 
 @Composable
 fun TaskDetails(
@@ -62,6 +63,9 @@ fun TaskDetails(
 
         val formData by viewModel.formData.observeAsState("Initial")
         Text(text = formData)
+        Button(onClick = { viewModel.postFormData("Updated value: ${Random.nextInt(10)}")  }) {
+            Text(text = "updated")
+        }
         WebPageScreen(
             modifier = Modifier.size(500.dp),
             urlToRender = "http://10.0.2.2:3000/",
@@ -147,20 +151,19 @@ fun WebPageScreen(
                 ), "Android"
             )
             loadUrl(urlToRender)
-            Timber.d("evaluate after load")
-            evaluateJavascript(
-                "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();") {}
         }
     }, update = {
+        Timber.d("Webview update triggered")
         Timber.d("formData: $formData")
         it.evaluateJavascript(
-            "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();"
-//            """(function() { window.dispatchEvent(new CustomEvent('android_formdata_event',
-//                {
-//                    formData: '$formData',
-//                    jsonSchema: '$jsonSchema',
-//                    uiSchema: '$uiSchema',
-//                })); })();""".trimMargin()
+//            "(function() { console.log('simple eval')})();"
+//            "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();"
+            """(function() { window.dispatchEvent(new CustomEvent('android_formdata_event',
+                {
+                    formData: 'passed formdata',
+                    jsonSchema: 'passed json schema',
+                    uiSchema: 'ui schema',
+                })); })();""".trimMargin()
         ) { Timber.d("evaluate javascrtipt")}
         Timber.d("update javascrtipt")
     })
@@ -181,5 +184,10 @@ class WebAppInterface(
     fun pickVideo() {
         Timber.d("pick video")
         launcher.launch("video/*")
+    }
+
+    @JavascriptInterface
+    fun getFormData(): String {
+        return "FormData from function"
     }
 }
