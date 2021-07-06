@@ -156,16 +156,8 @@ fun WebPageScreen(
         Timber.d("Webview update triggered")
         Timber.d("formData: $formData")
         it.evaluateJavascript(
-//            "(function() { console.log('simple eval')})();"
-//            "(function() { window.dispatchEvent(new CustomEvent('android_formdata_event', {formData: '$formData'})); })();"
-            """(function() { window.dispatchEvent(new CustomEvent('android_formdata_event',
-                {
-                    formData: 'passed formdata',
-                    jsonSchema: 'passed json schema',
-                    uiSchema: 'ui schema',
-                })); })();""".trimMargin()
-        ) { Timber.d("evaluate javascrtipt")}
-        Timber.d("update javascrtipt")
+            "(function() { window.dispatchEvent(new CustomEvent('android_event', {detail: '$formData'})); })();"
+        ) { }
     })
 }
 
