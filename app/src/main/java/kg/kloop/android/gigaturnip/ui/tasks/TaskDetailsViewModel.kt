@@ -34,6 +34,13 @@ class TaskDetailsViewModel @Inject constructor(
         _formData.postValue(value)
     }
 
+    private val _listenersReady = MutableLiveData<Boolean>()
+    val listenersReady: LiveData<Boolean> = _listenersReady
+
+    fun setListenersReady(value: Boolean) {
+        _listenersReady.postValue(value)
+    }
+
 
     private val _compressedFilePath = MutableLiveData<String>()
     val compressedFilePath: LiveData<String> = _compressedFilePath

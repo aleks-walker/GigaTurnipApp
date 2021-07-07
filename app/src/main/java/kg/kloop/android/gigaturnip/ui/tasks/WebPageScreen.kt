@@ -1,10 +1,8 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.*
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -17,6 +15,7 @@ fun WebPageScreen(
     urlToRender: String,
     payload: WebViewPayload,
     webAppInterface: WebAppInterface,
+    onUpdate: () -> Unit,
 ) {
     AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
@@ -28,6 +27,7 @@ fun WebPageScreen(
             loadUrl(urlToRender)
         }
     }, update = {
+        onUpdate()
         evaluateJs(it, payload.jsonSchema, "android_json_event")
         evaluateJs(it, payload.uiSchema, "android_ui_event")
         evaluateJs(it, payload.formData, "android_data_event")
@@ -59,7 +59,8 @@ private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
 
 class WebAppInterface(
     private val onValueChange: (String) -> Unit,
-    private val launcher: ManagedActivityResultLauncher<String, Uri>
+    private val onListenersReady: () -> Unit,
+    private val onPickVideo: () -> Unit,
 ) {
 
     @JavascriptInterface
@@ -69,7 +70,12 @@ class WebAppInterface(
 
     @JavascriptInterface
     fun pickVideo() {
-        launcher.launch("video/*")
+        onPickVideo()
+    }
+
+    @JavascriptInterface
+    fun listenersReady(){
+        onListenersReady()
     }
 }
 

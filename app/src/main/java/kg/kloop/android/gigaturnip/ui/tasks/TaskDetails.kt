@@ -21,7 +21,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import timber.log.Timber
-import kotlin.random.Random
 
 @Composable
 fun TaskDetails(
@@ -53,20 +52,8 @@ fun TaskDetails(
 //        Compress(launcher, originalFileUri, compressionProgress, viewModel, fileDestination)
 
         val formData by viewModel.formData.observeAsState("Initial")
-        Text(text = formData)
-        Button(
-            onClick = {
-                Timber.d("form data before update: ${viewModel.formData.value}")
-                Timber.d("json schema before update: ${taskStage?.jsonSchema}")
-                if (viewModel.formData.value == null) {
-                    viewModel.postFormData("Updated value: ${Random.nextInt(10)}")
-                } else {
-                    viewModel.postFormData(viewModel.formData.value!!)
-                }
-            }) {
-            Text(text = "Show form")
-        }
-        Timber.d("webview payload: ${taskStage?.jsonSchema.toString()}")
+        val listenersReady by viewModel.listenersReady.observeAsState(false)
+
         WebPageScreen(
             modifier = Modifier.wrapContentSize(),
             urlToRender = "http://10.0.2.2:3000/",
@@ -77,8 +64,13 @@ fun TaskDetails(
             ),
             webAppInterface = WebAppInterface(
                 onValueChange = { viewModel.postFormData(it) },
-                launcher = launcher
-            )
+                onListenersReady = { viewModel.setListenersReady(true) },
+                onPickVideo = { launcher.launch("video/*") }
+            ),
+            onUpdate = {
+                // set value to the initial state for the future updates
+                if (listenersReady) viewModel.setListenersReady(false)
+            }
         )
     }
 }
