@@ -12,7 +12,7 @@ data class TaskDto (
     val responses: JsonObject?,
 
     @SerializedName("stage")
-    val stageId: Int,
+    val stage: TaskStageDto,
 
     @SerializedName("case")
     val caseId: Int,

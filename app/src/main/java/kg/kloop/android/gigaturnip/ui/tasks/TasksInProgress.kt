@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,7 +24,7 @@ fun TasksInProgress(navController: NavHostController, tasks: List<Task>) {
                 onClick = {
                     navController.navigate(
                         TasksScreen.Details.route
-                            .plus("/${task.id}/${task.stageId}")
+                            .plus("/${task.id}/${task.stage.id}")
                     )
                 })
         }
@@ -43,8 +44,11 @@ private fun TaskCard(task: Task, onClick: () -> Unit) {
                 .padding(8.dp)
                 .fillMaxWidth(),
         ) {
-            Text(text = "task id: ${task.id}", style = MaterialTheme.typography.caption)
-            Text(text = "stage id: ${task.stageId}", style = MaterialTheme.typography.h5)
+            Text(text = task.stage.name, style = MaterialTheme.typography.h5)
+            SelectionContainer() {
+                Text(text = "id: ${task.id}", style = MaterialTheme.typography.caption)
+            }
+            Text(text = task.stage.description, style = MaterialTheme.typography.body1)
         }
     }
 }
