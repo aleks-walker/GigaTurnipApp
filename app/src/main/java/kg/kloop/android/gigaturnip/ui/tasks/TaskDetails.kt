@@ -41,7 +41,7 @@ fun TaskDetails(
     ) {
 
         val taskStage by viewModel.getTaskStage(stageId.toInt()).observeAsState()
-        TaskStageDetails(stageId, taskStage)
+        TaskStageDetails(id, taskStage)
 
         val originalFileUri = remember { mutableStateOf<Uri?>(null) }
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {

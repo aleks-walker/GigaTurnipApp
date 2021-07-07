@@ -5,6 +5,7 @@ import kg.kloop.android.gigaturnip.data.models.TaskDto
 import kg.kloop.android.gigaturnip.data.models.TaskStageDto
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface GigaTurnipApi {
 
@@ -22,7 +23,10 @@ interface GigaTurnipApi {
     ): TaskStageDto
 
     @GET("tasks")
-    suspend fun getTasksList(): List<TaskDto>
+    suspend fun getTasksList(
+        @Query("assignee") userId: String,
+        @Query("complete") complete: Boolean
+    ): List<TaskDto>
 
     @GET("tasks/{id}")
     suspend fun getTask(

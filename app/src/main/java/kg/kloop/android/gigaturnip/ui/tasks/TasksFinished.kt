@@ -5,6 +5,6 @@ import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.domain.Task
 
 @Composable
-fun TasksInProgress(navController: NavHostController, tasks: List<Task>) {
+fun TasksFinished(navController: NavHostController, tasks: List<Task>) {
     TasksList(navController = navController, tasks = tasks)
 }

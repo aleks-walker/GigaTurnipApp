@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -30,7 +33,7 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
         TasksScreen("tasks_in_progress", R.string.in_progress, Icons.Filled.ArrowForward)
 
     object Finished : TasksScreen("tasks_finished", R.string.finished, Icons.Filled.Done)
-    object Pending : TasksScreen("tasks_pending", R.string.pending, Icons.Filled.DateRange)
+//    object Pending : TasksScreen("tasks_pending", R.string.pending, Icons.Filled.DateRange)
     object Details : TasksScreen("task_details", R.string.details, Icons.Filled.ArrowDropDown)
 }
 
@@ -43,7 +46,7 @@ fun TasksScreenView(
     val items = listOf(
         TasksScreen.InProgress,
         TasksScreen.Finished,
-        TasksScreen.Pending
+//        TasksScreen.Pending
     )
     Scaffold(
         bottomBar = {
@@ -51,15 +54,16 @@ fun TasksScreenView(
         }
     )
     { innerPadding ->
-        val tasks: List<Task> by viewModel.tasks.observeAsState(listOf())
+        val tasksInProgress: List<Task> by viewModel.getTasksList("1", false).observeAsState(listOf())
+        val tasksFinished: List<Task> by viewModel.getTasksList("1", true).observeAsState(listOf())
         NavHost(
             navController,
             startDestination = TasksScreen.InProgress.route,
             Modifier.padding(innerPadding)
         ) {
-            composable(TasksScreen.InProgress.route) { TasksInProgress(navController, tasks) }
-            composable(TasksScreen.Finished.route) { TasksFinished(navController) }
-            composable(TasksScreen.Pending.route) { TasksPending(navController) }
+            composable(TasksScreen.InProgress.route) { TasksInProgress(navController, tasksInProgress) }
+            composable(TasksScreen.Finished.route) { TasksFinished(navController, tasksFinished) }
+//            composable(TasksScreen.Pending.route) { TasksPending(navController) }
             composable(
                 route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
                 arguments = listOf(navArgument("id") { type = NavType.StringType },
