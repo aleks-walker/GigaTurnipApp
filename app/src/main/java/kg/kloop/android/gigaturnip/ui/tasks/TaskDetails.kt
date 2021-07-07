@@ -1,26 +1,22 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
-import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
-import android.view.ViewGroup
-import android.webkit.*
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.domain.TaskStage
@@ -41,47 +37,57 @@ fun TaskDetails(
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
-            .size(1500.dp),
-//            .fillMaxSize(),
-//            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(8.dp)
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
     ) {
 
         val taskStage by viewModel.getTaskStage(id.toInt()).observeAsState()
-
         TaskStageDetails(id, taskStage)
 
-        val result = remember { mutableStateOf<Uri?>(null) }
+        val originalFileUri = remember { mutableStateOf<Uri?>(null) }
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-            result.value = it
+            originalFileUri.value = it
         }
         val fileDestination by viewModel.compressedFilePath.observeAsState()
         val compressionProgress: Int by viewModel.compressionProgress.observeAsState(0)
-        Compress(launcher, result, compressionProgress, viewModel, fileDestination)
+//        Compress(launcher, originalFileUri, compressionProgress, viewModel, fileDestination)
 
         val formData by viewModel.formData.observeAsState("Initial")
         Text(text = formData)
-        Button(onClick = { viewModel.postFormData("Updated value: ${Random.nextInt(10)}")  }) {
-            Text(text = "updated")
+        Button(
+            onClick = {
+                Timber.d("form data before update: ${viewModel.formData.value}")
+                Timber.d("json schema before update: ${taskStage?.jsonSchema}")
+                if (viewModel.formData.value == null) {
+                    viewModel.postFormData("Updated value: ${Random.nextInt(10)}")
+                } else {
+                    viewModel.postFormData(viewModel.formData.value!!)
+                }
+            }) {
+            Text(text = "Show form")
         }
+        Timber.d("webview payload: ${taskStage?.jsonSchema.toString()}")
         WebPageScreen(
-            modifier = Modifier.size(500.dp),
+            modifier = Modifier.wrapContentSize(),
             urlToRender = "http://10.0.2.2:3000/",
-            jsonSchema = taskStage?.jsonSchema.toString(),
-            uiSchema = taskStage?.uiSchema.toString(),
-            formData = formData,
-            launcher = launcher,
-            onValueChange = { viewModel.postFormData(it) })
-
+            payload = WebViewPayload(
+                jsonSchema = taskStage?.jsonSchema.toString(),
+                uiSchema = taskStage?.uiSchema.toString(),
+                formData = formData,
+            ),
+            webAppInterface = WebAppInterface(
+                onValueChange = { viewModel.postFormData(it) },
+                launcher = launcher
+            )
+        )
     }
 }
 
 @Composable
 private fun Compress(
     launcher: ManagedActivityResultLauncher<String, Uri>,
-    result: MutableState<Uri?>,
+    originalFileUri: MutableState<Uri?>,
     compressionProgress: Int,
     viewModel: TaskDetailsViewModel,
     fileDestination: String?
@@ -91,7 +97,7 @@ private fun Compress(
         onClick = { launcher.launch("video/*") }) {
         Text(text = "Compress")
     }
-    result.value?.let { uri ->
+    originalFileUri.value?.let { uri ->
         Timber.d("compression function called")
         if (compressionProgress == 0) viewModel.compressInTheBackground(uri, "")
         Column() {
@@ -107,77 +113,32 @@ private fun TaskStageDetails(
     id: String,
     taskStage: TaskStage?
 ) {
-    Text(text = id, style = MaterialTheme.typography.caption)
-    Text(
-        modifier = Modifier.padding(16.dp),
-        text = taskStage?.name.toString(),
-        style = MaterialTheme.typography.h5
-    )
-    Text(text = taskStage?.description.toString(), style = MaterialTheme.typography.subtitle2)
-}
-
-@SuppressLint("SetJavaScriptEnabled")
-@Composable
-fun WebPageScreen(
-    modifier: Modifier,
-    urlToRender: String,
-    jsonSchema: String,
-    uiSchema: String,
-    formData: String,
-    onValueChange: (String) -> Unit,
-    launcher: ManagedActivityResultLauncher<String, Uri>
-) {
-    AndroidView(modifier = modifier, factory = { context ->
-        WebView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+    ) {
+        Text(
+            text = taskStage?.name.toString(),
+            style = MaterialTheme.typography.h4
+        )
+        SelectionContainer {
+            Text(
+                modifier = Modifier,
+                text = "id: $id",
+                style = MaterialTheme.typography.subtitle2,
+                color = Color.LightGray
             )
-            settings.javaScriptEnabled = true
-            webViewClient = WebViewClient()
-            webChromeClient = object : WebChromeClient() {
-
-                override fun onConsoleMessage(message: ConsoleMessage): Boolean {
-                    Log.d("MyApplication", "${message.message()} -- From line " +
-                            "${message.lineNumber()}")
-                    return true
-                }
-            }
-            addJavascriptInterface(
-                WebAppInterface(
-                    onValueChange = onValueChange,
-                    launcher = launcher
-                ), "Android"
-            )
-            loadUrl(urlToRender)
         }
-    }, update = {
-        evaluateJs(it, jsonSchema, "android_json_event")
-        evaluateJs(it, uiSchema, "android_ui_event")
-        evaluateJs(it, formData, "android_data_event")
-    })
+        Text(
+            text = taskStage?.description.toString(),
+            style = MaterialTheme.typography.body1
+        )
+    }
 }
 
-private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
-    Timber.d("Event name: '$eventName'")
-    webView.evaluateJavascript(
-        "(function() { window.dispatchEvent(new CustomEvent(\'$eventName\', " +
-                                                    "{detail: '$detail'})); })();"
-    ) {}
-}
-
-class WebAppInterface(
-    private val onValueChange: (String) -> Unit,
-    private val launcher: ManagedActivityResultLauncher<String, Uri>
-) {
-
-    @JavascriptInterface
-    fun setFormData(data: String) {
-        onValueChange(data)
-    }
-
-    @JavascriptInterface
-    fun pickVideo() {
-        launcher.launch("video/*")
-    }
+@Preview(showBackground = false)
+@Composable
+fun TaskStageDetailPreview() {
+    TaskStageDetails(id = "123123", taskStage = null)
 }

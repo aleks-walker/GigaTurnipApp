@@ -44,7 +44,7 @@ private fun TaskCard(task: Task, onClick: () -> Unit) {
                 .fillMaxWidth(),
         ) {
             Text(text = task.id, style = MaterialTheme.typography.caption)
-            Text(text = task.responses, style = MaterialTheme.typography.h5)
+            Text(text = task.responses.toString(), style = MaterialTheme.typography.h5)
             Text(text = task.caseId.toString(), style = MaterialTheme.typography.subtitle2)
         }
     }
