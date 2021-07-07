@@ -23,7 +23,7 @@ fun TasksInProgress(navController: NavHostController, tasks: List<Task>) {
                 onClick = {
                     navController.navigate(
                         TasksScreen.Details.route
-                            .plus("/${task.id}/${task.responses}/${task.caseId}")
+                            .plus("/${task.id}/${task.stageId}")
                     )
                 })
         }
@@ -43,9 +43,8 @@ private fun TaskCard(task: Task, onClick: () -> Unit) {
                 .padding(8.dp)
                 .fillMaxWidth(),
         ) {
-            Text(text = task.id, style = MaterialTheme.typography.caption)
-            Text(text = task.responses.toString(), style = MaterialTheme.typography.h5)
-            Text(text = task.caseId.toString(), style = MaterialTheme.typography.subtitle2)
+            Text(text = "task id: ${task.id}", style = MaterialTheme.typography.caption)
+            Text(text = "stage id: ${task.stageId}", style = MaterialTheme.typography.h5)
         }
     }
 }

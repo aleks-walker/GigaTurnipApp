@@ -61,10 +61,9 @@ fun TasksScreenView(
             composable(TasksScreen.Finished.route) { TasksFinished(navController) }
             composable(TasksScreen.Pending.route) { TasksPending(navController) }
             composable(
-                route = TasksScreen.Details.route.plus("/{id}/{title}/{description}"),
+                route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
                 arguments = listOf(navArgument("id") { type = NavType.StringType },
-                    navArgument("title") { type = NavType.StringType },
-                    navArgument("description") { type = NavType.StringType })
+                    navArgument("stage_id") { type = NavType.StringType })
             ) { TaskDetails(navController) }
         }
     }

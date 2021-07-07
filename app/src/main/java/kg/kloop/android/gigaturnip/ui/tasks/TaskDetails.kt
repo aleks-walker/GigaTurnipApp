@@ -31,8 +31,7 @@ fun TaskDetails(
 
     val args = navController.currentBackStackEntry?.arguments
     val id = args?.getString("id", "No id")!!
-    val title = args.getString("title", "No title")!!
-    val description = args.getString("description", "No description")!!
+    val stageId = args.getString("stage_id", "No stage id")!!
 
 
     Column(
@@ -42,8 +41,8 @@ fun TaskDetails(
             .verticalScroll(rememberScrollState()),
     ) {
 
-        val taskStage by viewModel.getTaskStage(id.toInt()).observeAsState()
-        TaskStageDetails(id, taskStage)
+        val taskStage by viewModel.getTaskStage(stageId.toInt()).observeAsState()
+        TaskStageDetails(stageId, taskStage)
 
         val originalFileUri = remember { mutableStateOf<Uri?>(null) }
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
