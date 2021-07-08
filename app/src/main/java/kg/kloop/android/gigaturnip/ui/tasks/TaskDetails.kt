@@ -33,7 +33,6 @@ fun TaskDetails(
 
     val args = navController.currentBackStackEntry?.arguments
     val id = args?.getString("id", "No id")!!
-    val stageId = args.getString("stage_id", "No stage id")!!
 
 
     Column(
@@ -44,7 +43,7 @@ fun TaskDetails(
     ) {
 
         val token = mainActivityViewModel.getUserToken().observeAsState()
-        val task by viewModel.getTask(token.value.toString(), stageId.toInt()).observeAsState()
+        val task by viewModel.getTask(token.value.toString(), id.toInt()).observeAsState()
         TaskStageDetails(id, task?.stage)
 
         val originalFileUri = remember { mutableStateOf<Uri?>(null) }

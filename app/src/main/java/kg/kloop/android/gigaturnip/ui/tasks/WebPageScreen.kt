@@ -40,7 +40,7 @@ fun WebPageScreen(
                 add("uiSchema", payload.uiSchema)
                 addProperty("isComplete", payload.isTaskComplete)
             }
-            evaluateJs(it, json.toString(), "android_is_complete_event")
+            evaluateJs(it, json.toString(), "android_schema_event")
             evaluateJs(it, payload.formData.toString(), "android_data_event")
             evaluateJs(it, payload.fileData.toString(), "android_file_event")
         }
