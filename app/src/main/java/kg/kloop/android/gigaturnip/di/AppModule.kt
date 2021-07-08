@@ -9,7 +9,7 @@ import kg.kloop.android.gigaturnip.data.models.TaskDtoMapper
 import kg.kloop.android.gigaturnip.data.models.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.util.Constants.BASE_URL
+import kg.kloop.android.gigaturnip.util.Constants.API_BASE_URL
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -34,7 +34,7 @@ object AppModule {
     fun providesGigaTurnipApi(): GigaTurnipApi {
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(BASE_URL)
+            .baseUrl(API_BASE_URL)
             .build()
             .create(GigaTurnipApi::class.java)
 

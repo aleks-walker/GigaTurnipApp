@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.domain.TaskStage
+import kg.kloop.android.gigaturnip.util.Constants
 import timber.log.Timber
 
 @Composable
@@ -44,28 +45,33 @@ fun TaskDetails(
         TaskStageDetails(id, taskStage)
 
         val originalFileUri = remember { mutableStateOf<Uri?>(null) }
+        val pickFileKey by viewModel.pickFileKey.observeAsState("")
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
             originalFileUri.value = it
+            viewModel.setPickFileKey("\"$pickFileKey\": \"100\"")
         }
         val fileDestination by viewModel.compressedFilePath.observeAsState()
         val compressionProgress: Int by viewModel.compressionProgress.observeAsState(0)
 //        Compress(launcher, originalFileUri, compressionProgress, viewModel, fileDestination)
 
-        val formData by viewModel.formData.observeAsState("Initial")
+        val formData by viewModel.formData.observeAsState("{}")
         val listenersReady by viewModel.listenersReady.observeAsState(false)
-
         WebPageScreen(
             modifier = Modifier.wrapContentSize(),
-            urlToRender = "http://10.0.2.2:3000/",
+            urlToRender = Constants.TURNIP_VIEW_URL,
             payload = WebViewPayload(
                 jsonSchema = taskStage?.jsonSchema.toString(),
                 uiSchema = taskStage?.uiSchema.toString(),
                 formData = formData,
+                fileData = pickFileKey
             ),
             webAppInterface = WebAppInterface(
                 onValueChange = { viewModel.postFormData(it) },
-                onListenersReady = { viewModel.setListenersReady(true) },
-                onPickVideo = { launcher.launch("video/*") }
+                onListenersReady = { Timber.d("on listeners ready called") ;viewModel.setListenersReady(true) },
+                onPickFile = { key ->
+                    launcher.launch("video/*")
+                    viewModel.setPickFileKey(key)
+                }
             ),
             onUpdate = {
                 // set value to the initial state for the future updates

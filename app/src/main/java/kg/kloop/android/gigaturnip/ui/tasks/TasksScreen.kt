@@ -1,20 +1,18 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
+import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -24,6 +22,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
+import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
+import timber.log.Timber
 
 private val TAG = TasksScreen::class.java.simpleName
 
@@ -33,7 +33,6 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
         TasksScreen("tasks_in_progress", R.string.in_progress, Icons.Filled.ArrowForward)
 
     object Finished : TasksScreen("tasks_finished", R.string.finished, Icons.Filled.Done)
-//    object Pending : TasksScreen("tasks_pending", R.string.pending, Icons.Filled.DateRange)
     object Details : TasksScreen("task_details", R.string.details, Icons.Filled.ArrowDropDown)
 }
 
@@ -42,28 +41,46 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
 fun TasksScreenView(
     viewModel: TasksViewModel = hiltViewModel()
 ) {
+    val userId = "1"
     val navController = rememberNavController()
     val items = listOf(
         TasksScreen.InProgress,
         TasksScreen.Finished,
-//        TasksScreen.Pending
     )
+    val fabShape = RoundedCornerShape(50)
+    val context = LocalContext.current
     Scaffold(
         bottomBar = {
-            TasksBottomNavigation(navController, items)
-        }
+            TasksBottomNavigation(navController = navController, items = items)
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { Toast.makeText(context, "Soon", Toast.LENGTH_SHORT).show() },
+                shape = fabShape,
+                backgroundColor = ColorPalette.primary
+            ) {
+                Icon(Icons.Filled.Add, "")
+            }
+        },
+        isFloatingActionButtonDocked = true,
+        floatingActionButtonPosition = FabPosition.Center,
     )
     { innerPadding ->
-        val tasksInProgress: List<Task> by viewModel.getTasksList("1", false).observeAsState(listOf())
-        val tasksFinished: List<Task> by viewModel.getTasksList("1", true).observeAsState(listOf())
+        val tasksInProgress: List<Task> by viewModel.getTasksList(userId, false)
+            .observeAsState(listOf())
+        val tasksFinished: List<Task> by viewModel.getTasksList(userId, true).observeAsState(listOf())
         NavHost(
             navController,
             startDestination = TasksScreen.InProgress.route,
             Modifier.padding(innerPadding)
         ) {
-            composable(TasksScreen.InProgress.route) { TasksInProgress(navController, tasksInProgress) }
+            composable(TasksScreen.InProgress.route) {
+                TasksInProgress(
+                    navController,
+                    tasksInProgress
+                )
+            }
             composable(TasksScreen.Finished.route) { TasksFinished(navController, tasksFinished) }
-//            composable(TasksScreen.Pending.route) { TasksPending(navController) }
             composable(
                 route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
                 arguments = listOf(navArgument("id") { type = NavType.StringType },
@@ -78,9 +95,11 @@ private fun TasksBottomNavigation(
     navController: NavHostController,
     items: List<TasksScreen>
 ) {
-    BottomNavigation {
+    return BottomNavigation {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
+        Timber.d("current destination: $currentDestination")
+        Timber.d("details route: ${TasksScreen.Details.route}")
         items.forEach { screen ->
             BottomNavigationItem(
                 icon = { Icon(screen.icon, contentDescription = null) },
@@ -100,27 +119,8 @@ private fun TasksBottomNavigation(
                         // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
-                }
+                },
             )
         }
     }
 }
-
-
-@Composable
-fun TasksFinished(navController: NavHostController) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(text = "Finished")
-
-    }
-}
-
-@Composable
-fun TasksPending(navController: NavHostController) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(text = "Pending")
-
-    }
-}
-
-

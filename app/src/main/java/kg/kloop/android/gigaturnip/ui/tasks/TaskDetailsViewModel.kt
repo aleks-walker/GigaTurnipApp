@@ -41,6 +41,13 @@ class TaskDetailsViewModel @Inject constructor(
         _listenersReady.postValue(value)
     }
 
+    private val _pickFileKey = MutableLiveData<String>()
+    val pickFileKey: LiveData<String> = _pickFileKey
+
+    fun setPickFileKey(value: String) {
+        _pickFileKey.postValue(value)
+    }
+
 
     private val _compressedFilePath = MutableLiveData<String>()
     val compressedFilePath: LiveData<String> = _compressedFilePath

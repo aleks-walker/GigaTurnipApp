@@ -31,6 +31,7 @@ fun WebPageScreen(
         evaluateJs(it, payload.jsonSchema, "android_json_event")
         evaluateJs(it, payload.uiSchema, "android_ui_event")
         evaluateJs(it, payload.formData, "android_data_event")
+        evaluateJs(it, payload.fileData, "android_file_event")
     })
 }
 
@@ -60,7 +61,7 @@ private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
 class WebAppInterface(
     private val onValueChange: (String) -> Unit,
     private val onListenersReady: () -> Unit,
-    private val onPickVideo: () -> Unit,
+    private val onPickFile: (String) -> Unit,
 ) {
 
     @JavascriptInterface
@@ -69,8 +70,8 @@ class WebAppInterface(
     }
 
     @JavascriptInterface
-    fun pickVideo() {
-        onPickVideo()
+    fun pickFile(key: String) {
+        onPickFile(key)
     }
 
     @JavascriptInterface
@@ -82,5 +83,6 @@ class WebAppInterface(
 data class WebViewPayload(
     val jsonSchema: String,
     val uiSchema: String,
-    var formData: String
+    var formData: String,
+    var fileData: String
 )
