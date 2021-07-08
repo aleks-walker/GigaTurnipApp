@@ -65,6 +65,7 @@ fun TaskDetails(
             payload = WebViewPayload(
                 jsonSchema = task?.stage?.jsonSchema,
                 uiSchema = task?.stage?.uiSchema,
+                isTaskComplete = task?.isComplete,
                 formData = task?.responses,
                 fileData = pickFileKey
             ),

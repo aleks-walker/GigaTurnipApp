@@ -1,6 +1,5 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
-import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +34,7 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
 
     object Finished : TasksScreen("tasks_finished", R.string.finished, Icons.Filled.Done)
     object Details : TasksScreen("task_details", R.string.details, Icons.Filled.ArrowDropDown)
+    object Creatable : TasksScreen("task_creatable", R.string.creatable, Icons.Filled.ArrowDropDown)
 }
 
 
@@ -57,7 +57,7 @@ fun TasksScreenView(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { Toast.makeText(context, "Soon", Toast.LENGTH_SHORT).show() },
+                onClick = { navController.navigate(TasksScreen.Creatable.route) },
                 shape = fabShape,
                 backgroundColor = ColorPalette.primary
             ) {

@@ -14,6 +14,9 @@ data class TaskDto (
     @SerializedName("stage")
     val stage: TaskStageDto,
 
+    @SerializedName("complete")
+    val isComplete: Boolean,
+
     @SerializedName("case")
     val caseId: Int,
 

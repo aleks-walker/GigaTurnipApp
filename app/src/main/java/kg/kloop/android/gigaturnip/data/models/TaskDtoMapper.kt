@@ -9,6 +9,7 @@ class TaskDtoMapper : DomainMapper<TaskDto, Task>(){
             id = model.id,
             responses = model.responses,
             stage = TaskStageDtoMapper().mapToDomainModel(model.stage),
+            isComplete = model.isComplete,
             caseId = model.caseId,
             inTasks = model.inTasks
         )
@@ -19,6 +20,7 @@ class TaskDtoMapper : DomainMapper<TaskDto, Task>(){
             id = domainModel.id,
             responses = domainModel.responses,
             stage = TaskStageDtoMapper().mapFromDomainModel(domainModel.stage),
+            isComplete = domainModel.isComplete,
             caseId = domainModel.caseId,
             inTasks = domainModel.inTasks
         )
