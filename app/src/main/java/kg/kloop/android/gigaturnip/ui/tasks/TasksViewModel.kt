@@ -14,10 +14,11 @@ class TasksViewModel @Inject constructor(
 ) : ViewModel() {
 
     fun getTasksList(
+        token: String,
         userId: String,
         complete: Boolean
     ): LiveData<List<Task>> = liveData {
-        emit(repository.getTasksList(userId, complete).data.orEmpty())
+        emit(repository.getTasksList(token, userId, complete).data.orEmpty())
     }
 
 }

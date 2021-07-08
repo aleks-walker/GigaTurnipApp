@@ -20,6 +20,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
@@ -39,9 +40,10 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
 
 @Composable
 fun TasksScreenView(
-    viewModel: TasksViewModel = hiltViewModel()
+    viewModel: TasksViewModel = hiltViewModel(),
+    mainActivityViewModel: MainActivityViewModel = hiltViewModel()
 ) {
-    val userId = "1"
+    val user = mainActivityViewModel.user.observeAsState()
     val navController = rememberNavController()
     val items = listOf(
         TasksScreen.InProgress,
@@ -66,9 +68,20 @@ fun TasksScreenView(
         floatingActionButtonPosition = FabPosition.Center,
     )
     { innerPadding ->
-        val tasksInProgress: List<Task> by viewModel.getTasksList(userId, false)
-            .observeAsState(listOf())
-        val tasksFinished: List<Task> by viewModel.getTasksList(userId, true).observeAsState(listOf())
+        val token = mainActivityViewModel.getUserToken().observeAsState()
+
+        val tasksInProgress: List<Task> by viewModel.getTasksList(
+            token.value.toString(),
+            user.value!!.uid,
+            false
+        ).observeAsState(listOf())
+
+        val tasksFinished: List<Task> by viewModel.getTasksList(
+            token.value.toString(),
+            user.value!!.uid,
+            true
+        ).observeAsState(listOf())
+
         NavHost(
             navController,
             startDestination = TasksScreen.InProgress.route,

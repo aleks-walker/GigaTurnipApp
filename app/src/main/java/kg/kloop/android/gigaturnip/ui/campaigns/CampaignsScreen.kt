@@ -17,9 +17,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.ui.tasks.TasksScreen
-import timber.log.Timber
 
 
 sealed class CampaignsScreen(val route: String) {
@@ -28,9 +28,11 @@ sealed class CampaignsScreen(val route: String) {
 
 @Composable
 fun CampaignsScreenView(navController: NavHostController,
-                        viewModel: CampaignsViewModel = hiltViewModel()) {
-    val campaigns: List<Campaign> by viewModel.campaigns.observeAsState(listOf())
-    Timber.d("campaigns to display: ${campaigns.joinToString()}")
+                        viewModel: CampaignsViewModel = hiltViewModel(),
+                        mainActivityViewModel: MainActivityViewModel = hiltViewModel()) {
+    val token = mainActivityViewModel.getUserToken().observeAsState()
+    val campaigns: List<Campaign> by viewModel.getCampaigns(token.value.toString()).observeAsState(listOf())
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

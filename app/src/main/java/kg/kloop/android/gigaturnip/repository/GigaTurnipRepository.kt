@@ -18,8 +18,10 @@ class GigaTurnipRepository(
     private val tasksMapper: TaskDtoMapper,
     private val taskStageMapper: TaskStageDtoMapper
 ) {
-    suspend fun getCampaignsList(): Resource<List<Campaign>> {
-        return getList({ api.getCampaignsList() }, campaignMapper)
+
+    private fun makeToken(token: String) = "JWT $token"
+    suspend fun getCampaignsList(token: String): Resource<List<Campaign>> {
+        return getList({ api.getCampaignsList(makeToken(token)) }, campaignMapper)
     }
 
     suspend fun getCampaign(id: Int): Resource<Campaign> {
@@ -28,15 +30,22 @@ class GigaTurnipRepository(
     }
 
     suspend fun getTasksList(
+        token: String,
         userId: String,
         complete: Boolean
     ): Resource<List<Task>> {
         return getList({
             api.getTasksList(
+                token = makeToken(token),
                 userId = userId,
                 complete = complete
             )
         }, tasksMapper)
+
+    }
+
+    suspend fun getTask(token: String, id: Int): Resource<Task> {
+        return getSingle({ api.getTask(makeToken(token), id) }, tasksMapper)
 
     }
 

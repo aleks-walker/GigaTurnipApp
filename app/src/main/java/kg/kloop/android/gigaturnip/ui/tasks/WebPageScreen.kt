@@ -6,6 +6,8 @@ import android.webkit.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.gson.JsonObject
 import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -16,6 +18,7 @@ fun WebPageScreen(
     payload: WebViewPayload,
     webAppInterface: WebAppInterface,
     onUpdate: () -> Unit,
+    viewModel: TaskDetailsViewModel = hiltViewModel(),
 ) {
     AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
@@ -25,13 +28,18 @@ fun WebPageScreen(
             webChromeClient = webChromeClient()
             addJavascriptInterface(webAppInterface, "Android")
             loadUrl(urlToRender)
+
         }
     }, update = {
         onUpdate()
-        evaluateJs(it, payload.jsonSchema, "android_json_event")
-        evaluateJs(it, payload.uiSchema, "android_ui_event")
-        evaluateJs(it, payload.formData, "android_data_event")
-        evaluateJs(it, payload.fileData, "android_file_event")
+        if (viewModel.listenersReady.value == true
+            && payload.jsonSchema != null
+        ) {
+            evaluateJs(it, payload.jsonSchema.toString(), "android_json_event")
+            evaluateJs(it, payload.uiSchema.toString(), "android_ui_event")
+            evaluateJs(it, payload.formData.toString(), "android_data_event")
+            evaluateJs(it, payload.fileData.toString(), "android_file_event")
+        }
     })
 }
 
@@ -81,8 +89,8 @@ class WebAppInterface(
 }
 
 data class WebViewPayload(
-    val jsonSchema: String,
-    val uiSchema: String,
-    var formData: String,
+    val jsonSchema: JsonObject?,
+    val uiSchema: JsonObject?,
+    var formData: JsonObject?,
     var fileData: String
 )

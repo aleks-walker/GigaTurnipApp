@@ -9,7 +9,7 @@ import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kg.kloop.android.gigaturnip.domain.TaskStage
+import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,8 +24,8 @@ class TaskDetailsViewModel @Inject constructor(
     @ApplicationContext val context: Context,
 ) : ViewModel() {
 
-    fun getTaskStage(id: Int): LiveData<TaskStage> = liveData {
-        repository.getTaskStage(id).data?.let { emit(it) }
+    fun getTask(token: String, id: Int): LiveData<Task> = liveData {
+        repository.getTask(token, id).data?.let { emit(it) }
     }
     private val _formData = MutableLiveData<String>()
     val formData: LiveData<String> = _formData

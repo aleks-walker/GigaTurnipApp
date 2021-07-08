@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,10 +48,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    viewModel: MainActivityViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
 
-    val user = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
+    val user = viewModel.user.observeAsState()
     if (user.value != null) {
         CampaignsScreenView(navController = navController)
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -57,11 +62,8 @@ fun MainScreen() {
             topBar = {
                 Toolbar("GigaTurnip", scaffoldState.drawerState, scope) {
                     FirebaseAuth.getInstance().signOut()
-                    user.value = null
+                    viewModel.setUser(null)
                 }
-            },
-            drawerContent = {
-                Text(text = "Drawer")
             },
             scaffoldState = scaffoldState,
         )
@@ -74,17 +76,17 @@ fun MainScreen() {
         }
 
     } else {
-        logIn(user)
+        LogIn { currentUser -> viewModel.setUser(currentUser) }
     }
 
 }
 
 @Composable
-private fun logIn(user: MutableState<FirebaseUser?>) {
+private fun LogIn(setUser: (FirebaseUser?) -> Unit) {
     val contract = FirebaseAuthUIActivityResultContract()
     val launcher = rememberLauncherForActivityResult(contract) { result ->
         if (result.resultCode == RESULT_OK) {
-            user.value = FirebaseAuth.getInstance().currentUser
+            setUser(FirebaseAuth.getInstance().currentUser)
         }
     }
     val providers = arrayListOf(
