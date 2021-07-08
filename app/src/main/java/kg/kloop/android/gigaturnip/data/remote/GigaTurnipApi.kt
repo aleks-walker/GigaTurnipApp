@@ -3,10 +3,10 @@ package kg.kloop.android.gigaturnip.data.remote
 import kg.kloop.android.gigaturnip.data.models.CampaignDto
 import kg.kloop.android.gigaturnip.data.models.TaskDto
 import kg.kloop.android.gigaturnip.data.models.TaskStageDto
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Path
-import retrofit2.http.Query
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.*
 
 interface GigaTurnipApi {
 
@@ -37,5 +37,13 @@ interface GigaTurnipApi {
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): TaskDto
+
+
+    @PATCH("tasks/{id}/")
+    suspend fun updateTask(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body requestBody: RequestBody
+    ): Response<ResponseBody>
 
 }

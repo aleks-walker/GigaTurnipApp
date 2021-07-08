@@ -1,5 +1,7 @@
 package kg.kloop.android.gigaturnip.repository
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import dagger.hilt.android.scopes.ActivityScoped
 import kg.kloop.android.gigaturnip.data.models.CampaignDtoMapper
 import kg.kloop.android.gigaturnip.data.models.TaskDtoMapper
@@ -10,6 +12,11 @@ import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.util.Resource
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
+import retrofit2.Response
 
 @ActivityScoped
 class GigaTurnipRepository(
@@ -52,6 +59,15 @@ class GigaTurnipRepository(
     suspend fun getTaskStage(id: Int): Resource<TaskStage> {
         return getSingle({ api.getTaskStage(id) }, taskStageMapper)
 
+    }
+
+    suspend fun updateTask(token: String, id: Int, responses: String): Response<ResponseBody> =
+        api.updateTask(makeToken(token), id, makeRequestBody(responses))
+
+    private fun makeRequestBody(responses: String): RequestBody {
+        val responsesJson = JsonParser().parse(responses).asJsonObject
+        val json = JsonObject().apply { add("responses", responsesJson) }
+        return json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
     }
 
     private suspend fun <T, DomainModel> getSingle(

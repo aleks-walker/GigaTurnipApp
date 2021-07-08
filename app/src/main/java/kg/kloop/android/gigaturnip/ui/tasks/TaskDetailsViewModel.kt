@@ -27,11 +27,21 @@ class TaskDetailsViewModel @Inject constructor(
     fun getTask(token: String, id: Int): LiveData<Task> = liveData {
         repository.getTask(token, id).data?.let { emit(it) }
     }
+
     private val _formData = MutableLiveData<String>()
     val formData: LiveData<String> = _formData
 
     fun postFormData(value: String) {
         _formData.postValue(value)
+    }
+
+    fun updateTask(token: String, id: Int, responses: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                val response = repository.updateTask(token, id, responses)
+                Timber.d(response.toString())
+            }
+        }
     }
 
     private val _listenersReady = MutableLiveData<Boolean>()

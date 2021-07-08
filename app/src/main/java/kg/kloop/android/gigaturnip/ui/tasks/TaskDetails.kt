@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.util.Constants
@@ -47,10 +48,11 @@ fun TaskDetails(
         TaskStageDetails(id, task?.stage)
 
         val originalFileUri = remember { mutableStateOf<Uri?>(null) }
-        val pickFileKey by viewModel.pickFileKey.observeAsState("")
+        val pickFileKey by viewModel.pickFileKey.observeAsState()
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
             originalFileUri.value = it
-            viewModel.setPickFileKey("\"$pickFileKey\": {\"progress\": \"100\"}")
+            val json = getFileData(pickFileKey!!)
+            viewModel.setPickFileKey(json.toString())
         }
         val fileDestination by viewModel.compressedFilePath.observeAsState()
         val compressionProgress: Int by viewModel.compressionProgress.observeAsState(0)
@@ -69,7 +71,13 @@ fun TaskDetails(
                 fileData = pickFileKey
             ),
             webAppInterface = WebAppInterface(
-                onValueChange = { viewModel.postFormData(it) },
+                onValueChange = { responses ->
+                    viewModel.updateTask(
+                        token.value.toString(),
+                        id.toInt(),
+                        responses
+                    )
+                },
                 onListenersReady = {
                     viewModel.setListenersReady(true)
                },
@@ -86,6 +94,14 @@ fun TaskDetails(
             },
         )
     }
+}
+
+private fun getFileData(pickFileKey: String): JsonObject {
+    val fileInfo = JsonObject().apply {
+        addProperty("progress", 100)
+        addProperty("fileName", "name")
+    }
+    return JsonObject().apply { add(pickFileKey, fileInfo) }
 }
 
 @Composable

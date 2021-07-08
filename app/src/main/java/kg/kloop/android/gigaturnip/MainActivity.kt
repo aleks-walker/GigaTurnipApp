@@ -2,6 +2,7 @@ package kg.kloop.android.gigaturnip
 
 import android.app.Activity.RESULT_OK
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -38,7 +39,7 @@ import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setContent {
             GigaTurnipTheme {
                 MainScreen()

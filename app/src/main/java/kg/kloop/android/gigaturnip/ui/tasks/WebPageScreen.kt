@@ -7,6 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebSettingsCompat.setForceDark
+import androidx.webkit.WebViewFeature
 import com.google.gson.JsonObject
 import timber.log.Timber
 
@@ -28,6 +31,7 @@ fun WebPageScreen(
             webChromeClient = webChromeClient()
             addJavascriptInterface(webAppInterface, "Android")
             loadUrl(urlToRender)
+            setDarkMode(this)
 
         }
     }, update = {
@@ -45,6 +49,12 @@ fun WebPageScreen(
             evaluateJs(it, payload.fileData.toString(), "android_file_event")
         }
     })
+}
+
+private fun setDarkMode(webView: WebView) {
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+        setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)
+    }
 }
 
 private fun layoutParams() = ViewGroup.LayoutParams(
@@ -97,5 +107,5 @@ data class WebViewPayload(
     val uiSchema: JsonObject?,
     val isTaskComplete: Boolean?,
     var formData: JsonObject?,
-    var fileData: String,
+    var fileData: String?,
 )
