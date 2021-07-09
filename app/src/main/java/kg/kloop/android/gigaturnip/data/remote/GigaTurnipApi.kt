@@ -25,6 +25,13 @@ interface GigaTurnipApi {
         @Path("id") id: Int
     ): TaskStageDto
 
+    @GET("taskstages/user_relevant")
+    suspend fun getTasksStagesList(
+        @Header("Authorization") token: String,
+        @Query("is_creatable") isCreatable: Boolean,
+        @Query("ranklimits__total_limit") rankLimitsTotalLimit: Int
+    ): List<TaskStageDto>
+
     @GET("tasks")
     suspend fun getTasksList(
         @Header("Authorization") token: String,
@@ -44,6 +51,12 @@ interface GigaTurnipApi {
         @Header("Authorization") token: String,
         @Path("id") id: Int,
         @Body requestBody: RequestBody
+    ): Response<ResponseBody>
+
+    @POST("tasks/")
+    suspend fun createTask(
+        @Header("Authorization") token: String,
+        @Body requestBody: RequestBody,
     ): Response<ResponseBody>
 
 }

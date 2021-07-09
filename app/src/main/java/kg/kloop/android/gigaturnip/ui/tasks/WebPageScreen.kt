@@ -40,8 +40,8 @@ fun WebPageScreen(
             && payload.jsonSchema != null
         ) {
             val json = JsonObject().apply {
-                add("jsonSchema", payload.jsonSchema)
-                add("uiSchema", payload.uiSchema)
+                addProperty("jsonSchema", payload.jsonSchema)
+                addProperty("uiSchema", payload.uiSchema)
                 addProperty("isComplete", payload.isTaskComplete)
             }
             evaluateJs(it, json.toString(), "android_schema_event")
@@ -103,8 +103,8 @@ class WebAppInterface(
 }
 
 data class WebViewPayload(
-    val jsonSchema: JsonObject?,
-    val uiSchema: JsonObject?,
+    val jsonSchema: String?,
+    val uiSchema: String?,
     val isTaskComplete: Boolean?,
     var formData: JsonObject?,
     var fileData: String?,

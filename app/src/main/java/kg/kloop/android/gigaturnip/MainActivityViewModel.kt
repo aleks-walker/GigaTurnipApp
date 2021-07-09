@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,6 +23,7 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
         _user.value = FirebaseAuth.getInstance().currentUser
         _user.value?.getIdToken(false)?.addOnSuccessListener {
             _token.value = it.token!!
+            Timber.d("TOKEN: ${_token.value?.subSequence(0..20)}")
         }
     }
 

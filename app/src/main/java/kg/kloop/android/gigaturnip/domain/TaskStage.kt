@@ -1,13 +1,11 @@
 package kg.kloop.android.gigaturnip.domain
 
-import com.google.gson.JsonObject
-
 data class TaskStage(
     val id: String,
     val name: String,
     val description: String,
-    val jsonSchema: JsonObject,
-    val uiSchema: JsonObject,
+    val jsonSchema: String,
+    val uiSchema: String,
 
     val library: String,
     val xPos: String,

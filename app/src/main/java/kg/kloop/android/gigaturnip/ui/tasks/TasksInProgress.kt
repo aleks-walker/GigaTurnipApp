@@ -1,10 +1,9 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.domain.Task
 
 @Composable
-fun TasksInProgress(navController: NavHostController, tasks: List<Task>) {
-    TasksList(navController = navController, tasks = tasks)
+fun TasksInProgress(onDetailsClick: (Task) -> Unit, tasks: List<Task>) {
+    TasksList(onDetailsClick = onDetailsClick, tasks = tasks)
 }

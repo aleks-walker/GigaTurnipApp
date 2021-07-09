@@ -18,7 +18,7 @@ data class TaskDto (
     val isComplete: Boolean,
 
     @SerializedName("case")
-    val caseId: Int,
+    val caseId: Int?,
 
     @SerializedName("in_tasks")
     val inTasks: List<Int>?,

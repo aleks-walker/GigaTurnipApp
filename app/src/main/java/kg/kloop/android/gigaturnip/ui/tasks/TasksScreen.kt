@@ -11,14 +11,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
@@ -31,8 +32,8 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
     object TasksList : TasksScreen("tasks_list", R.string.tasks_list, Icons.Filled.Home)
     object InProgress :
         TasksScreen("tasks_in_progress", R.string.in_progress, Icons.Filled.ArrowForward)
-
     object Finished : TasksScreen("tasks_finished", R.string.finished, Icons.Filled.Done)
+
     object Details : TasksScreen("task_details", R.string.details, Icons.Filled.ArrowDropDown)
     object Creatable : TasksScreen("task_creatable", R.string.creatable, Icons.Filled.ArrowDropDown)
 }
@@ -40,6 +41,8 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
 
 @Composable
 fun TasksScreenView(
+    onFabClick: () -> Unit,
+    navigateToDetails: (Task) -> Unit,
     viewModel: TasksViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel = hiltViewModel()
 ) {
@@ -50,14 +53,13 @@ fun TasksScreenView(
         TasksScreen.Finished,
     )
     val fabShape = RoundedCornerShape(50)
-    val context = LocalContext.current
     Scaffold(
         bottomBar = {
             TasksBottomNavigation(navController = navController, items = items)
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate(TasksScreen.Creatable.route) },
+                onClick = { onFabClick() },
                 shape = fabShape,
                 backgroundColor = ColorPalette.primary
             ) {
@@ -89,19 +91,25 @@ fun TasksScreenView(
         ) {
             composable(TasksScreen.InProgress.route) {
                 TasksInProgress(
-                    navController,
+                    navigateToDetails,
                     tasksInProgress
                 )
             }
-            composable(TasksScreen.Finished.route) { TasksFinished(navController, tasksFinished) }
-            composable(
-                route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
-                arguments = listOf(navArgument("id") { type = NavType.StringType },
-                    navArgument("stage_id") { type = NavType.StringType })
-            ) { TaskDetails(navController) }
+            composable(TasksScreen.Finished.route) {
+                TasksFinished(
+                    navigateToDetails,
+                    tasksFinished
+                )
+            }
+//            composable(
+//                route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
+//                arguments = listOf(navArgument("id") { type = NavType.StringType },
+//                    navArgument("stage_id") { type = NavType.StringType })
+//            ) { TaskDetails(navController) }
         }
     }
 }
+
 
 @Composable
 private fun TasksBottomNavigation(

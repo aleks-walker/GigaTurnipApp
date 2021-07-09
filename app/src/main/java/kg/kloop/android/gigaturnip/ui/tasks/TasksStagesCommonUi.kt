@@ -5,28 +5,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kg.kloop.android.gigaturnip.domain.Task
+import kg.kloop.android.gigaturnip.domain.TaskStage
 
 @Composable
-fun TasksList(onDetailsClick: (Task) -> Unit, tasks: List<Task>) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(tasks) { task ->
-            TaskCard(
-                task,
+fun TaskStageList(onClick: (String) -> Unit, taskStages: List<TaskStage>) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        taskStages.forEach { stage ->
+            TaskStageCard(
+                stage,
                 onClick = {
-                    onDetailsClick(task)
+                    onClick(stage.id)
 //                    navController.navigate(
 //                        TasksScreen.Details.route
-//                            .plus("/${task.id}/${task.stage.id}")
+//                            .plus("/${task.id}/${taskStage.id}")
 //                    )
                 })
         }
@@ -34,7 +31,7 @@ fun TasksList(onDetailsClick: (Task) -> Unit, tasks: List<Task>) {
 }
 
 @Composable
-private fun TaskCard(task: Task, onClick: () -> Unit) {
+private fun TaskStageCard(taskStage: TaskStage, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .padding(start = 8.dp, end = 8.dp, top = 8.dp)
@@ -46,11 +43,9 @@ private fun TaskCard(task: Task, onClick: () -> Unit) {
                 .padding(8.dp)
                 .fillMaxWidth(),
         ) {
-            Text(text = task.stage.name, style = MaterialTheme.typography.h5)
-            SelectionContainer() {
-                Text(text = "id: ${task.id}", style = MaterialTheme.typography.caption)
-            }
-            Text(text = task.stage.description, style = MaterialTheme.typography.body1)
+            Text(text = taskStage.name, style = MaterialTheme.typography.h5)
+            Text(text = taskStage.description, style = MaterialTheme.typography.body1)
         }
     }
 }
+

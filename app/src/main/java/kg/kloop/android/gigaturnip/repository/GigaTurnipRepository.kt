@@ -1,5 +1,6 @@
 package kg.kloop.android.gigaturnip.repository
 
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import dagger.hilt.android.scopes.ActivityScoped
@@ -7,6 +8,7 @@ import kg.kloop.android.gigaturnip.data.models.CampaignDtoMapper
 import kg.kloop.android.gigaturnip.data.models.TaskDtoMapper
 import kg.kloop.android.gigaturnip.data.models.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
+import kg.kloop.android.gigaturnip.data.requests.TaskPostRequestEntity
 import kg.kloop.android.gigaturnip.data.utils.DomainMapper
 import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.domain.Task
@@ -62,12 +64,32 @@ class GigaTurnipRepository(
     }
 
     suspend fun updateTask(token: String, id: Int, responses: String): Response<ResponseBody> =
-        api.updateTask(makeToken(token), id, makeRequestBody(responses))
+        api.updateTask(makeToken(token), id, addProperty("responses", responses))
 
-    private fun makeRequestBody(responses: String): RequestBody {
-        val responsesJson = JsonParser().parse(responses).asJsonObject
-        val json = JsonObject().apply { add("responses", responsesJson) }
-        return json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+    suspend fun createTask(token: String, stageId: Int): Response<ResponseBody> {
+        val json = Gson().toJson(TaskPostRequestEntity(stageId = stageId))
+        return api.createTask(makeToken(token), json.toRequestBodyWithMediaType())
+    }
+
+    private fun addProperty(property: String, value: String): RequestBody {
+        val parsedValue = JsonParser().parse(value).asJsonObject
+        val json = JsonObject().apply { add(property, parsedValue) }
+        return json.toString().toRequestBodyWithMediaType()
+    }
+
+    suspend fun getTasksStagesList(
+        token: String,
+        isCreatable: Boolean,
+        rankLimitsTotalLimit: Int
+    ): Resource<List<TaskStage>> {
+        return getList({
+            api.getTasksStagesList(
+                token = makeToken(token),
+                isCreatable = isCreatable,
+                rankLimitsTotalLimit = rankLimitsTotalLimit
+            )
+        }, taskStageMapper)
+
     }
 
     private suspend fun <T, DomainModel> getSingle(
@@ -95,4 +117,7 @@ class GigaTurnipRepository(
         }
         return Resource.Success(mapper.toDomainList(response))
     }
+
+    fun String.toRequestBodyWithMediaType() =
+        this.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 }

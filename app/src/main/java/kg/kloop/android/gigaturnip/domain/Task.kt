@@ -7,6 +7,6 @@ data class Task(
     val responses: JsonObject?,
     val stage: TaskStage,
     val isComplete: Boolean,
-    val caseId: Int,
+    val caseId: Int?,
     val inTasks: List<Int>?
 )
