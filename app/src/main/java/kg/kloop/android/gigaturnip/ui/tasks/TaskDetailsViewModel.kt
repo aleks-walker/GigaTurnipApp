@@ -7,6 +7,13 @@ import com.abedelazizshe.lightcompressorlibrary.CompressionListener
 import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
 import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.component1
+import com.google.firebase.storage.ktx.component2
+import com.google.firebase.storage.ktx.storage
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kg.kloop.android.gigaturnip.domain.Task
@@ -53,6 +60,9 @@ class TaskDetailsViewModel @Inject constructor(
     private val _pickFileKey = MutableLiveData<String>()
     val pickFileKey: LiveData<String> = _pickFileKey
 
+    private val _fileUploadInfo = MutableLiveData<String>()
+    val fileUploadInfo: LiveData<String> = _fileUploadInfo
+
     fun setPickFileKey(value: String) {
         _pickFileKey.postValue(value)
     }
@@ -63,6 +73,61 @@ class TaskDetailsViewModel @Inject constructor(
 
     private val _compressionProgress = MutableLiveData<Int>()
     val compressionProgress: LiveData<Int> = _compressionProgress
+
+    fun uploadFiles(path: Path, uris: List<Uri>) {
+        val storage = Firebase.storage
+        val storageRef = storage.reference
+        val jsonArray = JsonArray()
+        uris.forEachIndexed { i, uri ->
+            val fileName = getFileName(uri)
+            val fileRef = getFileRef(storageRef, path, fileName)
+            val uploadTask = fileRef.putFile(uri)
+
+            uploadTask.addOnProgressListener { (bytesTransferred, totalByteCount) ->
+                val json = getFileInfo(bytesTransferred, totalByteCount, fileName)
+                jsonArray.set(i, json)
+                _fileUploadInfo.postValue(jsonArray.toString())
+            }.addOnSuccessListener {
+                Timber.d("upload metadata: ${it.metadata.toString()}")
+            }
+        }
+    }
+
+    private fun getFileInfo(
+        bytesTransferred: Long,
+        totalByteCount: Long,
+        fileName: String
+    ): JsonObject {
+        val progress = (100.0 * bytesTransferred) / totalByteCount
+        Timber.d("Upload is $progress done")
+        val json = getFileData(
+            _pickFileKey.value!!,
+            fileName,
+            progress.toString()
+        )
+        return json
+    }
+
+    private fun getFileName(uri: Uri) = File(uri.path!!).name
+
+    private fun getFileRef(
+        storageRef: StorageReference,
+        path: Path,
+        fileName: String
+    ): StorageReference {
+        val ref = storageRef.child(
+            """${path.campaignId}/${path.chainId}/${path.stageId}/${path.stageId}/$fileName""".trimMargin())
+            Timber.d("ref path: ${ref.path}")
+        return(ref)
+    }
+
+    private fun getFileData(pickFileKey: String, fileName: String, progress: String): JsonObject {
+        val fileInfo = JsonObject().apply {
+            addProperty("progress", progress)
+            addProperty("fileName", fileName)
+        }
+        return JsonObject().apply { add(pickFileKey, fileInfo) }
+    }
 
     fun compressInTheBackground(uri: Uri, destination: String) {
         viewModelScope.launch {

@@ -19,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.util.Constants
@@ -34,6 +33,7 @@ fun TaskDetails(
 
     val args = navController.currentBackStackEntry?.arguments
     val id = args?.getString("id", "No id")!!
+    val user = mainActivityViewModel.user.observeAsState()
 
 
     Column(
@@ -48,11 +48,19 @@ fun TaskDetails(
         TaskStageDetails(id, task?.stage)
 
         val originalFileUri = remember { mutableStateOf<Uri?>(null) }
-        val pickFileKey by viewModel.pickFileKey.observeAsState()
+//        val pickFileKey by viewModel.pickFileKey.observeAsState()
+        val fileUploadInfo by viewModel.fileUploadInfo.observeAsState()
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
             originalFileUri.value = it
-            val json = getFileData(pickFileKey!!)
-            viewModel.setPickFileKey(json.toString())
+            viewModel.uploadFiles(
+                Path(
+                    user.value!!.uid,
+                    "1",
+                    task!!.stage.chain.toString(),
+                    task!!.id,
+                    task!!.stage.id,
+                ), listOf(it)
+            )
         }
         val fileDestination by viewModel.compressedFilePath.observeAsState()
         val compressionProgress: Int by viewModel.compressionProgress.observeAsState(0)
@@ -68,7 +76,7 @@ fun TaskDetails(
                 uiSchema = task?.stage?.uiSchema,
                 isTaskComplete = task?.isComplete,
                 formData = task?.responses,
-                fileData = pickFileKey
+                fileData = fileUploadInfo
             ),
             webAppInterface = WebAppInterface(
                 onValueChange = { responses ->
@@ -96,13 +104,6 @@ fun TaskDetails(
     }
 }
 
-private fun getFileData(pickFileKey: String): JsonObject {
-    val fileInfo = JsonObject().apply {
-        addProperty("progress", 100)
-        addProperty("fileName", "name")
-    }
-    return JsonObject().apply { add(pickFileKey, fileInfo) }
-}
 
 @Composable
 private fun Compress(
@@ -162,3 +163,11 @@ private fun TaskStageDetails(
 fun TaskStageDetailPreview() {
     TaskStageDetails(id = "123123", taskStage = null)
 }
+
+data class Path(
+    val userId: String,
+    val campaignId: String,
+    val chainId: String,
+    val stageId: String,
+    val taskId: String
+)
