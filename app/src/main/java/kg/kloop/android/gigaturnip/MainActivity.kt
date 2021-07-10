@@ -2,22 +2,24 @@ package kg.kloop.android.gigaturnip
 
 import android.app.Activity.RESULT_OK
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -44,20 +46,18 @@ import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setContent {
+            val navController = rememberNavController()
+            val viewModel by viewModels<MainActivityViewModel>()
             GigaTurnipTheme {
-                MainScreen()
+                MainScreen(viewModel, navController)
             }
         }
     }
 }
 
 @Composable
-fun MainScreen(
-    viewModel: MainActivityViewModel = hiltViewModel()
-) {
-    val navController = rememberNavController()
+fun MainScreen(viewModel: MainActivityViewModel, navController: NavHostController) {
 
     val user = viewModel.user.observeAsState()
     if (user.value != null) {
@@ -72,6 +72,7 @@ fun MainScreen(
                 }
             },
             scaffoldState = scaffoldState,
+            drawerContent = { DrawerContent(user) }
         )
         { innerPadding ->
             MainNavHost(
@@ -79,13 +80,31 @@ fun MainScreen(
                 modifier = Modifier.padding(innerPadding),
                 viewModel = viewModel
             )
-
         }
 
     } else {
         LogIn { currentUser -> viewModel.setUser(currentUser) }
     }
 
+}
+
+@Composable
+private fun DrawerContent(user: State<FirebaseUser?>) {
+    SelectionContainer {
+        Column() {
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = user.value?.displayName.toString(),
+                style = MaterialTheme.typography.h5
+            )
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = user.value?.email.toString(),
+                style = MaterialTheme.typography.h5
+            )
+        }
+
+    }
 }
 
 @Composable
