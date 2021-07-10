@@ -32,10 +32,9 @@ interface GigaTurnipApi {
         @Query("ranklimits__total_limit") rankLimitsTotalLimit: Int
     ): List<TaskStageDto>
 
-    @GET("tasks")
+    @GET("tasks/user_relevant")
     suspend fun getTasksList(
         @Header("Authorization") token: String,
-        @Query("assignee__username") userId: String,
         @Query("complete") complete: Boolean
     ): List<TaskDto>
 

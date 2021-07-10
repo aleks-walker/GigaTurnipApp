@@ -10,21 +10,20 @@ class TaskStageDtoMapper : DomainMapper<TaskStageDto, TaskStage>() {
             id = model.id,
             name = model.name,
             description = model.description,
-            jsonSchema = model.jsonSchema,
-            uiSchema = model.uiSchema,
-
-            library = model.library,
+            chain = ChainDtoMapper().mapToDomainModel(model.chain),
+            inStages = model.inStages,
+            outStages = model.outStages,
             xPos = model.xPos,
             yPos = model.yPos,
+            jsonSchema = model.jsonSchema,
+            uiSchema = model.uiSchema,
+            library = model.library,
             copyInput = model.copyInput,
             allowMultipleFiles = model.allowMultipleFiles,
             isCreatable = model.isCreatable,
-            countComplete = model.countComplete,
-            polymorphicCType = model.polymorphicCType,
-
-            chain = ChainDtoMapper().mapToDomainModel(model.chain),
-            inStages = model.inStages,
             displayedPrevStages = model.displayedPrevStages,
+            assignUserBy = model.assignUserBy,
+            assignUserFromStage = model.assignUserFromStage
         )
     }
 
@@ -33,21 +32,20 @@ class TaskStageDtoMapper : DomainMapper<TaskStageDto, TaskStage>() {
             id = domainModel.id,
             name = domainModel.name,
             description = domainModel.description,
-            jsonSchema = domainModel.jsonSchema,
-            uiSchema = domainModel.uiSchema,
-
-            library = domainModel.library,
+            chain = ChainDtoMapper().mapFromDomainModel(domainModel.chain),
+            inStages = domainModel.inStages,
+            outStages = domainModel.outStages,
             xPos = domainModel.xPos,
             yPos = domainModel.yPos,
+            jsonSchema = domainModel.jsonSchema,
+            uiSchema = domainModel.uiSchema,
+            library = domainModel.library,
             copyInput = domainModel.copyInput,
             allowMultipleFiles = domainModel.allowMultipleFiles,
             isCreatable = domainModel.isCreatable,
-            countComplete = domainModel.countComplete,
-            polymorphicCType = domainModel.polymorphicCType,
-
-            chain = ChainDtoMapper().mapFromDomainModel(domainModel.chain),
-            inStages = domainModel.inStages,
             displayedPrevStages = domainModel.displayedPrevStages,
+            assignUserBy = domainModel.assignUserBy,
+            assignUserFromStage = domainModel.assignUserFromStage
         )
     }
 }

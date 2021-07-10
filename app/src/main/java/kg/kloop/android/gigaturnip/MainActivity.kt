@@ -76,7 +76,8 @@ fun MainScreen(
         { innerPadding ->
             MainNavHost(
                 navController = navController,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                viewModel = viewModel
             )
 
         }
@@ -121,7 +122,9 @@ private fun LogIn(setUser: (FirebaseUser?) -> Unit) {
 }
 
 @Composable
-fun MainNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+fun MainNavHost(navController: NavHostController,
+                modifier: Modifier = Modifier,
+                viewModel: MainActivityViewModel) {
     NavHost(
         navController,
         startDestination = CampaignsScreen.CampaignScreen.route,
@@ -143,7 +146,7 @@ fun MainNavHost(navController: NavHostController, modifier: Modifier = Modifier)
         ) { TaskDetails(navController) }
 
         composable(TasksScreen.Creatable.route) {
-            TasksCreatable(navController = navController)
+            TasksCreatable(navController = navController, mainActivityViewModel = viewModel)
         }
     }
 

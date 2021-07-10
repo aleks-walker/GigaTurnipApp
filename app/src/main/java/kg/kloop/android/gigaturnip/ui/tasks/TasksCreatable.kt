@@ -12,8 +12,8 @@ import kg.kloop.android.gigaturnip.domain.TaskStage
 @Composable
 fun TasksCreatable(
     navController: NavHostController,
-    viewModel: TasksCreatableViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel = hiltViewModel()
+    mainActivityViewModel: MainActivityViewModel,
+    viewModel: TasksCreatableViewModel = hiltViewModel()
 ) {
     val token = mainActivityViewModel.getUserToken().observeAsState()
 

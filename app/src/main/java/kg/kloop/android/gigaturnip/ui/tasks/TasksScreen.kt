@@ -74,13 +74,11 @@ fun TasksScreenView(
 
         val tasksInProgress: List<Task> by viewModel.getTasksList(
             token.value.toString(),
-            user.value!!.uid,
             false
         ).observeAsState(listOf())
 
         val tasksFinished: List<Task> by viewModel.getTasksList(
             token.value.toString(),
-            user.value!!.uid,
             true
         ).observeAsState(listOf())
 

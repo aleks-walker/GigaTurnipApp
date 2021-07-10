@@ -40,13 +40,11 @@ class GigaTurnipRepository(
 
     suspend fun getTasksList(
         token: String,
-        userId: String,
         complete: Boolean
     ): Resource<List<Task>> {
         return getList({
             api.getTasksList(
                 token = makeToken(token),
-                userId = userId,
                 complete = complete
             )
         }, tasksMapper)
