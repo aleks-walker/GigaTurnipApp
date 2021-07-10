@@ -77,35 +77,41 @@ class TaskDetailsViewModel @Inject constructor(
     fun uploadFiles(path: Path, uris: List<Uri>) {
         val storage = Firebase.storage
         val storageRef = storage.reference
-        val jsonArray = JsonArray()
+        val jsonArray = getJsonArray(uris)
         uris.forEachIndexed { i, uri ->
             val fileName = getFileName(uri)
             val fileRef = getFileRef(storageRef, path, fileName)
             val uploadTask = fileRef.putFile(uri)
 
             uploadTask.addOnProgressListener { (bytesTransferred, totalByteCount) ->
-                val json = getFileInfo(bytesTransferred, totalByteCount, fileName)
+                val progress = (100.0 * bytesTransferred) / totalByteCount
+                val json = getFileInfo(progress, fileName)
                 jsonArray.set(i, json)
-                _fileUploadInfo.postValue(jsonArray.toString())
+                val fileInfo = JsonObject().apply { add(_pickFileKey.value, jsonArray) }
+                _fileUploadInfo.postValue(fileInfo.toString())
             }.addOnSuccessListener {
                 Timber.d("upload metadata: ${it.metadata.toString()}")
             }
         }
     }
 
+    private fun getJsonArray(uris: List<Uri>): JsonArray {
+        val jsonArray = JsonArray().asJsonArray
+        uris.forEach {
+            jsonArray.add(getFileInfo(0.0, getFileName(it)))
+        }
+        return jsonArray
+    }
+
     private fun getFileInfo(
-        bytesTransferred: Long,
-        totalByteCount: Long,
+        progress: Double,
         fileName: String
     ): JsonObject {
-        val progress = (100.0 * bytesTransferred) / totalByteCount
         Timber.d("Upload is $progress done")
-        val json = getFileData(
-            _pickFileKey.value!!,
+        return getFileData(
             fileName,
             progress.toString()
         )
-        return json
     }
 
     private fun getFileName(uri: Uri) = File(uri.path!!).name
@@ -121,12 +127,9 @@ class TaskDetailsViewModel @Inject constructor(
         return(ref)
     }
 
-    private fun getFileData(pickFileKey: String, fileName: String, progress: String): JsonObject {
-        val fileInfo = JsonObject().apply {
-            addProperty("progress", progress)
-            addProperty("fileName", fileName)
-        }
-        return JsonObject().apply { add(pickFileKey, fileInfo) }
+    private fun getFileData(fileName: String, progress: String): JsonObject = JsonObject().apply {
+        addProperty("progress", progress)
+        addProperty("fileName", fileName)
     }
 
     fun compressInTheBackground(uri: Uri, destination: String) {

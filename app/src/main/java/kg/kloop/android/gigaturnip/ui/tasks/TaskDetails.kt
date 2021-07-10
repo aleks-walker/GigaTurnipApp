@@ -11,7 +11,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,11 +49,11 @@ fun TaskDetails(
         val task by viewModel.getTask(token.value.toString(), id.toInt()).observeAsState()
         TaskStageDetails(id, task?.stage)
 
-        val originalFileUri = remember { mutableStateOf<Uri?>(null) }
+//        val originalFileUri = remember { mutableStateOf<Uri?>(null) }
 //        val pickFileKey by viewModel.pickFileKey.observeAsState()
         val fileUploadInfo by viewModel.fileUploadInfo.observeAsState()
-        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-            originalFileUri.value = it
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
+//            originalFileUri.value = it
             viewModel.uploadFiles(
                 Path(
                     user.value!!.uid,
@@ -59,7 +61,7 @@ fun TaskDetails(
                     task!!.stage.chain.toString(),
                     task!!.id,
                     task!!.stage.id,
-                ), listOf(it)
+                ), it
             )
         }
         val fileDestination by viewModel.compressedFilePath.observeAsState()
@@ -90,7 +92,7 @@ fun TaskDetails(
                     viewModel.setListenersReady(true)
                },
                 onPickFile = { key ->
-                    launcher.launch("video/*")
+                    launcher.launch("*/*")
                     viewModel.setPickFileKey(key)
                 }
             ),
