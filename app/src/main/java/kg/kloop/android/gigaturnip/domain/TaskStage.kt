@@ -16,7 +16,7 @@ data class TaskStage(
     val countComplete: Boolean,
     val polymorphicCType: Int,
 
-    val chain: Int,
+    val chain: Chain,
     val inStages: List<Int>,
     val displayedPrevStages: List<Int>,
 )

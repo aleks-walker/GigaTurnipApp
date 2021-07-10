@@ -82,14 +82,14 @@ private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
 }
 
 class WebAppInterface(
-    private val onValueChange: (String) -> Unit,
+    private val onSubmit: (String) -> Unit,
     private val onListenersReady: () -> Unit,
     private val onPickFile: (String) -> Unit,
 ) {
 
     @JavascriptInterface
-    fun setFormData(data: String) {
-        onValueChange(data)
+    fun onFormSubmit(data: String) {
+        onSubmit(data)
     }
 
     @JavascriptInterface

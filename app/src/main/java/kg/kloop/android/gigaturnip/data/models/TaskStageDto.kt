@@ -33,7 +33,7 @@ data class TaskStageDto (
     val polymorphicCType: Int,
 
     @SerializedName("chain")
-    val chain: Int,
+    val chain: ChainDto,
     @SerializedName("in_stages")
     val inStages: List<Int>,
     @SerializedName("displayed_prev_stages")

@@ -4,9 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import dagger.hilt.android.scopes.ActivityScoped
-import kg.kloop.android.gigaturnip.data.models.CampaignDtoMapper
-import kg.kloop.android.gigaturnip.data.models.TaskDtoMapper
-import kg.kloop.android.gigaturnip.data.models.TaskStageDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.CampaignDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.TaskDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
 import kg.kloop.android.gigaturnip.data.requests.TaskPostRequestEntity
 import kg.kloop.android.gigaturnip.data.utils.DomainMapper

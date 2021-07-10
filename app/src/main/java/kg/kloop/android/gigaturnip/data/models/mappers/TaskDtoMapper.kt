@@ -1,5 +1,6 @@
-package kg.kloop.android.gigaturnip.data.models
+package kg.kloop.android.gigaturnip.data.models.mappers
 
+import kg.kloop.android.gigaturnip.data.models.TaskDto
 import kg.kloop.android.gigaturnip.data.utils.DomainMapper
 import kg.kloop.android.gigaturnip.domain.Task
 

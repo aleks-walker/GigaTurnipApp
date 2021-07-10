@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
+import kg.kloop.android.gigaturnip.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -85,32 +86,53 @@ class TaskDetailsViewModel @Inject constructor(
 
             uploadTask.addOnProgressListener { (bytesTransferred, totalByteCount) ->
                 val progress = (100.0 * bytesTransferred) / totalByteCount
-                val json = getFileInfo(progress, fileName)
-                jsonArray.set(i, json)
-                val fileInfo = JsonObject().apply { add(_pickFileKey.value, jsonArray) }
-                _fileUploadInfo.postValue(fileInfo.toString())
+                updateFileInfo(i, progress, fileName, jsonArray)
             }.addOnSuccessListener {
-                Timber.d("upload metadata: ${it.metadata.toString()}")
+                fileRef.downloadUrl.addOnSuccessListener {
+                    updateFileInfo(
+                        i,
+                        100.0,
+                        fileName,
+                        jsonArray,
+                        Constants.STORAGE_BASE_URL.plus(it.path!!)
+                    )
+                }
             }
         }
+    }
+
+    private fun updateFileInfo(
+        i: Int,
+        progress: Double,
+        fileName: String,
+        jsonArray: JsonArray,
+        downloadUri: String = ""
+    ) {
+        val json = getFileInfo(progress, fileName, downloadUri)
+        jsonArray.set(i, json)
+        val fileInfo = JsonObject().apply { add(_pickFileKey.value, jsonArray) }
+        Timber.d("file info: $fileInfo")
+        _fileUploadInfo.postValue(fileInfo.toString())
     }
 
     private fun getJsonArray(uris: List<Uri>): JsonArray {
         val jsonArray = JsonArray().asJsonArray
         uris.forEach {
-            jsonArray.add(getFileInfo(0.0, getFileName(it)))
+            jsonArray.add(getFileInfo(0.0, getFileName(it), ""))
         }
         return jsonArray
     }
 
     private fun getFileInfo(
         progress: Double,
-        fileName: String
+        fileName: String,
+        downloadUri: String
     ): JsonObject {
         Timber.d("Upload is $progress done")
         return getFileData(
             fileName,
-            progress.toString()
+            progress.toString(),
+            downloadUri
         )
     }
 
@@ -122,14 +144,16 @@ class TaskDetailsViewModel @Inject constructor(
         fileName: String
     ): StorageReference {
         val ref = storageRef.child(
-            """${path.campaignId}/${path.chainId}/${path.stageId}/${path.stageId}/$fileName""".trimMargin())
+            """${path.campaignId}/${path.chainId}/${path.stageId}/${path.userId}/${path.taskId}/$fileName""".trimMargin())
             Timber.d("ref path: ${ref.path}")
         return(ref)
     }
 
-    private fun getFileData(fileName: String, progress: String): JsonObject = JsonObject().apply {
-        addProperty("progress", progress)
-        addProperty("fileName", fileName)
+    private fun getFileData(fileName: String, progress: String, downloadUri: String): JsonObject =
+        JsonObject().apply {
+            addProperty("progress", progress)
+            addProperty("fileName", fileName)
+            addProperty("downloadUri", downloadUri)
     }
 
     fun compressInTheBackground(uri: Uri, destination: String) {

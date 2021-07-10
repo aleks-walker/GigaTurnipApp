@@ -1,5 +1,6 @@
-package kg.kloop.android.gigaturnip.data.models
+package kg.kloop.android.gigaturnip.data.models.mappers
 
+import kg.kloop.android.gigaturnip.data.models.TaskStageDto
 import kg.kloop.android.gigaturnip.data.utils.DomainMapper
 import kg.kloop.android.gigaturnip.domain.TaskStage
 
@@ -21,7 +22,7 @@ class TaskStageDtoMapper : DomainMapper<TaskStageDto, TaskStage>() {
             countComplete = model.countComplete,
             polymorphicCType = model.polymorphicCType,
 
-            chain = model.chain,
+            chain = ChainDtoMapper().mapToDomainModel(model.chain),
             inStages = model.inStages,
             displayedPrevStages = model.displayedPrevStages,
         )
@@ -44,7 +45,7 @@ class TaskStageDtoMapper : DomainMapper<TaskStageDto, TaskStage>() {
             countComplete = domainModel.countComplete,
             polymorphicCType = domainModel.polymorphicCType,
 
-            chain = domainModel.chain,
+            chain = ChainDtoMapper().mapFromDomainModel(domainModel.chain),
             inStages = domainModel.inStages,
             displayedPrevStages = domainModel.displayedPrevStages,
         )

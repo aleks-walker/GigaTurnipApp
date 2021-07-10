@@ -57,8 +57,8 @@ fun TaskDetails(
             viewModel.uploadFiles(
                 Path(
                     user.value!!.uid,
-                    "1",
-                    task!!.stage.chain.toString(),
+                    task!!.stage.chain.campaignId.toString(),
+                    task!!.stage.chain.id.toString(),
                     task!!.id,
                     task!!.stage.id,
                 ), it
@@ -81,7 +81,7 @@ fun TaskDetails(
                 fileData = fileUploadInfo
             ),
             webAppInterface = WebAppInterface(
-                onValueChange = { responses ->
+                onSubmit= { responses ->
                     viewModel.updateTask(
                         token.value.toString(),
                         id.toInt(),

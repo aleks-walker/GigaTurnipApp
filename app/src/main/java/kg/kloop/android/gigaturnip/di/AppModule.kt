@@ -4,9 +4,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kg.kloop.android.gigaturnip.data.models.CampaignDtoMapper
-import kg.kloop.android.gigaturnip.data.models.TaskDtoMapper
-import kg.kloop.android.gigaturnip.data.models.TaskStageDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.CampaignDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.TaskDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.util.Constants.API_BASE_URL
