@@ -11,6 +11,7 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebSettingsCompat.setForceDark
 import androidx.webkit.WebViewFeature
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -40,8 +41,8 @@ fun WebPageScreen(
             && payload.jsonSchema != null
         ) {
             val json = JsonObject().apply {
-                addProperty("jsonSchema", payload.jsonSchema)
-                addProperty("uiSchema", payload.uiSchema)
+                add("jsonSchema", payload.jsonSchema.toJsonObject())
+                add("uiSchema", payload.uiSchema?.toJsonObject())
                 addProperty("isComplete", payload.isTaskComplete)
             }
             evaluateJs(it, json.toString(), "android_schema_event")
@@ -109,3 +110,5 @@ data class WebViewPayload(
     var formData: JsonObject?,
     var fileData: String?,
 )
+
+fun String.toJsonObject() = JsonParser().parse(this).asJsonObject

@@ -39,7 +39,6 @@ class TaskDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val response = repository.updateTask(token, id, responses)
-                Timber.d(response.toString())
             }
         }
     }

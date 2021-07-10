@@ -50,6 +50,7 @@ android {
 
 dependencies {
     implementation("androidx.webkit:webkit:1.4.0")
+    implementation("com.google.firebase:firebase-auth-ktx:21.0.1")
     val lifecycle_version = "2.4.0-alpha02"
     val compose_version = "1.0.0-beta09"
 
