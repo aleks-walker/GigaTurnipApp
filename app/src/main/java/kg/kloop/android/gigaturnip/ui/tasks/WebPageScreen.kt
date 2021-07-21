@@ -32,7 +32,7 @@ fun WebPageScreen(
             webChromeClient = webChromeClient()
             addJavascriptInterface(webAppInterface, "Android")
             loadUrl(urlToRender)
-            setDarkMode(this)
+//            setDarkMode(this)
 
         }
     }, update = {
@@ -111,4 +111,4 @@ data class WebViewPayload(
     var fileData: String?,
 )
 
-fun String.toJsonObject() = JsonParser().parse(this).asJsonObject
+fun String.toJsonObject(): JsonObject = JsonParser().parse(this).asJsonObject

@@ -2,6 +2,8 @@ package kg.kloop.android.gigaturnip.ui.tasks
 
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
+import androidx.core.net.toUri
 import androidx.lifecycle.*
 import com.abedelazizshe.lightcompressorlibrary.CompressionListener
 import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
@@ -68,29 +70,21 @@ class TaskDetailsViewModel @Inject constructor(
         _pickFileKey.postValue(value)
     }
 
-
-    private val _compressedFilePath = MutableLiveData<String>()
-    val compressedFilePath: LiveData<String> = _compressedFilePath
-
-    private val _compressionProgress = MutableLiveData<Int>()
-    val compressionProgress: LiveData<Int> = _compressionProgress
-
-    fun uploadFiles(path: Path, uris: List<Uri>) {
-        val storage = Firebase.storage
-        val storageRef = storage.reference
+    private fun uploadFiles(path: Path, uris: List<Uri>) {
+        val storageRef = Firebase.storage.reference
         val jsonArray = getJsonArray(uris)
-        uris.forEachIndexed { i, uri ->
+        uris.forEachIndexed { index, uri ->
             val fileName = getFileName(uri)
             val fileRef = getFileRef(storageRef, path, fileName)
             val uploadTask = fileRef.putFile(uri)
 
             uploadTask.addOnProgressListener { (bytesTransferred, totalByteCount) ->
                 val progress = (100.0 * bytesTransferred) / totalByteCount
-                updateFileInfo(i, progress, fileName, jsonArray)
+                updateFileInfo(index, progress, fileName, jsonArray)
             }.addOnSuccessListener {
                 fileRef.downloadUrl.addOnSuccessListener {
                     updateFileInfo(
-                        i,
+                        index,
                         100.0,
                         fileName,
                         jsonArray,
@@ -156,47 +150,63 @@ class TaskDetailsViewModel @Inject constructor(
             addProperty("downloadUri", downloadUri)
     }
 
-    fun compressInTheBackground(uri: Uri, destination: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val destPath = File(context.filesDir, "compressed_file").absolutePath
-                Timber.d("Compressing in the background, destPath: $destPath")
-
-                VideoCompressor.start(
-                    context,
-                    srcUri = uri,
-                    srcPath = null,
-                    destPath = destPath,
-                    listener = object : CompressionListener {
-                        override fun onCancelled() {
-                        }
-
-                        override fun onFailure(failureMessage: String) {
-                            Timber.e(failureMessage)
-                        }
-
-                        override fun onProgress(percent: Float) {
-                            _compressionProgress.postValue(percent.toInt())
-                        }
-
-                        override fun onStart() {
-                        }
-
-                        override fun onSuccess() {
-                            _compressedFilePath.postValue(destPath)
-                        }
+    private fun compressFile(uri: Uri, onSuccess: (Uri) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val videoFile = File(uri.path!!)
+            val videoFileName = videoFile.name
+            val downloadsPath = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
+            val desFile = File(downloadsPath, videoFileName)
+            desFile.createNewFile()
 
 
-                    }, configureWith = Configuration(
-                        quality = VideoQuality.MEDIUM,
-                        isMinBitRateEnabled = false,
-                        keepOriginalResolution = false,
+            VideoCompressor.start(
+                context,
+                srcUri = uri,
+                srcPath = null,
+                destPath = desFile.path,
+                listener = object : CompressionListener {
+                    override fun onCancelled() {
+                    }
+
+                    override fun onFailure(failureMessage: String) {
+                        Timber.e(failureMessage)
+                    }
+
+                    override fun onProgress(percent: Float) {
+                        Timber.d("compression progress: ${percent.toInt()}")
+                    }
+
+                    override fun onStart() {
+                        Timber.d("Compression started")
+                    }
+
+                    override fun onSuccess() {
+                        Timber.d("Compression successful")
+                        onSuccess(desFile.toUri())
+//                        _compressedFilePath.postValue(desFile.path)
+                    }
+
+
+                }, configureWith = Configuration(
+                    quality = VideoQuality.MEDIUM,
+                    isMinBitRateEnabled = false,
+                    keepOriginalResolution = false,
 //                        videoHeight = 320.0 /*Double, ignore, or null*/,
 //                        videoWidth = 320.0 /*Double, ignore, or null*/,
 //                        videoBitrate = 3677198 /*Int, ignore, or null*/
-                    )
                 )
+            )
+        }
+    }
+
+    fun uploadCompressedFiles(uploadPath: Path, fileUris: List<Uri>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            fileUris.forEach { fileUri ->
+                compressFile(
+                    fileUri,
+                    onSuccess = { filePath -> uploadFiles(uploadPath, listOf(filePath)) })
             }
+
         }
     }
 

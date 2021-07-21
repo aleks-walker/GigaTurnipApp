@@ -46,7 +46,6 @@ fun TasksScreenView(
     viewModel: TasksViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel = hiltViewModel()
 ) {
-    val user = mainActivityViewModel.user.observeAsState()
     val navController = rememberNavController()
     val items = listOf(
         TasksScreen.InProgress,
@@ -99,11 +98,6 @@ fun TasksScreenView(
                     tasksFinished
                 )
             }
-//            composable(
-//                route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
-//                arguments = listOf(navArgument("id") { type = NavType.StringType },
-//                    navArgument("stage_id") { type = NavType.StringType })
-//            ) { TaskDetails(navController) }
         }
     }
 }

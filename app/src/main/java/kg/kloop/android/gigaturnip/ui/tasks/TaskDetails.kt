@@ -1,18 +1,14 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
-import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -26,6 +22,7 @@ import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.util.Constants
 import timber.log.Timber
 
+
 @Composable
 fun TaskDetails(
     navController: NavHostController,
@@ -36,6 +33,7 @@ fun TaskDetails(
     val args = navController.currentBackStackEntry?.arguments
     val id = args?.getString("id", "No id")!!
     val user = mainActivityViewModel.user.observeAsState()
+
 
 
     Column(
@@ -49,12 +47,10 @@ fun TaskDetails(
         val task by viewModel.getTask(token.value.toString(), id.toInt()).observeAsState()
         TaskStageDetails(id, task?.stage)
 
-//        val originalFileUri = remember { mutableStateOf<Uri?>(null) }
-//        val pickFileKey by viewModel.pickFileKey.observeAsState()
         val fileUploadInfo by viewModel.fileUploadInfo.observeAsState()
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-//            originalFileUri.value = it
-            viewModel.uploadFiles(
+            Timber.d("file uri: ${it[0]}")
+            viewModel.uploadCompressedFiles(
                 Path(
                     user.value!!.uid,
                     task!!.stage.chain.campaignId.toString(),
@@ -64,11 +60,7 @@ fun TaskDetails(
                 ), it
             )
         }
-        val fileDestination by viewModel.compressedFilePath.observeAsState()
-        val compressionProgress: Int by viewModel.compressionProgress.observeAsState(0)
-//        Compress(launcher, originalFileUri, compressionProgress, viewModel, fileDestination)
 
-//        val formData by viewModel.formData.observeAsState("{}")
         val listenersReady by viewModel.listenersReady.observeAsState(false)
         WebPageScreen(
             modifier = Modifier.wrapContentSize(),
@@ -98,36 +90,10 @@ fun TaskDetails(
             ),
             onUpdate = {
                 if (listenersReady) {
-//                    viewModel.setListenersReady(false)
                     Timber.d("onUpdate listeners: $listenersReady")
                 }
             },
         )
-    }
-}
-
-
-@Composable
-private fun Compress(
-    launcher: ManagedActivityResultLauncher<String, Uri>,
-    originalFileUri: MutableState<Uri?>,
-    compressionProgress: Int,
-    viewModel: TaskDetailsViewModel,
-    fileDestination: String?
-) {
-    Button(modifier = Modifier
-        .padding(16.dp),
-        onClick = { launcher.launch("video/*") }) {
-        Text(text = "Compress")
-    }
-    originalFileUri.value?.let { uri ->
-        Timber.d("compression function called")
-        if (compressionProgress == 0) viewModel.compressInTheBackground(uri, "")
-        Column() {
-            Text(text = uri.toString())
-            Text(text = fileDestination ?: "Compressing . . .")
-            Text(text = "Progress: $compressionProgress%")
-        }
     }
 }
 
