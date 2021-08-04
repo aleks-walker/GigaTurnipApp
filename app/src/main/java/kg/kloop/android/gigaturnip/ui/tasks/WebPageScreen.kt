@@ -84,7 +84,8 @@ private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
 class WebAppInterface(
     private val onSubmit: (String) -> Unit,
     private val onListenersReady: () -> Unit,
-    private val onPickFile: (String) -> Unit,
+    private val onPickVideos: (String) -> Unit,
+    private val onPickPhotos: (String) -> Unit,
 ) {
 
     @JavascriptInterface
@@ -93,8 +94,13 @@ class WebAppInterface(
     }
 
     @JavascriptInterface
-    fun pickFile(key: String) {
-        onPickFile(key)
+    fun pickVideos(key: String) {
+        onPickVideos(key)
+    }
+
+    @JavascriptInterface
+    fun pickPhotos(key: String) {
+        onPickPhotos(key)
     }
 
     @JavascriptInterface

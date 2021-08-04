@@ -49,7 +49,6 @@ fun TaskDetails(
 
         val fileUploadInfo by viewModel.fileUploadInfo.observeAsState()
         val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-            Timber.d("file uri: ${it[0]}")
             viewModel.uploadCompressedFiles(
                 Path(
                     user.value!!.uid,
@@ -83,8 +82,12 @@ fun TaskDetails(
                 onListenersReady = {
                     viewModel.setListenersReady(true)
                },
-                onPickFile = { key ->
-                    launcher.launch("*/*")
+                onPickVideos = { key ->
+                    launcher.launch("video/*")
+                    viewModel.setPickFileKey(key)
+                },
+                onPickPhotos = { key ->
+                    launcher.launch("image/*")
                     viewModel.setPickFileKey(key)
                 }
             ),
