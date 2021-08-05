@@ -54,6 +54,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx:19.0.0")
     val lifecycle_version = "2.4.0-alpha02"
     val compose_version = "1.0.0-beta09"
+    val accompanist_version = "0.16.0"
 
     implementation("androidx.core:core-ktx:1.6.0")
     implementation("androidx.appcompat:appcompat:1.3.0")
@@ -77,7 +78,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha08")
 
     //Accompanist
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.16.0")
+    implementation("com.google.accompanist:accompanist-swiperefresh:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-placeholder-material:$accompanist_version")
 
     //Firebase
     implementation("com.firebaseui:firebase-ui-auth:7.2.0")

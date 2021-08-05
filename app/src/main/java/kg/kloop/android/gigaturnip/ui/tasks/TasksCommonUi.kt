@@ -31,18 +31,9 @@ fun TasksList(
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(tasks) { task ->
-                TaskCard(
-                    task,
-                    onClick = {
-                        onDetailsClick(task)
-//                    navController.navigate(
-//                        TasksScreen.Details.route
-//                            .plus("/${task.id}/${task.stage.id}")
-//                    )
-                    })
+                TaskCard(task, onClick = { onDetailsClick(task) })
             }
         }
-
     }
 }
 

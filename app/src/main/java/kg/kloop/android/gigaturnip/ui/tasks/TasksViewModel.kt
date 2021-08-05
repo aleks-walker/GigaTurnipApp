@@ -16,10 +16,7 @@ class TasksViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _isRefreshing = MutableLiveData<Boolean>()
-
-    val isRefreshing: MutableLiveData<Boolean>
-        get() = _isRefreshing
-
+    val isRefreshing: MutableLiveData<Boolean> = _isRefreshing
     fun setIsRefreshing(value: Boolean) {
         _isRefreshing.value = value
     }

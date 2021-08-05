@@ -22,6 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.google.accompanist.placeholder.PlaceholderDefaults
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.color
+import com.google.accompanist.placeholder.material.fade
+import com.google.accompanist.placeholder.placeholder
 import com.google.firebase.auth.FirebaseUser
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
@@ -40,19 +45,18 @@ fun TaskDetails(
     val args = navController.currentBackStackEntry?.arguments
     val id = args?.getString("id", "No id")!!
     val user = mainActivityViewModel.user.observeAsState()
-
-
+    val isTaskLoading by viewModel.isTaskLoading.observeAsState(true)
 
     Column(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
     ) {
 
         val token = mainActivityViewModel.getUserToken().observeAsState()
         val task by viewModel.getTask(token.value.toString(), id.toInt()).observeAsState()
-        TaskStageDetails(id, task?.stage)
+        TaskStageDetails(id, task?.stage, isTaskLoading)
 
         val fileUploadInfo by viewModel.fileUploadInfo.observeAsState()
 
@@ -69,7 +73,13 @@ fun TaskDetails(
         if (isTaskCompleted) { showTaskCompletedToast() }
 
         WebPageScreen(
-            modifier = Modifier.wrapContentSize(),
+            modifier = Modifier
+                .wrapContentSize()
+                .placeholder(
+                    visible = isTaskLoading,
+                    highlight = PlaceholderHighlight.fade(),
+                    color = PlaceholderDefaults.color()
+                ),
             urlToRender = Constants.TURNIP_VIEW_URL,
             payload = WebViewPayload(
                 jsonSchema = task?.stage?.jsonSchema,
@@ -137,12 +147,19 @@ private fun getActivityLauncher(
 @Composable
 private fun TaskStageDetails(
     id: String,
-    taskStage: TaskStage?
+    taskStage: TaskStage?,
+    isTaskLoading: Boolean
 ) {
     Column(
         modifier = Modifier
             .padding(8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .placeholder(
+                visible = isTaskLoading,
+                highlight = PlaceholderHighlight.fade(),
+                color = PlaceholderDefaults.color()
+            )
+        ,
     ) {
         Text(
             text = taskStage?.name.toString(),
@@ -166,7 +183,7 @@ private fun TaskStageDetails(
 @Preview(showBackground = false)
 @Composable
 fun TaskStageDetailPreview() {
-    TaskStageDetails(id = "123123", taskStage = null)
+    TaskStageDetails(id = "123123", taskStage = null, false)
 }
 
 data class Path(

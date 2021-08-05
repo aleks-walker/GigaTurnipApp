@@ -35,17 +35,17 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun getTask(token: String, id: Int): LiveData<Task> = liveData {
         repository.getTask(token, id).data?.let { emit(it) }
+        _isTaskLoading.postValue(false)
     }
 
-    private val _formData = MutableLiveData<String>()
-    val formData: LiveData<String> = _formData
+    private val _isTaskLoading = MutableLiveData<Boolean>()
+    val isTaskLoading: LiveData<Boolean> = _isTaskLoading
+
+    fun setIsTaskLoading(value: Boolean) = _isTaskLoading.postValue(value)
+
 
     private val _isTaskCompleted = MutableLiveData<Boolean>()
     val isTaskCompleted: LiveData<Boolean> = _isTaskCompleted
-
-    fun postFormData(value: String) {
-        _formData.postValue(value)
-    }
 
     fun updateTask(token: String, id: Int, responses: String, complete: Boolean) {
         viewModelScope.launch(Dispatchers.Default) {
