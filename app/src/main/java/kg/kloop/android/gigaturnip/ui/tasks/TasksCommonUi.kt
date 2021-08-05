@@ -14,22 +14,35 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kg.kloop.android.gigaturnip.domain.Task
 
 @Composable
-fun TasksList(onDetailsClick: (Task) -> Unit, tasks: List<Task>) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(tasks) { task ->
-            TaskCard(
-                task,
-                onClick = {
-                    onDetailsClick(task)
+fun TasksList(
+    onDetailsClick: (Task) -> Unit,
+    tasks: List<Task>,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit
+) {
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = onRefresh
+    ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(tasks) { task ->
+                TaskCard(
+                    task,
+                    onClick = {
+                        onDetailsClick(task)
 //                    navController.navigate(
 //                        TasksScreen.Details.route
 //                            .plus("/${task.id}/${task.stage.id}")
 //                    )
-                })
+                    })
+            }
         }
+
     }
 }
 

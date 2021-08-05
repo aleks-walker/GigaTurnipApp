@@ -76,6 +76,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.4.0-alpha04")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha08")
 
+    //Accompanist
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.16.0")
+
     //Firebase
     implementation("com.firebaseui:firebase-ui-auth:7.2.0")
     implementation("com.google.firebase:firebase-auth-ktx:21.0.1")

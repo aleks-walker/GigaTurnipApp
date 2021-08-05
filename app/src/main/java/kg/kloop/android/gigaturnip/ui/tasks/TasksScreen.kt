@@ -71,6 +71,9 @@ fun TasksScreenView(
     { innerPadding ->
         val token = mainActivityViewModel.getUserToken().observeAsState()
 
+        val isRefreshing by viewModel.isRefreshing.observeAsState(true)
+        if (isRefreshing) Timber.d("Refreshing tasks")
+
         val tasksInProgress: List<Task> by viewModel.getTasksList(
             token.value.toString(),
             false
@@ -81,6 +84,7 @@ fun TasksScreenView(
             true
         ).observeAsState(listOf())
 
+
         NavHost(
             navController,
             startDestination = TasksScreen.InProgress.route,
@@ -89,13 +93,23 @@ fun TasksScreenView(
             composable(TasksScreen.InProgress.route) {
                 TasksInProgress(
                     navigateToDetails,
-                    tasksInProgress
+                    tasksInProgress,
+                    isRefreshing,
+                    onRefresh = {
+                        viewModel.setIsRefreshing(true)
+                        Timber.d("Is refreshing $isRefreshing")
+                    }
                 )
             }
             composable(TasksScreen.Finished.route) {
                 TasksFinished(
                     navigateToDetails,
-                    tasksFinished
+                    tasksFinished,
+                    isRefreshing,
+                    onRefresh = {
+                        viewModel.setIsRefreshing(true)
+                        Timber.d("Is refreshing $isRefreshing")
+                    }
                 )
             }
         }
