@@ -8,12 +8,13 @@
         <entry key="../../../../layout/compose-model-1625641496848.xml" value="0.5" />
         <entry key="../../../../layout/compose-model-1625641742913.xml" value="0.375" />
         <entry key="../../../../layout/compose-model-1625645260422.xml" value="0.75" />
+        <entry key="../../../../layout/compose-model-1628153819470.xml" value="0.4537037037037037" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.3177083333333333" />
         <entry key="app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.3177083333333333" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

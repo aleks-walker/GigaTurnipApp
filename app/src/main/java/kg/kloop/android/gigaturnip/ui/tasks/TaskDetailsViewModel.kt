@@ -23,7 +23,6 @@ import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -41,15 +40,17 @@ class TaskDetailsViewModel @Inject constructor(
     private val _formData = MutableLiveData<String>()
     val formData: LiveData<String> = _formData
 
+    private val _isTaskCompleted = MutableLiveData<Boolean>()
+    val isTaskCompleted: LiveData<Boolean> = _isTaskCompleted
+
     fun postFormData(value: String) {
         _formData.postValue(value)
     }
 
-    fun updateTask(token: String, id: Int, responses: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                val response = repository.updateTask(token, id, responses)
-            }
+    fun updateTask(token: String, id: Int, responses: String, complete: Boolean) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val response = repository.updateTask(token, id, responses, complete)
+            if (complete && response.isSuccessful) _isTaskCompleted.postValue(complete)
         }
     }
 
@@ -70,7 +71,7 @@ class TaskDetailsViewModel @Inject constructor(
         _pickFileKey.postValue(value)
     }
 
-    private fun uploadFiles(path: Path, uris: List<Uri>) {
+    fun uploadFiles(path: Path, uris: List<Uri>) {
         val storageRef = Firebase.storage.reference
         val jsonArray = getJsonArray(uris)
         uris.forEachIndexed { index, uri ->

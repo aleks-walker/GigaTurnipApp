@@ -61,18 +61,27 @@ class GigaTurnipRepository(
 
     }
 
-    suspend fun updateTask(token: String, id: Int, responses: String): Response<ResponseBody> =
-        api.updateTask(makeToken(token), id, addProperty("responses", responses))
+    suspend fun updateTask(
+        token: String,
+        id: Int,
+        responses: String,
+        complete: Boolean
+    ): Response<ResponseBody> {
+        val body = makeRequestBody(responses, complete)
+        return api.updateTask(makeToken(token), id, body)
+    }
+
+    private fun makeRequestBody(
+        responses: String,
+        complete: Boolean
+    ): RequestBody = JsonObject().apply {
+        addProperty("complete", complete)
+        add("responses", JsonParser().parse(responses).asJsonObject)
+    }.toString().toRequestBodyWithMediaType()
 
     suspend fun createTask(token: String, stageId: Int): Response<ResponseBody> {
         val json = Gson().toJson(TaskPostRequestEntity(stageId = stageId))
         return api.createTask(makeToken(token), json.toRequestBodyWithMediaType())
-    }
-
-    private fun addProperty(property: String, value: String): RequestBody {
-        val parsedValue = JsonParser().parse(value).asJsonObject
-        val json = JsonObject().apply { add(property, parsedValue) }
-        return json.toString().toRequestBodyWithMediaType()
     }
 
     suspend fun getTasksStagesList(
