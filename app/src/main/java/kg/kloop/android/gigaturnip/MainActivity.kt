@@ -36,10 +36,10 @@ import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
-import kg.kloop.android.gigaturnip.ui.tasks.TaskDetails
 import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatable
-import kg.kloop.android.gigaturnip.ui.tasks.TasksScreen
-import kg.kloop.android.gigaturnip.ui.tasks.TasksScreenView
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 
 @AndroidEntryPoint

@@ -19,7 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.domain.Campaign
-import kg.kloop.android.gigaturnip.ui.tasks.TasksScreen
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 
 
 sealed class CampaignsScreen(val route: String) {

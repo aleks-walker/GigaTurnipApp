@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.ui.tasks
+package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
@@ -23,6 +23,9 @@ import androidx.navigation.compose.rememberNavController
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
+import kg.kloop.android.gigaturnip.ui.tasks.TasksFinished
+import kg.kloop.android.gigaturnip.ui.tasks.TasksInProgress
+import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
 import timber.log.Timber
 

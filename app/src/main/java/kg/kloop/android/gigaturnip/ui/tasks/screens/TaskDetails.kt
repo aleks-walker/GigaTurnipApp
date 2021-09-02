@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.ui.tasks
+package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import android.net.Uri
 import android.widget.Toast
@@ -32,6 +32,10 @@ import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
+import kg.kloop.android.gigaturnip.ui.tasks.TaskDetailsViewModel
+import kg.kloop.android.gigaturnip.ui.tasks.WebAppInterface
+import kg.kloop.android.gigaturnip.ui.tasks.WebPageScreen
+import kg.kloop.android.gigaturnip.ui.tasks.WebViewPayload
 import kg.kloop.android.gigaturnip.util.Constants
 import timber.log.Timber
 
