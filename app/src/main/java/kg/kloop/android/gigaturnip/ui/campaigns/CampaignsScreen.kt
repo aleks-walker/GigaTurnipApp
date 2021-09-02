@@ -29,7 +29,7 @@ sealed class CampaignsScreen(val route: String) {
 @Composable
 fun CampaignsScreenView(navController: NavHostController,
                         viewModel: CampaignsViewModel = hiltViewModel(),
-                        mainActivityViewModel: MainActivityViewModel = hiltViewModel()) {
+                        mainActivityViewModel: MainActivityViewModel) {
     val token = mainActivityViewModel.getUserToken().observeAsState()
     val campaigns: List<Campaign> by viewModel.getCampaigns(token.value.toString()).observeAsState(listOf())
 
@@ -42,7 +42,10 @@ fun CampaignsScreenView(navController: NavHostController,
         items(campaigns) {
             CampaignItem(
                 campaign = it,
-                onClick = { navController.navigate(TasksScreen.TasksList.route) })
+                onClick = {
+                    mainActivityViewModel.setCampaignId(it.id)
+                    navController.navigate(TasksScreen.TasksList.route)
+                })
         }
     }
 

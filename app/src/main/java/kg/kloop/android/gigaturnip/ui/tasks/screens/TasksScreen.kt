@@ -23,8 +23,6 @@ import androidx.navigation.compose.rememberNavController
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
-import kg.kloop.android.gigaturnip.ui.tasks.TasksFinished
-import kg.kloop.android.gigaturnip.ui.tasks.TasksInProgress
 import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
 import timber.log.Timber
@@ -47,8 +45,10 @@ fun TasksScreenView(
     onFabClick: () -> Unit,
     navigateToDetails: (Task) -> Unit,
     viewModel: TasksViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel = hiltViewModel()
+    mainActivityViewModel: MainActivityViewModel
 ) {
+    val campaignId = mainActivityViewModel.campaignId.observeAsState()
+
     val navController = rememberNavController()
     val items = listOf(
         TasksScreen.InProgress,
@@ -79,12 +79,14 @@ fun TasksScreenView(
 
         val tasksInProgress: List<Task> by viewModel.getTasksList(
             token.value.toString(),
-            false
+            false,
+            campaignId.value.toString()
         ).observeAsState(listOf())
 
         val tasksFinished: List<Task> by viewModel.getTasksList(
             token.value.toString(),
-            true
+            true,
+            campaignId.value.toString()
         ).observeAsState(listOf())
 
 

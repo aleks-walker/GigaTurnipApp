@@ -29,13 +29,15 @@ interface GigaTurnipApi {
     suspend fun getTasksStagesList(
         @Header("Authorization") token: String,
         @Query("is_creatable") isCreatable: Boolean,
-        @Query("ranklimits__total_limit") rankLimitsTotalLimit: Int
+        @Query("ranklimits__total_limit") rankLimitsTotalLimit: Int,
+        @Query("chain__campaign") campaignId: String
     ): List<TaskStageDto>
 
     @GET("tasks/user_relevant")
     suspend fun getTasksList(
         @Header("Authorization") token: String,
-        @Query("complete") complete: Boolean
+        @Query("complete") complete: Boolean,
+        @Query("stage__chain__campaign") campaignId: String
     ): List<TaskDto>
 
     @GET("tasks/{id}")

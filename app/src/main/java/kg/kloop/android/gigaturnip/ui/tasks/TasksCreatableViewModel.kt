@@ -18,9 +18,18 @@ class TasksCreatableViewModel @Inject constructor(
     private val repository: GigaTurnipRepository
 ) : ViewModel() {
 
-    fun getTasksStagesList(token: String, isCreatable: Boolean): LiveData<List<TaskStage>> =
+    fun getTasksStagesList(
+        token: String,
+        isCreatable: Boolean,
+        campaignId: String
+    ): LiveData<List<TaskStage>> =
         liveData {
-            emit(repository.getTasksStagesList(token, isCreatable, 0).data.orEmpty())
+            emit(
+                repository.getTasksStagesList(
+                    token,
+                    isCreatable, 0, campaignId
+                ).data.orEmpty()
+            )
         }
 
     private val _taskResponse = MutableLiveData<TaskResponseEntity>()

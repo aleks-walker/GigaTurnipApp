@@ -40,12 +40,14 @@ class GigaTurnipRepository(
 
     suspend fun getTasksList(
         token: String,
-        complete: Boolean
+        complete: Boolean,
+        campaignId: String
     ): Resource<List<Task>> {
         return getList({
             api.getTasksList(
                 token = makeToken(token),
-                complete = complete
+                complete = complete,
+                campaignId = campaignId
             )
         }, tasksMapper)
 
@@ -87,13 +89,15 @@ class GigaTurnipRepository(
     suspend fun getTasksStagesList(
         token: String,
         isCreatable: Boolean,
-        rankLimitsTotalLimit: Int
+        rankLimitsTotalLimit: Int,
+        campaignId: String
     ): Resource<List<TaskStage>> {
         return getList({
             api.getTasksStagesList(
                 token = makeToken(token),
                 isCreatable = isCreatable,
-                rankLimitsTotalLimit = rankLimitsTotalLimit
+                rankLimitsTotalLimit = rankLimitsTotalLimit,
+                campaignId = campaignId
             )
         }, taskStageMapper)
 

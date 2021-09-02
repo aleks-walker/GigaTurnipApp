@@ -36,8 +36,8 @@ import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
-import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
@@ -61,7 +61,7 @@ fun MainScreen(viewModel: MainActivityViewModel, navController: NavHostControlle
 
     val user = viewModel.user.observeAsState()
     if (user.value != null) {
-        CampaignsScreenView(navController = navController)
+        CampaignsScreenView(navController = navController, mainActivityViewModel = viewModel)
         val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
         val scope = rememberCoroutineScope()
         Scaffold(
@@ -149,10 +149,22 @@ fun MainNavHost(navController: NavHostController,
         startDestination = CampaignsScreen.CampaignScreen.route,
         modifier = modifier
     ) {
-        composable(CampaignsScreen.CampaignScreen.route) { CampaignsScreenView(navController) }
-        navigation(TasksScreen.InProgress.route, TasksScreen.TasksList.route) {
-            composable(TasksScreen.InProgress.route) {
+        composable(CampaignsScreen.CampaignScreen.route) {
+            CampaignsScreenView(
+                navController,
+                mainActivityViewModel = viewModel
+            )
+        }
+        navigation(
+            startDestination = TasksScreen.InProgress.route,
+            route = TasksScreen.TasksList.route
+        ) {
+            composable(
+                route = TasksScreen.InProgress.route,
+//                arguments = listOf(navArgument("campaignId") { type = NavType.StringType })
+            ) {
                 TasksScreenView(
+                    mainActivityViewModel = viewModel,
                     navigateToDetails = navigateToDetails(navController),
                     onFabClick = { navController.navigate(TasksScreen.Creatable.route) }
                 )

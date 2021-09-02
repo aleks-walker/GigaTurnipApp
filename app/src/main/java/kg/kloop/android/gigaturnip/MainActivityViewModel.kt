@@ -18,6 +18,8 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
     private val _token = MutableLiveData<String>()
     val token: LiveData<String> = _token
 
+    private val _campaignId = MutableLiveData<String>()
+    val campaignId: LiveData<String> = _campaignId
 
     init {
         _user.value = FirebaseAuth.getInstance().currentUser
@@ -28,11 +30,13 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
     }
 
 
-    fun setUser(value: FirebaseUser?) {
-        _user.postValue(value)
-    }
+    fun setUser(value: FirebaseUser?) = _user.postValue(value)
 
     fun getUserToken() = token
+
+    fun setCampaignId(value: String) {
+        _campaignId.value = value
+    }
 
 //    fun getUserToken() = liveData {
 //        emit(user.value?.getIdToken(false)?.result?.token)

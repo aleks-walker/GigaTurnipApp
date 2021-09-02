@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.ui.tasks
+package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.ui.tasks
+package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kg.kloop.android.gigaturnip.domain.TaskStage
+import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
 
 @Composable
 fun TaskStageList(onClick: (String) -> Unit,

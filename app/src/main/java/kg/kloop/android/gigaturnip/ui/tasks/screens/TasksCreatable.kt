@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.ui.tasks
+package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -7,7 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.domain.TaskStage
-import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
+import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
 
 
 @Composable
@@ -17,10 +17,12 @@ fun TasksCreatable(
     viewModel: TasksCreatableViewModel = hiltViewModel()
 ) {
     val token = mainActivityViewModel.getUserToken().observeAsState()
+    val campaignId = mainActivityViewModel.campaignId.observeAsState()
 
     val creatableTasksStages: List<TaskStage> by viewModel.getTasksStagesList(
         token.value.toString(),
-        true
+        true,
+        campaignId.value.toString()
     ).observeAsState(listOf())
 
     val taskResponse by viewModel.taskResponseEntity.observeAsState()

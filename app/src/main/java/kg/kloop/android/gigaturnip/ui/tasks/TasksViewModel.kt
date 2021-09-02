@@ -23,11 +23,12 @@ class TasksViewModel @Inject constructor(
 
     fun getTasksList(
         token: String,
-        complete: Boolean
+        complete: Boolean,
+        campaignId: String
     ): LiveData<List<Task>> = liveData {
 //        _isRefreshing.postValue(true)
         Timber.d("Get tasks list")
-        emit(repository.getTasksList(token, complete).data.orEmpty())
+        emit(repository.getTasksList(token, complete, campaignId).data.orEmpty())
         _isRefreshing.postValue(false)
     }
 
