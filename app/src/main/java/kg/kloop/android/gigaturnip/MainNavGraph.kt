@@ -42,7 +42,7 @@ fun MainNavGraph(
                 TasksScreenView(
                     mainActivityViewModel = viewModel,
                     navigateToDetails = navigateToDetails(navController),
-                    onFabClick = { navController.navigate(TasksScreen.Creatable.route) }
+                    onFabClick = { navController.navigate(TasksScreen.Creatable.route) },
                 )
             }
         }
@@ -50,7 +50,7 @@ fun MainNavGraph(
             route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
             arguments = listOf(navArgument("id") { type = NavType.StringType },
                 navArgument("stage_id") { type = NavType.StringType })
-        ) { TaskDetails(navController) }
+        ) { TaskDetails(mainActivityViewModel = viewModel) }
 
         composable(TasksScreen.Creatable.route) {
             TasksCreatable(navController = navController, mainActivityViewModel = viewModel)

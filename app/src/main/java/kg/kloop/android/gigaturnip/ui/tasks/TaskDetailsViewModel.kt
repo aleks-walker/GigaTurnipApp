@@ -32,7 +32,10 @@ import javax.inject.Inject
 class TaskDetailsViewModel @Inject constructor(
     private val repository: GigaTurnipRepository,
     @ApplicationContext val context: Context,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    val taskId: String = savedStateHandle.get<String>("id")!!
 
     fun getTask(token: String, id: Int): LiveData<Task> = liveData {
         repository.getTask(token, id).data?.let { emit(it) }

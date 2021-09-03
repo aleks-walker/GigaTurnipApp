@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -25,14 +26,13 @@ import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
-import timber.log.Timber
 
-private val TAG = TasksScreen::class.java.simpleName
 
 sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val icon: ImageVector) {
     object TasksList : TasksScreen("tasks_list", R.string.tasks_list, Icons.Filled.Home)
     object InProgress :
         TasksScreen("tasks_in_progress", R.string.in_progress, Icons.Filled.ArrowForward)
+
     object Finished : TasksScreen("tasks_finished", R.string.finished, Icons.Filled.Done)
 
     object Details : TasksScreen("task_details", R.string.details, Icons.Filled.ArrowDropDown)
@@ -45,16 +45,18 @@ fun TasksScreenView(
     onFabClick: () -> Unit,
     navigateToDetails: (Task) -> Unit,
     viewModel: TasksViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel
+    mainActivityViewModel: MainActivityViewModel,
 ) {
     val campaignId = mainActivityViewModel.campaignId.observeAsState()
+    viewModel.setCampaignId(campaignId.value!!)
+
+    val uiState by viewModel.uiState.collectAsState()
 
     val navController = rememberNavController()
     val items = listOf(
         TasksScreen.InProgress,
         TasksScreen.Finished,
     )
-    val fabShape = RoundedCornerShape(50)
     Scaffold(
         bottomBar = {
             TasksBottomNavigation(navController = navController, items = items)
@@ -62,7 +64,7 @@ fun TasksScreenView(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onFabClick() },
-                shape = fabShape,
+                shape = RoundedCornerShape(50),
                 backgroundColor = ColorPalette.primary
             ) {
                 Icon(Icons.Filled.Add, "")
@@ -72,23 +74,6 @@ fun TasksScreenView(
         floatingActionButtonPosition = FabPosition.Center,
     )
     { innerPadding ->
-        val token = mainActivityViewModel.getUserToken().observeAsState()
-
-        val isRefreshing by viewModel.isRefreshing.observeAsState(true)
-        if (isRefreshing) Timber.d("Refreshing tasks")
-
-        val tasksInProgress: List<Task> by viewModel.getTasksList(
-            token.value.toString(),
-            false,
-            campaignId.value.toString()
-        ).observeAsState(listOf())
-
-        val tasksFinished: List<Task> by viewModel.getTasksList(
-            token.value.toString(),
-            true,
-            campaignId.value.toString()
-        ).observeAsState(listOf())
-
 
         NavHost(
             navController,
@@ -98,23 +83,17 @@ fun TasksScreenView(
             composable(TasksScreen.InProgress.route) {
                 TasksInProgress(
                     navigateToDetails,
-                    tasksInProgress,
-                    isRefreshing,
-                    onRefresh = {
-                        viewModel.setIsRefreshing(true)
-                        Timber.d("Is refreshing $isRefreshing")
-                    }
+                    uiState.inProgressTasks,
+                    uiState.loading,
+                    onRefresh = { viewModel.refreshTasks() }
                 )
             }
             composable(TasksScreen.Finished.route) {
                 TasksFinished(
                     navigateToDetails,
-                    tasksFinished,
-                    isRefreshing,
-                    onRefresh = {
-                        viewModel.setIsRefreshing(true)
-                        Timber.d("Is refreshing $isRefreshing")
-                    }
+                    uiState.finishedTasks,
+                    uiState.loading,
+                    onRefresh = { viewModel.refreshTasks() }
                 )
             }
         }
@@ -130,8 +109,6 @@ private fun TasksBottomNavigation(
     return BottomNavigation {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-        Timber.d("current destination: $currentDestination")
-        Timber.d("details route: ${TasksScreen.Details.route}")
         items.forEach { screen ->
             BottomNavigationItem(
                 icon = { Icon(screen.icon, contentDescription = null) },

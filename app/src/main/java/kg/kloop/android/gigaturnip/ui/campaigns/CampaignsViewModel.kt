@@ -2,11 +2,10 @@ package kg.kloop.android.gigaturnip.ui.campaigns
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
+import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
 import javax.inject.Inject
 
 data class CampaignsUiState(
@@ -34,14 +32,6 @@ class CampaignsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CampaignsUiState(loading = true))
     val uiState: StateFlow<CampaignsUiState> = _uiState.asStateFlow()
 
-    private fun getToken(): String? {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            val result = Tasks.await(user.getIdToken(true));
-            return Objects.requireNonNull(result).token!!
-        }
-        return null
-    }
 
     init {
         refreshCampaigns()
@@ -51,7 +41,7 @@ class CampaignsViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val tokenDeferred = async { getToken() }
+                val tokenDeferred = async { getTokenSynchronously() }
                 val token = tokenDeferred.await()
                 val result = repository.getCampaignsList(token!!).data.orEmpty()
                 _uiState.update {

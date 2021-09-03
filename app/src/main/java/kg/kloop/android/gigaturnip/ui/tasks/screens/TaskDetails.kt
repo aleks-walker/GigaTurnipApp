@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.google.accompanist.placeholder.PlaceholderDefaults
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.color
@@ -41,13 +40,11 @@ import timber.log.Timber
 
 @Composable
 fun TaskDetails(
-    navController: NavHostController,
     viewModel: TaskDetailsViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel = hiltViewModel()
+    mainActivityViewModel: MainActivityViewModel
 ) {
 
-    val args = navController.currentBackStackEntry?.arguments
-    val id = args?.getString("id", "No id")!!
+    val taskId = viewModel.taskId
     val user = mainActivityViewModel.user.observeAsState()
     val isTaskLoading by viewModel.isTaskLoading.observeAsState(true)
 
@@ -59,8 +56,8 @@ fun TaskDetails(
     ) {
 
         val token = mainActivityViewModel.getUserToken().observeAsState()
-        val task by viewModel.getTask(token.value.toString(), id.toInt()).observeAsState()
-        TaskStageDetails(id, task?.stage, isTaskLoading)
+        val task by viewModel.getTask(token.value.toString(), taskId.toInt()).observeAsState()
+        TaskStageDetails(taskId, task?.stage, isTaskLoading)
 
         val fileUploadInfo by viewModel.fileUploadInfo.observeAsState()
 
@@ -96,7 +93,7 @@ fun TaskDetails(
                 onSubmit= { responses ->
                     viewModel.updateTask(
                         token = token.value.toString(),
-                        id = id.toInt(),
+                        id = taskId.toInt(),
                         responses = responses,
                         complete = true
                     )

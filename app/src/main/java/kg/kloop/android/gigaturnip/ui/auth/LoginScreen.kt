@@ -1,4 +1,4 @@
-package kg.kloop.android.gigaturnip.ui.login
+package kg.kloop.android.gigaturnip.ui.auth
 
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult

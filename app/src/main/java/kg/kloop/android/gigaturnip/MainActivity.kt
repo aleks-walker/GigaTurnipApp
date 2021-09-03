@@ -19,7 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kg.kloop.android.gigaturnip.ui.Toolbar
-import kg.kloop.android.gigaturnip.ui.login.LoginScreen
+import kg.kloop.android.gigaturnip.ui.auth.LoginScreen
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 
 @AndroidEntryPoint
