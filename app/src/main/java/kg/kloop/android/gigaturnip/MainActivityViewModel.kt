@@ -22,6 +22,10 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
     val campaignId: LiveData<String> = _campaignId
 
     init {
+        getToken()
+    }
+
+    private fun getToken() {
         _user.value = FirebaseAuth.getInstance().currentUser
         _user.value?.getIdToken(false)?.addOnSuccessListener {
             _token.value = it.token!!
@@ -37,11 +41,4 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
     fun setCampaignId(value: String) {
         _campaignId.value = value
     }
-
-//    fun getUserToken() = liveData {
-//        emit(user.value?.getIdToken(false)?.result?.token)
-////        emit(user.value?.getIdToken(false)?.addOnSuccessListener {
-////            _token.value = it.token!!
-////        })
-//    }
 }

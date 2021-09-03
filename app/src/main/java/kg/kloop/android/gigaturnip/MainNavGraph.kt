@@ -16,10 +16,13 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
 
+
 @Composable
-fun MainNavGraph(navController: NavHostController,
-                modifier: Modifier = Modifier,
-                viewModel: MainActivityViewModel) {
+fun MainNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    viewModel: MainActivityViewModel
+) {
     NavHost(
         navController,
         startDestination = CampaignsScreen.CampaignScreen.route,
@@ -35,9 +38,7 @@ fun MainNavGraph(navController: NavHostController,
             startDestination = TasksScreen.InProgress.route,
             route = TasksScreen.TasksList.route
         ) {
-            composable(
-                route = TasksScreen.InProgress.route,
-            ) {
+            composable(route = TasksScreen.InProgress.route) {
                 TasksScreenView(
                     mainActivityViewModel = viewModel,
                     navigateToDetails = navigateToDetails(navController),
@@ -57,6 +58,7 @@ fun MainNavGraph(navController: NavHostController,
     }
 
 }
+
 private fun navigateToDetails(navController: NavHostController) = { task: Task ->
     navController.navigate(
         TasksScreen.Details.route
