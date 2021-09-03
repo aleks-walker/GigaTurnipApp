@@ -8,12 +8,12 @@ plugins {
 }
 
 android {
-    compileSdk = 30
+    compileSdk = 31
 
     defaultConfig {
         applicationId = "kg.kloop.android.gigaturnip"
         minSdk = 23
-        targetSdk = 30
+        targetSdk = 31
         versionCode = 1
         versionName = "1.0"
 
@@ -44,42 +44,39 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = rootProject.extra["compose_version"] as String
+        kotlinCompilerExtensionVersion = "1.1.0-alpha03"
 //        kotlinCompilerVersion = "1.4.32"
     }
 }
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.1.0")
-    implementation("com.google.firebase:firebase-analytics-ktx:19.0.0")
-    val lifecycle_version = "2.4.0-alpha02"
-    val compose_version = "1.0.0-beta09"
-    val accompanist_version = "0.16.0"
+    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.1")
+    implementation("com.google.firebase:firebase-analytics-ktx:19.0.1")
 
     implementation("androidx.core:core-ktx:1.6.0")
-    implementation("androidx.appcompat:appcompat:1.3.0")
+    implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("com.google.android.material:material:1.4.0")
-    implementation("androidx.compose.ui:ui:${rootProject.extra["compose_version"]}")
-    implementation("androidx.compose.material:material:${rootProject.extra["compose_version"]}")
-    implementation("androidx.compose.ui:ui-tooling:${rootProject.extra["compose_version"]}")
+    implementation("androidx.compose.ui:ui:1.1.0-alpha03")
+    implementation("androidx.compose.material:material:1.1.0-alpha03")
+    implementation("androidx.compose.ui:ui-tooling:1.1.0-alpha03")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-    implementation("androidx.activity:activity-compose:1.3.0-rc01")
-    implementation("androidx.navigation:navigation-compose:2.4.0-alpha04")
+    implementation("androidx.activity:activity-compose:1.4.0-alpha01")
+    implementation("androidx.navigation:navigation-compose:2.4.0-alpha08")
     implementation("androidx.webkit:webkit:1.4.0")
     testImplementation("junit:junit:4.+")
-    androidTestImplementation("androidx.test.ext:junit:1.1.2")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:${rootProject.extra["compose_version"]}")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.1.0-alpha03")
 
-    implementation("androidx.compose.material:material-icons-core:$compose_version")
-    implementation("androidx.compose.material:material-icons-extended:$compose_version")
+    implementation("androidx.compose.material:material-icons-core:1.1.0-alpha03")
+    implementation("androidx.compose.material:material-icons-extended:1.1.0-alpha03")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
-    implementation("androidx.navigation:navigation-compose:2.4.0-alpha04")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha08")
+    implementation("androidx.navigation:navigation-compose:2.4.0-alpha08")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-beta02")
 
     //Accompanist
-    implementation("com.google.accompanist:accompanist-swiperefresh:$accompanist_version")
-    implementation("com.google.accompanist:accompanist-placeholder-material:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.16.0")
+    implementation("com.google.accompanist:accompanist-placeholder-material:0.16.0")
 
     //Firebase
     implementation("com.firebaseui:firebase-ui-auth:7.2.0")
@@ -99,20 +96,20 @@ dependencies {
     implementation("com.jakewharton.timber:timber:4.7.1")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1")
 
     // Coroutine Lifecycle Scopes
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
 
     // LiveData
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
-    implementation("androidx.compose.runtime:runtime-livedata:1.0.0-rc01")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0-alpha03")
+    implementation("androidx.compose.runtime:runtime-livedata:1.1.0-alpha03")
 
     //Dagger - Hilt
-    implementation("com.google.dagger:hilt-android:2.37")
-    kapt("com.google.dagger:hilt-android-compiler:2.37")
+    implementation("com.google.dagger:hilt-android:2.38.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.38.1")
     implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha03")
