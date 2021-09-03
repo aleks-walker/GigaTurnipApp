@@ -20,13 +20,31 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
+import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.util.Constants
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
+
+data class TaskDetailsUiState(
+    val task: Task? = null,
+    val completed: Boolean = false,
+    val loading: Boolean = false,
+    val fileUploadInfo: String = "{}",
+    val listenersReady: Boolean = false
+) {
+    val initialLoad: Boolean
+        get() = task == null && loading
+}
 
 @HiltViewModel
 class TaskDetailsViewModel @Inject constructor(
@@ -36,43 +54,48 @@ class TaskDetailsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val taskId: String = savedStateHandle.get<String>("id")!!
+    private val _uiState = MutableStateFlow(TaskDetailsUiState(loading = true))
+    val uiState: StateFlow<TaskDetailsUiState> = _uiState.asStateFlow()
 
-    fun getTask(token: String, id: Int): LiveData<Task> = liveData {
-        repository.getTask(token, id).data?.let { emit(it) }
-        _isTaskLoading.postValue(false)
+    init {
+        refreshTaskDetails()
     }
 
-    private val _isTaskLoading = MutableLiveData<Boolean>()
-    val isTaskLoading: LiveData<Boolean> = _isTaskLoading
-
-    fun setIsTaskLoading(value: Boolean) = _isTaskLoading.postValue(value)
+    fun refreshTaskDetails() {
+        _uiState.update { it.copy(loading = true) }
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                val token = async { getTokenSynchronously() }.await()
+                val task = repository.getTask(token!!, taskId.toInt()).data!!
+                _uiState.update {
+                    it.copy(
+                        task = task,
+                        loading = false
+                    )
+                }
+            }
+        }
+    }
 
 
     private val _isTaskCompleted = MutableLiveData<Boolean>()
     val isTaskCompleted: LiveData<Boolean> = _isTaskCompleted
 
-    fun updateTask(token: String, id: Int, responses: String, complete: Boolean) {
+    fun completeTask(responses: String) {
         viewModelScope.launch(Dispatchers.Default) {
-            val response = repository.updateTask(token, id, responses, complete)
-            if (complete && response.isSuccessful) _isTaskCompleted.postValue(complete)
+            val token = async { getTokenSynchronously() }.await()
+            val response = repository.updateTask(token!!, taskId.toInt(), responses, true)
         }
     }
 
-    private val _listenersReady = MutableLiveData<Boolean>()
-    val listenersReady: LiveData<Boolean> = _listenersReady
-
     fun setListenersReady(value: Boolean) {
-        _listenersReady.postValue(value)
+        _uiState.update { it.copy(listenersReady = value) }
     }
 
-    private val _pickFileKey = MutableLiveData<String>()
-    val pickFileKey: LiveData<String> = _pickFileKey
-
-    private val _fileUploadInfo = MutableLiveData<String>()
-    val fileUploadInfo: LiveData<String> = _fileUploadInfo
+    private var _pickFileKey: String? = null
 
     fun setPickFileKey(value: String) {
-        _pickFileKey.postValue(value)
+        _pickFileKey = value
     }
 
     fun uploadFiles(path: Path, uris: List<Uri>) {
@@ -109,9 +132,9 @@ class TaskDetailsViewModel @Inject constructor(
     ) {
         val json = getFileInfo(progress, fileName, downloadUri)
         jsonArray.set(i, json)
-        val fileInfo = JsonObject().apply { add(_pickFileKey.value, jsonArray) }
+        val fileInfo = JsonObject().apply { add(_pickFileKey, jsonArray) }
         Timber.d("file info: $fileInfo")
-        _fileUploadInfo.postValue(fileInfo.toString())
+        _uiState.update { it.copy(fileUploadInfo = fileInfo.toString()) }
     }
 
     private fun getJsonArray(uris: List<Uri>): JsonArray {

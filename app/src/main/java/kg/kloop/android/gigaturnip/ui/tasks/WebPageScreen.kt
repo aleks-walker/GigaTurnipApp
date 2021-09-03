@@ -6,7 +6,6 @@ import android.webkit.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebSettingsCompat.setForceDark
 import androidx.webkit.WebViewFeature
@@ -19,10 +18,9 @@ import timber.log.Timber
 fun WebPageScreen(
     modifier: Modifier,
     urlToRender: String,
-    payload: WebViewPayload,
     webAppInterface: WebAppInterface,
     onUpdate: () -> Unit,
-    viewModel: TaskDetailsViewModel = hiltViewModel(),
+    uiState: TaskDetailsUiState
 ) {
     AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
@@ -37,17 +35,15 @@ fun WebPageScreen(
         }
     }, update = {
         onUpdate()
-        if (viewModel.listenersReady.value == true
-            && payload.jsonSchema != null
-        ) {
+        if (uiState.listenersReady ) {
             val json = JsonObject().apply {
-                add("jsonSchema", payload.jsonSchema.toJsonObject())
-                add("uiSchema", payload.uiSchema?.toJsonObject())
-                addProperty("isComplete", payload.isTaskComplete)
+                add("jsonSchema", uiState.task!!.stage.jsonSchema.toJsonObject())
+                add("uiSchema", uiState.task.stage.uiSchema.toJsonObject())
+                addProperty("isComplete", uiState.task.isComplete)
             }
             evaluateJs(it, json.toString(), "android_schema_event")
-            evaluateJs(it, payload.formData.toString(), "android_data_event")
-            evaluateJs(it, payload.fileData.toString(), "android_file_event")
+            evaluateJs(it, uiState.task!!.responses.toString(), "android_data_event")
+            evaluateJs(it, uiState.fileUploadInfo.toString(), "android_file_event")
         }
     })
 }
@@ -108,13 +104,5 @@ class WebAppInterface(
         onListenersReady()
     }
 }
-
-data class WebViewPayload(
-    val jsonSchema: String?,
-    val uiSchema: String?,
-    val isTaskComplete: Boolean?,
-    var formData: JsonObject?,
-    var fileData: String?,
-)
 
 fun String.toJsonObject(): JsonObject = JsonParser().parse(this).asJsonObject
