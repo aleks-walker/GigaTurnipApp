@@ -8,4 +8,5 @@
     <string name="login">Log In</string>
     <string name="creatable">Creatable</string>
     <string name="task_completed">Task completed</string>
+    <string name="logout">LogOut</string>
 </resources>
