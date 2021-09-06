@@ -42,7 +42,11 @@ fun MainNavGraph(
                 TasksScreenView(
                     mainActivityViewModel = viewModel,
                     navigateToDetails = navigateToDetails(navController),
-                    onFabClick = { navController.navigate(TasksScreen.Creatable.route) },
+                    onFabClick = {
+                        navController.navigate(
+                            TasksScreen.Creatable.route.plus("/${viewModel.campaignId.value}")
+                        )
+                    },
                 )
             }
         }
@@ -52,9 +56,10 @@ fun MainNavGraph(
                 navArgument("stage_id") { type = NavType.StringType })
         ) { TaskDetails(mainActivityViewModel = viewModel) }
 
-        composable(TasksScreen.Creatable.route) {
-            TasksCreatable(navController = navController, mainActivityViewModel = viewModel)
-        }
+        composable(
+            route = TasksScreen.Creatable.route.plus("/{campaign_id}"),
+            arguments = listOf(navArgument("campaign_id") { type = NavType.StringType })
+        ) { TasksCreatable(navController = navController) }
     }
 
 }

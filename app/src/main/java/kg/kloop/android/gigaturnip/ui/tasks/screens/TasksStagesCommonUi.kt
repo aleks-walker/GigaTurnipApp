@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -12,27 +14,20 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import kg.kloop.android.gigaturnip.domain.TaskStage
-import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
 
 @Composable
-fun TaskStageList(onClick: (String) -> Unit,
-                  taskStages: List<TaskStage>,
-                  viewModel: TasksCreatableViewModel = hiltViewModel(),
+fun TaskStageList(
+    taskStages: List<TaskStage>,
+    isCreatingTask: Boolean,
+    onClick: (String) -> Unit,
 ) {
-    val loading = viewModel.loading.value
-    Column(modifier = Modifier.fillMaxSize()) {
-        taskStages.forEach { stage ->
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(taskStages) { stage ->
             TaskStageCard(
                 stage,
-                onClick = {
-                    if (!loading){
-                        onClick(stage.id)
-                        viewModel.setTaskStageId(stage.id.toInt())
-                    }
-                },
-                loading
+                onClick = { onClick(stage.id) },
+                isCreatingTask
             )
         }
     }
@@ -42,7 +37,7 @@ fun TaskStageList(onClick: (String) -> Unit,
 private fun TaskStageCard(
     taskStage: TaskStage,
     onClick: () -> Unit,
-    loading: Boolean
+    isCreatingTask: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -56,7 +51,7 @@ private fun TaskStageCard(
                 .fillMaxWidth(),
         ) {
             Text(text = taskStage.name, style = MaterialTheme.typography.h5)
-            if (loading) {
+            if (isCreatingTask) {
                 LinearProgressIndicator(modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp, bottom = 4.dp))

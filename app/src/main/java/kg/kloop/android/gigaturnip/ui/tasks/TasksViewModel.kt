@@ -9,7 +9,6 @@ import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,10 +45,9 @@ class TasksViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val tokenDeferred = async { getTokenSynchronously() }
-                val token = tokenDeferred.await()!!
+                val token = getTokenSynchronously()
                 val inProgressTasks = repository.getTasksList(
-                    token,
+                    token!!,
                     false,
                     _campaignId.value!!
                 ).data.orEmpty()

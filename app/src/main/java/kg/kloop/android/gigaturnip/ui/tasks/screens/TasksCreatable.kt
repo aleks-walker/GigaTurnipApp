@@ -1,46 +1,76 @@
 package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import kg.kloop.android.gigaturnip.MainActivityViewModel
-import kg.kloop.android.gigaturnip.domain.TaskStage
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
+import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableUiState
 import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
+import timber.log.Timber
 
 
 @Composable
 fun TasksCreatable(
     navController: NavHostController,
-    mainActivityViewModel: MainActivityViewModel,
     viewModel: TasksCreatableViewModel = hiltViewModel()
 ) {
-    val token = mainActivityViewModel.getUserToken().observeAsState()
-    val campaignId = mainActivityViewModel.campaignId.observeAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    val creatableTasksStages: List<TaskStage> by viewModel.getTasksStagesList(
-        token.value.toString(),
-        true,
-        campaignId.value.toString()
-    ).observeAsState(listOf())
+    Timber.d(("ui state: \n" +
+            "creating task ${uiState.creatingTask}\n" +
+            "created task id ${uiState.createdTaskId}\n" +
+            "loading ${uiState.loading}\n" +
+            "initial load ${uiState.initialLoad}").trimMargin())
 
-    val taskResponse by viewModel.taskResponseEntity.observeAsState()
-    val taskStageId: Int? by viewModel.taskStageId.observeAsState(null)
+    if (uiState.createdTaskId != null && !uiState.creatingTask) {
+        navigateToCreatedTask(navController, uiState, viewModel)
+    } else {
+        LoadingContent(empty = uiState.initialLoad,
+            emptyContent = { FullScreenLoading() },
+            loading = uiState.loading,
+            onRefresh = { viewModel.refreshAll() }) {
+            TaskStageList(
+                taskStages = uiState.taskStages,
+                isCreatingTask = uiState.creatingTask,
+                onClick = { stageId -> viewModel.createTask(stageId) },
+            )
+        }
+    }
 
-    TaskStageList(
-        onClick = { stageId ->
-            if (taskResponse == null) {
-                viewModel.createTask(token.value.toString(), stageId)
-            }
-        },
-        taskStages = creatableTasksStages
+}
+
+private fun navigateToCreatedTask(
+    navController: NavHostController,
+    uiState: TasksCreatableUiState,
+    viewModel: TasksCreatableViewModel
+) {
+    navController.popBackStack()
+    navController.navigate(
+        TasksScreen.Details.route.plus("/${uiState.createdTaskId}/${uiState.taskStageId}")
     )
+    viewModel.setCreatedTaskId(null)
+}
 
-    if (taskResponse != null && taskStageId != null) {
-        navController.popBackStack()
-        navController.navigate(
-            TasksScreen.Details.route.plus("/${taskResponse!!.id}/$taskStageId")
+@Composable
+private fun LoadingContent(
+    empty: Boolean,
+    emptyContent: @Composable () -> Unit,
+    loading: Boolean,
+    onRefresh: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    if (empty) {
+        emptyContent()
+    } else {
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(loading),
+            onRefresh = onRefresh,
+            content = content,
         )
     }
 }
+

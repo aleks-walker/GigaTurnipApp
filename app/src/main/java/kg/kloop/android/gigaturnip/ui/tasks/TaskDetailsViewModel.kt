@@ -65,7 +65,7 @@ class TaskDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = async { getTokenSynchronously() }.await()
+                val token = getTokenSynchronously()
                 val task = repository.getTask(token!!, taskId.toInt()).data!!
                 _uiState.update {
                     it.copy(
