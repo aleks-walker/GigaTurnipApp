@@ -118,4 +118,7 @@ dependencies {
     implementation("com.github.AbedElazizShe:LightCompressor:0.9.3")
     implementation("com.iceteck.silicompressorr:silicompressor:2.2.4")
     implementation("com.googlecode.mp4parser:isoparser:1.1.22")
+
+    //WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.6.0")
 }

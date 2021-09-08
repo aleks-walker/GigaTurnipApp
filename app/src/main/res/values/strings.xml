@@ -9,4 +9,6 @@
     <string name="creatable">Creatable</string>
     <string name="task_completed">Task completed</string>
     <string name="logout">LogOut</string>
+    <string name="video_compression">Compressing video</string>
+    <string name="compression_complete">Compression complete</string>
 </resources>

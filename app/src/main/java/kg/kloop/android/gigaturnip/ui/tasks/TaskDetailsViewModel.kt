@@ -1,14 +1,12 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
-import android.content.Context
+import android.app.Application
 import android.net.Uri
-import android.os.Environment
-import androidx.core.net.toUri
 import androidx.lifecycle.*
-import com.abedelazizshe.lightcompressorlibrary.CompressionListener
-import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
-import com.abedelazizshe.lightcompressorlibrary.VideoQuality
-import com.abedelazizshe.lightcompressorlibrary.config.Configuration
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.component1
@@ -17,12 +15,15 @@ import com.google.firebase.storage.ktx.storage
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.util.Constants
+import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
+import kg.kloop.android.gigaturnip.util.Constants.TAG_PROGRESS
+import kg.kloop.android.gigaturnip.util.Constants.VIDEO_MANIPULATION_WORK_NAME
+import kg.kloop.android.gigaturnip.workers.CompressVideoWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +41,9 @@ data class TaskDetailsUiState(
     val completed: Boolean = false,
     val loading: Boolean = false,
     val fileUploadInfo: String = "{}",
-    val listenersReady: Boolean = false
+    val listenersReady: Boolean = false,
+//    val outputWorkInfos: List<WorkInfo> = emptyList(),
+//    val progressWorkInfoItems: List<WorkInfo> = emptyList()
 ) {
     val initialLoad: Boolean
         get() = task == null && loading
@@ -49,7 +52,8 @@ data class TaskDetailsUiState(
 @HiltViewModel
 class TaskDetailsViewModel @Inject constructor(
     private val repository: GigaTurnipRepository,
-    @ApplicationContext val context: Context,
+//    @ApplicationContext val context: Context,
+    application: Application,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -57,9 +61,34 @@ class TaskDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TaskDetailsUiState(loading = true))
     val uiState: StateFlow<TaskDetailsUiState> = _uiState.asStateFlow()
 
+    private val workManager = WorkManager.getInstance(application)
+
     init {
         refreshTaskDetails()
     }
+
+    fun compressVideo(videoUri: Uri) {
+        Timber.d("Compress video $videoUri")
+//        workManager.pruneWork()
+        val compressRequest = OneTimeWorkRequestBuilder<CompressVideoWorker>()
+            .setInputData(createInputDataForUri(videoUri))
+            .addTag(TAG_PROGRESS)
+            .build()
+        workManager.beginUniqueWork(
+            VIDEO_MANIPULATION_WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            compressRequest
+        ).enqueue()
+    }
+
+    private fun createInputDataForUri(uri: Uri?): Data {
+        val builder = Data.Builder()
+        uri?.let {
+            builder.putString(KEY_VIDEO_URI, uri.toString())
+        }
+        return builder.build()
+    }
+
 
     fun refreshTaskDetails() {
         _uiState.update { it.copy(loading = true) }
@@ -91,6 +120,8 @@ class TaskDetailsViewModel @Inject constructor(
     fun setListenersReady(value: Boolean) {
         _uiState.update { it.copy(listenersReady = value) }
     }
+
+
 
     private var _pickFileKey: String? = null
 
@@ -178,61 +209,13 @@ class TaskDetailsViewModel @Inject constructor(
             addProperty("downloadUri", downloadUri)
     }
 
-    private fun compressFile(uri: Uri, onSuccess: (Uri) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val videoFile = File(uri.path!!)
-            val videoFileName = videoFile.name
-            val downloadsPath = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-            val desFile = File(downloadsPath, videoFileName)
-            desFile.createNewFile()
-
-
-            VideoCompressor.start(
-                context,
-                srcUri = uri,
-                srcPath = null,
-                destPath = desFile.path,
-                listener = object : CompressionListener {
-                    override fun onCancelled() {
-                    }
-
-                    override fun onFailure(failureMessage: String) {
-                        Timber.e(failureMessage)
-                    }
-
-                    override fun onProgress(percent: Float) {
-                        Timber.d("compression progress: ${percent.toInt()}")
-                    }
-
-                    override fun onStart() {
-                        Timber.d("Compression started")
-                    }
-
-                    override fun onSuccess() {
-                        Timber.d("Compression successful")
-                        onSuccess(desFile.toUri())
-//                        _compressedFilePath.postValue(desFile.path)
-                    }
-
-
-                }, configureWith = Configuration(
-                    quality = VideoQuality.MEDIUM,
-                    isMinBitRateEnabled = false,
-                    keepOriginalResolution = false,
-//                        videoHeight = 320.0 /*Double, ignore, or null*/,
-//                        videoWidth = 320.0 /*Double, ignore, or null*/,
-//                        videoBitrate = 3677198 /*Int, ignore, or null*/
-                )
-            )
-        }
-    }
 
     fun uploadCompressedFiles(uploadPath: Path, fileUris: List<Uri>) {
         viewModelScope.launch(Dispatchers.IO) {
             fileUris.forEach { fileUri ->
-                compressFile(
-                    fileUri,
-                    onSuccess = { filePath -> uploadFiles(uploadPath, listOf(filePath)) })
+//                compressFile(
+//                    fileUri,
+//                    onSuccess = { filePath -> uploadFiles(uploadPath, listOf(filePath)) })
             }
 
         }
