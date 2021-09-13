@@ -23,10 +23,13 @@ object Constants {
 
     // Other keys
     const val KEY_VIDEO_URI = "KEY_VIDEO_URI"
+    const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
+    const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"
     const val TAG_PROGRESS = "TAG_PROGRESS"
+    const val TAG_UPLOAD = "TAG_UPLOAD"
 
 
 }

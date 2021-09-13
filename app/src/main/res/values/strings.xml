@@ -11,4 +11,6 @@
     <string name="logout">LogOut</string>
     <string name="video_compression">Compressing video</string>
     <string name="compression_complete">Compression complete</string>
+    <string name="uploading_file">Uploading file</string>
+    <string name="file_uploaded">File uploaded</string>
 </resources>

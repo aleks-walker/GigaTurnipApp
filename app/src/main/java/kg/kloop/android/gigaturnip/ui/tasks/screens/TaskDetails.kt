@@ -49,7 +49,7 @@ fun TaskDetails(
         if (uiState.task != null && user.value != null) {
             val videoLauncher = getActivityLauncher { urls ->
 //                viewModel.uploadCompressedFiles(getPath(user.value!!.uid, uiState.task!!), urls)
-                viewModel.compressVideo(urls[0])
+                viewModel.compressVideo(urls[0], getPath(user.value!!.uid, uiState.task!!))
             }
             val photoLauncher = getActivityLauncher { urls ->
                 viewModel.uploadFiles(getPath(user.value!!.uid, uiState.task!!), urls)

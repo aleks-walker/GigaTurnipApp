@@ -20,10 +20,13 @@ import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.util.Constants
+import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
 import kg.kloop.android.gigaturnip.util.Constants.TAG_PROGRESS
+import kg.kloop.android.gigaturnip.util.Constants.TAG_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.VIDEO_MANIPULATION_WORK_NAME
 import kg.kloop.android.gigaturnip.workers.CompressVideoWorker
+import kg.kloop.android.gigaturnip.workers.UploadFileWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,28 +70,42 @@ class TaskDetailsViewModel @Inject constructor(
         refreshTaskDetails()
     }
 
-    fun compressVideo(videoUri: Uri) {
+    fun compressVideo(videoUri: Uri, path: Path) {
         Timber.d("Compress video $videoUri")
 //        workManager.pruneWork()
         val compressRequest = OneTimeWorkRequestBuilder<CompressVideoWorker>()
-            .setInputData(createInputDataForUri(videoUri))
+            .setInputData(
+                createInputData(
+                    listOf(
+                        KEY_UPLOAD_PATH to getUploadPath(path),
+                        KEY_VIDEO_URI to videoUri.toString()
+                    )
+                )
+            )
             .addTag(TAG_PROGRESS)
             .build()
+        val uploadRequest = OneTimeWorkRequestBuilder<UploadFileWorker>()
+            .addTag(TAG_UPLOAD)
+            .build()
+
         workManager.beginUniqueWork(
             VIDEO_MANIPULATION_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             compressRequest
-        ).enqueue()
+        ).then(uploadRequest).enqueue()
     }
 
-    private fun createInputDataForUri(uri: Uri?): Data {
+    private fun createInputData(params: List<Pair<String, String>>): Data {
         val builder = Data.Builder()
-        uri?.let {
-            builder.putString(KEY_VIDEO_URI, uri.toString())
+        for (param in params) {
+            builder.putString(param.first, param.second)
         }
         return builder.build()
     }
 
+    private fun getUploadPath(path: Path): String {
+        return """${path.campaignId}/${path.chainId}/${path.stageId}/${path.userId}/${path.taskId}/""".trimMargin()
+    }
 
     fun refreshTaskDetails() {
         _uiState.update { it.copy(loading = true) }

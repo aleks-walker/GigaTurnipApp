@@ -7,6 +7,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import kg.kloop.android.gigaturnip.R
+import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -17,6 +19,7 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
     override suspend fun doWork(): Result {
         val appContext = applicationContext
         val resourceUri = inputData.getString(KEY_VIDEO_URI)
+        val uploadPath = inputData.getString(KEY_UPLOAD_PATH)
         try {
             if (TextUtils.isEmpty(resourceUri)) {
                 Timber.e("Invalid input uri")
@@ -25,7 +28,10 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
 
             return coroutineScope {
                 withContext(Dispatchers.IO) {
-                    val notificationsHelper = NotificationsHelper(appContext)
+                    val notificationsHelper = NotificationsHelper(
+                        appContext,
+                        appContext.getString(R.string.video_compression)
+                    )
                     val notificationId = 1
 
                     val outputData: Data?
@@ -40,8 +46,14 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                             )
                         }
                     )
-                    outputData = workDataOf(KEY_VIDEO_URI to uri.toString())
-                    notificationsHelper.completeNotification(notificationId)
+                    outputData = workDataOf(
+                        KEY_VIDEO_URI to uri.toString(),
+                        KEY_UPLOAD_PATH to uploadPath
+                    )
+                    notificationsHelper.completeNotification(
+                        notificationId,
+                        appContext.getString(R.string.compression_complete)
+                    )
                     Timber.d("output data $outputData")
                     Result.success(outputData)
                 }

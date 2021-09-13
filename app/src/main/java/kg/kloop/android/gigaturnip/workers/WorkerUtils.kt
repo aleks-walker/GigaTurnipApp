@@ -22,7 +22,7 @@ import timber.log.Timber
 import java.io.File
 
 
-class NotificationsHelper(val context: Context) {
+class NotificationsHelper(private val context: Context, val title: String) {
 
     private val notificationBuilder: NotificationCompat.Builder
 
@@ -55,14 +55,15 @@ class NotificationsHelper(val context: Context) {
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setOnlyAlertOnce(true)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(context.getString(R.string.video_compression))
+            .setContentTitle(title)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
     }
 
     fun completeNotification(
-        notificationId: Int
+        notificationId: Int,
+        text: String
     ) {
-        notificationBuilder.setContentText(context.getString(R.string.compression_complete))
+        notificationBuilder.setContentText(text)
             .setProgress(0, 0, false)
         NotificationManagerCompat.from(context).apply {
             notify(notificationId, notificationBuilder.build())
@@ -103,10 +104,12 @@ fun compressFile(
         destination = desFile.path,
         listener = object : CompressionProgressListener {
             override fun onProgressChanged(percent: Float) {
+                Timber.d("Compress progress: ${percent.toInt()}")
                 onProgress(percent)
             }
 
             override fun onProgressCancelled() {
+                Timber.d("Compression cancelled")
             }
         },
         configuration = Configuration(
