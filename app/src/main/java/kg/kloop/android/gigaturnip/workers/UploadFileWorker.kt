@@ -12,6 +12,7 @@ import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
+import timber.log.Timber
 import java.io.File
 
 class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
@@ -40,13 +41,16 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
                     context.getString(R.string.file_uploaded)
                 )
                 downloadUri = it.toString()
+                Timber.d("Download uri: $downloadUri")
             }
         }.addOnFailureListener {
             notificationsHelper.completeNotification(
                 notificationId, it.localizedMessage!!.toString()
             )
         }
-        return Result.success(workDataOf(KEY_DOWNLOAD_URI to downloadUri))
+        return Result.success(
+            workDataOf(KEY_DOWNLOAD_URI to downloadUri)
+        )
     }
 
     private fun getStorageRef(

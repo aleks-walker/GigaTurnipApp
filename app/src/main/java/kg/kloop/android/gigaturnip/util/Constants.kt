@@ -22,6 +22,7 @@ object Constants {
     const val VIDEO_MANIPULATION_WORK_NAME = "video_manipulation_work"
 
     // Other keys
+    const val OUTPUT_PATH = "compress_video_outputs"
     const val KEY_VIDEO_URI = "KEY_VIDEO_URI"
     const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
     const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
@@ -30,6 +31,7 @@ object Constants {
     const val PROGRESS = "PROGRESS"
     const val TAG_PROGRESS = "TAG_PROGRESS"
     const val TAG_UPLOAD = "TAG_UPLOAD"
+    const val TAG_CLEANUP = "TAG_CLEANUP"
 
 
 }

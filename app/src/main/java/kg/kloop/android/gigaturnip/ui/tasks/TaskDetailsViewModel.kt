@@ -22,9 +22,11 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
+import kg.kloop.android.gigaturnip.util.Constants.TAG_CLEANUP
 import kg.kloop.android.gigaturnip.util.Constants.TAG_PROGRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.VIDEO_MANIPULATION_WORK_NAME
+import kg.kloop.android.gigaturnip.workers.CleanupWorker
 import kg.kloop.android.gigaturnip.workers.CompressVideoWorker
 import kg.kloop.android.gigaturnip.workers.UploadFileWorker
 import kotlinx.coroutines.Dispatchers
@@ -87,12 +89,17 @@ class TaskDetailsViewModel @Inject constructor(
         val uploadRequest = OneTimeWorkRequestBuilder<UploadFileWorker>()
             .addTag(TAG_UPLOAD)
             .build()
+        val cleanupRequest = OneTimeWorkRequestBuilder<CleanupWorker>()
+            .addTag(TAG_CLEANUP)
+            .build()
 
         workManager.beginUniqueWork(
             VIDEO_MANIPULATION_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             compressRequest
-        ).then(uploadRequest).enqueue()
+        ).then(uploadRequest)
+            .then(cleanupRequest)
+            .enqueue()
     }
 
     private fun createInputData(params: List<Pair<String, String>>): Data {
@@ -104,7 +111,8 @@ class TaskDetailsViewModel @Inject constructor(
     }
 
     private fun getUploadPath(path: Path): String {
-        return """${path.campaignId}/${path.chainId}/${path.stageId}/${path.userId}/${path.taskId}/""".trimMargin()
+        //TODO: remove "test"
+        return """test/${path.campaignId}/${path.chainId}/${path.stageId}/${path.userId}/${path.taskId}/""".trimMargin()
     }
 
     fun refreshTaskDetails() {

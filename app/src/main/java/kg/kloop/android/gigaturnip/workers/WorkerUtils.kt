@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import androidx.annotation.WorkerThread
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -16,6 +15,7 @@ import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.CHANNEL_ID
+import kg.kloop.android.gigaturnip.util.Constants.OUTPUT_PATH
 import kg.kloop.android.gigaturnip.util.Constants.VERBOSE_NOTIFICATION_CHANNEL_DESCRIPTION
 import kg.kloop.android.gigaturnip.util.Constants.VERBOSE_NOTIFICATION_CHANNEL_NAME
 import timber.log.Timber
@@ -93,8 +93,9 @@ fun compressFile(
     onProgress: (Float) -> Unit
 ): Uri? {
     val videoFile = File(uri.path!!)
-    val downloadsPath = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-    val desFile = File(downloadsPath, videoFile.name)
+    val outputDir = File(context.filesDir, OUTPUT_PATH)
+    if (!outputDir.exists()) { outputDir.mkdirs() }
+    val desFile = File(outputDir, videoFile.name)
     desFile.createNewFile()
 
     val result = Compressor.compressVideo(
