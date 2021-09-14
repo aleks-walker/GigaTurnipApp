@@ -13,4 +13,5 @@
     <string name="compression_complete">Compression complete</string>
     <string name="uploading_file">Uploading file</string>
     <string name="file_uploaded">File uploaded</string>
+    <string name="cancelled">Cancelled</string>
 </resources>

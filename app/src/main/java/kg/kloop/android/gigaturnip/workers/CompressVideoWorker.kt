@@ -3,13 +3,12 @@ package kg.kloop.android.gigaturnip.workers
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
-import androidx.work.CoroutineWorker
-import androidx.work.Data
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import androidx.work.*
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
+import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
+import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -39,11 +38,18 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         context = appContext,
                         uri = Uri.parse(resourceUri),
                         onProgress = { progress ->
-//                            setProgressAsync(workDataOf(PROGRESS to progress.toInt()))
+                            setProgressAsync(workDataOf(PROGRESS to progress.toInt()))
                             notificationsHelper.updateNotificationProgress(
                                 progress = progress.toInt(),
                                 notificationId = notificationId
                             )
+                        },
+                        onCancel = {
+                            notificationsHelper.completeNotification(
+                                notificationId,
+                                appContext.getString(R.string.cancelled)
+                            )
+                            cancelWork(appContext)
                         }
                     )
                     outputData = workDataOf(
@@ -63,6 +69,10 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
             return Result.failure()
         }
 
+    }
+
+    private fun cancelWork(appContext: Context) {
+        WorkManager.getInstance(appContext).cancelAllWorkByTag(TAG_COMPRESS)
     }
 
 }

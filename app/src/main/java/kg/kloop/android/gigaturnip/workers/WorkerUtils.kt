@@ -90,7 +90,8 @@ class NotificationsHelper(private val context: Context, val title: String) {
 fun compressFile(
     context: Context,
     uri: Uri,
-    onProgress: (Float) -> Unit
+    onProgress: (Float) -> Unit,
+    onCancel: () -> Unit
 ): Uri? {
     val videoFile = File(uri.path!!)
     val outputDir = File(context.filesDir, OUTPUT_PATH)
@@ -98,6 +99,7 @@ fun compressFile(
     val desFile = File(outputDir, videoFile.name)
     desFile.createNewFile()
 
+    Compressor.isRunning = true
     val result = Compressor.compressVideo(
         context,
         srcUri = uri,
@@ -111,6 +113,7 @@ fun compressFile(
 
             override fun onProgressCancelled() {
                 Timber.d("Compression cancelled")
+                onCancel()
             }
         },
         configuration = Configuration(
