@@ -16,7 +16,6 @@ import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
-import kg.kloop.android.gigaturnip.ui.tasks.screens.getUploadPath
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
@@ -65,22 +64,24 @@ class TaskDetailsViewModel @Inject constructor(
     var uploadWorkProgress: LiveData<List<WorkInfo>>
     var compressWorkProgress: LiveData<List<WorkInfo>>
 
-    private val workManager = WorkManager.getInstance(application)
+//    var storagePath: String? = null
+//    var videoUri: String? = null
 
+    private val workManager = WorkManager.getInstance(application)
     init {
         refreshTaskDetails()
         uploadWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_UPLOAD)
         compressWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_COMPRESS)
     }
 
-    fun compressVideo(videoUri: Uri, path: Path) {
+    fun compressVideo(videoUri: Uri, storagePath: String) {
 //        workManager.pruneWork()
         val compressRequest = OneTimeWorkRequestBuilder<CompressVideoWorker>()
             .setInputData(
                 createInputData(
                     listOf(
                         //TODO: remove "test"
-                        KEY_UPLOAD_PATH to "test/".plus(path.getUploadPath()),
+                        KEY_UPLOAD_PATH to "test/".plus(storagePath),
                         KEY_VIDEO_URI to videoUri.toString()
                     )
                 )
@@ -209,11 +210,12 @@ class TaskDetailsViewModel @Inject constructor(
     private fun getFileData(
         fileName: String,
         progress: String = "0.0",
+        storagePath: String = "",
         downloadUri: String = ""
     ): JsonObject =
         JsonObject().apply {
 //            addProperty("progressType", progressType)
-//            addProperty("filePath", filePath)
+            addProperty("storagePath", storagePath)
             addProperty("progress", progress)
             addProperty("fileName", fileName)
             addProperty("downloadUri", downloadUri)

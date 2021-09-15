@@ -27,6 +27,7 @@ object Constants {
     const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
     const val KEY_FILE_PATH = "KEY_FILE_PATH"
     const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
+    const val KEY_FILENAME = "KEY_FILENAME"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"

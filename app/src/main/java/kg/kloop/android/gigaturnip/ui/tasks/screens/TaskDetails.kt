@@ -13,7 +13,9 @@ import androidx.compose.material.Button
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +38,11 @@ import kg.kloop.android.gigaturnip.ui.tasks.TaskDetailsViewModel
 import kg.kloop.android.gigaturnip.ui.tasks.WebAppInterface
 import kg.kloop.android.gigaturnip.ui.tasks.WebPageScreen
 import kg.kloop.android.gigaturnip.util.Constants
+import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_PATH
+import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
-import kg.kloop.android.gigaturnip.util.getFileName
 
 @Composable
 fun TaskDetails(
@@ -52,36 +56,21 @@ fun TaskDetails(
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
     val context = LocalContext.current
-    var uri by  remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Button(onClick = {
-            Compressor.isRunning = false
-        }) {
-            Text("Cancel")
-        }
+        Button(onClick = { Compressor.isRunning = false }) { Text("Cancel") }
         compressProgressInfos.let { workInfo ->
             workInfo?.forEach { info ->
-                if (info.state == WorkInfo.State.SUCCEEDED) {
-                    Text(text = info.outputData.toString())
-                    Button(onClick = {
-                        deleteFileFromStorage(info, context)
-                    }) {
-                        Text("Delete")
-                    }
+                if (isSuccess(info)) {
+                    Text(text = info.outputData.getString(KEY_UPLOAD_PATH).toString())
+                    Button(onClick = { deleteFileFromStorage(info, context) }) { Text("Delete") }
                 }
             }
             uploadProgressInfos?.forEach { progressInfo ->
-                if (progressInfo.state == WorkInfo.State.RUNNING) {
-                    val progress = progressInfo.progress.getInt(PROGRESS, 0).toFloat()
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = progress.toInt().toString())
-                        LinearProgressIndicator(progress = progress/100)
-                    }
-//                    val uri = progressInfo.outputData.getString(KEY_FILE_PATH)!!.toUri()
-                    val fileName = getFileName(uri.toUri())
-                    val jsonArray = viewModel.buildJsonArray(listOf(uri.toUri()))
-                    viewModel.updateFileInfo(0, progress.toDouble(), fileName, jsonArray, "")
+                if (isRunning(progressInfo)) {
+                    updateWebView(progressInfo, viewModel)
+                } else if (isSuccess(progressInfo)) {
+                    updateWebView(progressInfo, viewModel)
                 }
             }
         }
@@ -94,8 +83,8 @@ fun TaskDetails(
             if (uiState.task != null && user.value != null) {
                 val videoLauncher = getActivityLauncher { urls ->
 //                viewModel.uploadCompressedFiles(getPath(user.value!!.uid, uiState.task!!), urls)
-                    uri = urls[0].toString()
-                    viewModel.compressVideo(urls[0], getPath(user.value!!.uid, uiState.task!!))
+                    val storagePath = getPath(user.value!!.uid, uiState.task!!).getUploadPath()
+                    viewModel.compressVideo(urls[0], storagePath)
                 }
                 val photoLauncher = getActivityLauncher { urls ->
                     viewModel.uploadFiles(getPath(user.value!!.uid, uiState.task!!), urls)
@@ -123,6 +112,31 @@ fun TaskDetails(
 
     }
 
+}
+
+private fun isSuccess(progressInfo: WorkInfo) =
+    progressInfo.state == WorkInfo.State.SUCCEEDED
+
+private fun isRunning(progressInfo: WorkInfo) =
+    progressInfo.state == WorkInfo.State.RUNNING
+
+@Composable
+private fun updateWebView(
+    progressInfo: WorkInfo,
+    viewModel: TaskDetailsViewModel,
+) {
+    val progress = progressInfo.progress.getInt(PROGRESS, 0).toFloat()
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = progress.toInt().toString())
+        LinearProgressIndicator(progress = progress/100)
+    }
+    val storagePath = progressInfo.progress.getString(KEY_UPLOAD_PATH)
+    val fileName = progressInfo.progress.getString(KEY_FILENAME)
+    val downloadUrl = progressInfo.outputData.getString(KEY_DOWNLOAD_URI).orEmpty()
+    if (!storagePath.isNullOrBlank() && !fileName.isNullOrBlank()) {
+        val jsonArray = viewModel.buildJsonArray(listOf(storagePath.toUri()))
+        viewModel.updateFileInfo(0, progress.toDouble(), fileName, jsonArray, downloadUrl)
+    }
 }
 
 private fun deleteFileFromStorage(info: WorkInfo, context: Context) {

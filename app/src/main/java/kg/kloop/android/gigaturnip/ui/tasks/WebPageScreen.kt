@@ -35,16 +35,14 @@ fun WebPageScreen(
         }
     }, update = {
         onUpdate()
-        if (uiState.listenersReady ) {
-            val json = JsonObject().apply {
-                add("jsonSchema", uiState.task!!.stage.jsonSchema.toJsonObject())
-                add("uiSchema", uiState.task.stage.uiSchema.toJsonObject())
-                addProperty("isComplete", uiState.task.isComplete)
-            }
-            evaluateJs(it, json.toString(), "android_schema_event")
-            evaluateJs(it, uiState.task!!.responses.toString(), "android_data_event")
-            evaluateJs(it, uiState.fileUploadInfo.toString(), "android_file_event")
+        val json = JsonObject().apply {
+            add("jsonSchema", uiState.task!!.stage.jsonSchema.toJsonObject())
+            add("uiSchema", uiState.task.stage.uiSchema.toJsonObject())
+            addProperty("isComplete", uiState.task.isComplete)
         }
+        evaluateJs(it, json.toString(), "android_schema_event")
+        evaluateJs(it, uiState.task!!.responses.toString(), "android_data_event")
+        evaluateJs(it, uiState.fileUploadInfo.toString(), "android_file_event")
     })
 }
 

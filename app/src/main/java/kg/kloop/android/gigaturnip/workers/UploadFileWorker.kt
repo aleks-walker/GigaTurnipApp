@@ -10,6 +10,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
@@ -35,7 +36,13 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
         return coroutineScope {
             Tasks.await(uploadTask.addOnProgressListener { //(bytesTransferred, totalByteCount) ->
                 val progress = (100.0 * it.bytesTransferred) / it.totalByteCount
-                setProgressAsync(workDataOf(PROGRESS to progress.toInt()))
+                setProgressAsync(
+                    workDataOf(
+                        PROGRESS to progress.toInt(),
+                        KEY_UPLOAD_PATH to uploadPath,
+                        KEY_FILENAME to fileName
+                    )
+                )
                 notificationsHelper.updateNotificationProgress(
                     progress.toInt(),
                     notificationId,
