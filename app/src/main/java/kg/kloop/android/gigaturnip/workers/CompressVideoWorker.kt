@@ -3,12 +3,16 @@ package kg.kloop.android.gigaturnip.workers
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
+import androidx.core.net.toUri
 import androidx.work.*
 import kg.kloop.android.gigaturnip.R
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
+import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
+import kg.kloop.android.gigaturnip.util.getFileName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -19,6 +23,7 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
         val appContext = applicationContext
         val resourceUri = inputData.getString(KEY_VIDEO_URI)
         val uploadPath = inputData.getString(KEY_UPLOAD_PATH)
+        val fileKey = inputData.getInt(KEY_WEBVIEW_FILE_KEY, 0)
         try {
             if (TextUtils.isEmpty(resourceUri)) {
                 Timber.e("Invalid input uri")
@@ -38,7 +43,12 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         context = appContext,
                         uri = Uri.parse(resourceUri),
                         onProgress = { progress ->
-                            setProgressAsync(workDataOf(PROGRESS to progress.toInt()))
+                            setProgressAsync(workDataOf(
+                                KEY_WEBVIEW_FILE_KEY to fileKey,
+                                PROGRESS to progress.toInt(),
+                                KEY_UPLOAD_PATH to uploadPath,
+                                KEY_FILENAME to getFileName(resourceUri!!.toUri())
+                            ))
                             notificationsHelper.updateNotificationProgress(
                                 progress = progress.toInt(),
                                 notificationId = notificationId

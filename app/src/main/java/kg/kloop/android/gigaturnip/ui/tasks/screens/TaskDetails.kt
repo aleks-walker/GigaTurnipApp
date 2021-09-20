@@ -22,16 +22,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.work.WorkInfo
 import com.abedelazizshe.lightcompressorlibrary.Compressor
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.firebase.storage.FirebaseStorage
+import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
-import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.tasks.TaskDetailsUiState
 import kg.kloop.android.gigaturnip.ui.tasks.TaskDetailsViewModel
@@ -42,7 +41,9 @@ import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
+import timber.log.Timber
 
 @Composable
 fun TaskDetails(
@@ -52,6 +53,7 @@ fun TaskDetails(
 
     val uiState by viewModel.uiState.collectAsState()
     val user = mainActivityViewModel.user.observeAsState()
+    viewModel.setUser(user.value)
 
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
@@ -59,17 +61,23 @@ fun TaskDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Button(onClick = { Compressor.isRunning = false }) { Text("Cancel") }
-        compressProgressInfos.let { workInfo ->
-            workInfo?.forEach { info ->
-                if (isSuccess(info)) {
-                    Text(text = info.outputData.getString(KEY_UPLOAD_PATH).toString())
-                    Button(onClick = { deleteFileFromStorage(info, context) }) { Text("Delete") }
+        compressProgressInfos.let { compressWorkInfo ->
+            compressWorkInfo?.forEach { compressProgressInfo ->
+                if (isSuccess(compressProgressInfo)) {
+                    Text( text = compressProgressInfo.outputData.getString(KEY_UPLOAD_PATH).toString() )
+                    Button(onClick = {
+                        deleteFileFromStorage(
+                            compressProgressInfo,
+                            context
+                        )
+                    }) { Text("Delete") }
+                    updateWebView(compressProgressInfo, viewModel)
+                } else if (isRunning(compressProgressInfo)) {
+                    updateWebView(compressProgressInfo, viewModel)
                 }
             }
             uploadProgressInfos?.forEach { progressInfo ->
-                if (isRunning(progressInfo)) {
-                    updateWebView(progressInfo, viewModel)
-                } else if (isSuccess(progressInfo)) {
+                if (isRunning(progressInfo) || isSuccess(progressInfo)) {
                     updateWebView(progressInfo, viewModel)
                 }
             }
@@ -81,13 +89,12 @@ fun TaskDetails(
             loading = uiState.loading,
             onRefresh = { viewModel.refreshTaskDetails() }) {
             if (uiState.task != null && user.value != null) {
-                val videoLauncher = getActivityLauncher { urls ->
+                val videoLauncher = getActivityLauncher { uris ->
 //                viewModel.uploadCompressedFiles(getPath(user.value!!.uid, uiState.task!!), urls)
-                    val storagePath = getPath(user.value!!.uid, uiState.task!!).getUploadPath()
-                    viewModel.compressVideo(urls[0], storagePath)
+                    viewModel.compressVideos(uris)
                 }
                 val photoLauncher = getActivityLauncher { urls ->
-                    viewModel.uploadFiles(getPath(user.value!!.uid, uiState.task!!), urls)
+//                    viewModel.uploadFiles(getPath(user.value!!.uid, uiState.task!!), urls)
                 }
                 TaskDetailsScreenContent(
                     uiState = uiState,
@@ -125,17 +132,26 @@ private fun updateWebView(
     progressInfo: WorkInfo,
     viewModel: TaskDetailsViewModel,
 ) {
-    val progress = progressInfo.progress.getInt(PROGRESS, 0).toFloat()
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = progress.toInt().toString())
-        LinearProgressIndicator(progress = progress/100)
+    Timber.d("progress info: $progressInfo")
+    val fileProgress = FileProgress(
+        id = progressInfo.progress.getInt(KEY_WEBVIEW_FILE_KEY, 0),
+        progress = progressInfo.progress.getInt(PROGRESS, 0).toFloat(),
+        storagePath = progressInfo.progress.getString(KEY_UPLOAD_PATH),
+        fileName = progressInfo.progress.getString(KEY_FILENAME),
+        downloadUrl = progressInfo.outputData.getString(KEY_DOWNLOAD_URI))
+    if (fileProgress.id != null
+        && !fileProgress.storagePath.isNullOrBlank()
+        && !fileProgress.fileName.isNullOrBlank()
+    ) {
+//        val jsonArray = viewModel.buildJsonArray(listOf(fileName.toUri()))
+//        viewModel.updateFileInfo(fileKey, progress.toDouble(), fileName, jsonArray, downloadUrl)
+        Timber.d("file progress: $fileProgress")
+        viewModel.updateFileInfo(fileProgress)
     }
-    val storagePath = progressInfo.progress.getString(KEY_UPLOAD_PATH)
-    val fileName = progressInfo.progress.getString(KEY_FILENAME)
-    val downloadUrl = progressInfo.outputData.getString(KEY_DOWNLOAD_URI).orEmpty()
-    if (!storagePath.isNullOrBlank() && !fileName.isNullOrBlank()) {
-        val jsonArray = viewModel.buildJsonArray(listOf(storagePath.toUri()))
-        viewModel.updateFileInfo(0, progress.toDouble(), fileName, jsonArray, downloadUrl)
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = fileProgress.progress.toInt().toString())
+        LinearProgressIndicator(progress = fileProgress.progress/100)
     }
 }
 
@@ -218,17 +234,6 @@ private fun getActivityLauncher(
     onActivityResult(it)
 }
 
-private fun getPath(
-    userId: String,
-    task: Task
-) = Path(
-    userId,
-    task.stage.chain.campaignId.toString(),
-    task.stage.chain.id.toString(),
-    task.id,
-    task.stage.id,
-)
-
 @Composable
 private fun TaskStageDetails(
     uiState: TaskDetailsUiState
@@ -267,3 +272,17 @@ data class Path(
 
 fun Path.getUploadPath() =
     "${this.campaignId}/${this.chainId}/${this.stageId}/${this.userId}/${this.taskId}/"
+
+data class FileProgress(
+    val id: Int?,
+    val progress: Float = 0.0f,
+    val storagePath: String?,
+    val fileName: String?,
+    val downloadUrl: String?
+)
+fun FileProgress.toJsonObject(): JsonObject = JsonObject().apply {
+    addProperty("progress", progress)
+    addProperty("storagePath", storagePath)
+    addProperty("fileName", fileName)
+    addProperty("downloadUri", downloadUrl)
+}

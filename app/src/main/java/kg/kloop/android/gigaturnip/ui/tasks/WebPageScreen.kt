@@ -42,7 +42,7 @@ fun WebPageScreen(
         }
         evaluateJs(it, json.toString(), "android_schema_event")
         evaluateJs(it, uiState.task!!.responses.toString(), "android_data_event")
-        evaluateJs(it, uiState.fileUploadInfo.toString(), "android_file_event")
+        evaluateJs(it, uiState.fileProgressState.toString(), "android_file_event")
     })
 }
 
