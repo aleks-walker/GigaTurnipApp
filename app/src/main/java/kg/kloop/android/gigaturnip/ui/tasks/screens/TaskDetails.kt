@@ -176,8 +176,7 @@ private fun TaskDetailsScreenContent(
     ) {
         TaskStageDetails(uiState)
         WebPageScreen(
-            modifier = Modifier
-                .wrapContentSize(),
+            modifier = Modifier.wrapContentSize(),
             uiState = uiState,
             urlToRender = Constants.TURNIP_VIEW_URL,
             webAppInterface = WebAppInterface(
@@ -189,6 +188,9 @@ private fun TaskDetailsScreenContent(
                 onCancelWork = { fileName ->
                     Compressor.isRunning = false
                     cancelAllWork(context)
+                },
+                onPreviewFile = {
+                    Toast.makeText(context, "File preview", Toast.LENGTH_SHORT).show()
                 }
             ),
             onUpdate = onUpdate,

@@ -82,6 +82,7 @@ class WebAppInterface(
     private val onPickPhotos: (String) -> Unit,
     private val onFileDelete: (String) -> Unit,
     private val onCancelWork: (String) -> Unit,
+    private val onPreviewFile: (String) -> Unit,
 ) {
 
     @JavascriptInterface
@@ -112,6 +113,11 @@ class WebAppInterface(
     @JavascriptInterface
     fun cancelWork(fileName: String){
         onCancelWork(fileName)
+    }
+
+    @JavascriptInterface
+    fun previewFile(downloadUrl: String){
+        onPreviewFile(downloadUrl)
     }
 }
 
