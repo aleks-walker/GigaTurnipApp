@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -24,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.abedelazizshe.lightcompressorlibrary.Compressor
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -39,7 +39,6 @@ import kg.kloop.android.gigaturnip.ui.tasks.WebPageScreen
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
-import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
@@ -57,10 +56,8 @@ fun TaskDetails(
 
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
-    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Button(onClick = { Compressor.isRunning = false }) { Text("Cancel") }
         compressProgressInfos.let { compressWorkInfo ->
             compressWorkInfo?.forEach { compressProgressInfo ->
                 if (isSuccess(compressProgressInfo)) {
@@ -71,9 +68,6 @@ fun TaskDetails(
                 }
             }
             uploadProgressInfos?.forEach { progressInfo ->
-                Button(onClick = {
-                    deleteFileFromStorage(progressInfo, context)
-                }) { Text("Delete") }
                 if (isRunning(progressInfo) || isSuccess(progressInfo)) {
                     updateWebView(progressInfo, viewModel)
                 }
@@ -152,14 +146,13 @@ private fun updateWebView(
     }
 }
 
-private fun deleteFileFromStorage(info: WorkInfo, context: Context) {
+private fun deleteFileFromStorage(filePath: String, context: Context) {
     val ref = FirebaseStorage.getInstance().reference
-    val filePath = info.outputData.getString(KEY_FILE_PATH)!!
     Timber.d("file path: $filePath")
     ref.child(filePath).delete().addOnCompleteListener {
         Toast.makeText(
             context,
-            "Deleted:$filePath",
+            "Deleted file:${filePath.substringAfterLast("/")}",
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -172,7 +165,8 @@ private fun TaskDetailsScreenContent(
     onPickVideos: (String) -> Unit,
     onPickPhotos: (String) -> Unit,
     onListenersReady: () -> Unit,
-    onUpdate: () -> Unit
+    onUpdate: () -> Unit,
+    context: Context = LocalContext.current
 ) {
     Column(
         modifier = Modifier
@@ -190,12 +184,20 @@ private fun TaskDetailsScreenContent(
                 onSubmit = { responses -> onTaskSubmit(responses) },
                 onListenersReady = onListenersReady,
                 onPickVideos = { key -> onPickVideos(key) },
-                onPickPhotos = { key -> onPickPhotos(key) }
+                onPickPhotos = { key -> onPickPhotos(key) },
+                onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
+                onCancelWork = { fileName ->
+                    Compressor.isRunning = false
+                    cancelAllWork(context)
+                }
             ),
             onUpdate = onUpdate,
         )
     }
 }
+
+private fun cancelAllWork(context: Context) =
+    WorkManager.getInstance(context).cancelAllWork()
 
 @Composable
 private fun LoadingContent(

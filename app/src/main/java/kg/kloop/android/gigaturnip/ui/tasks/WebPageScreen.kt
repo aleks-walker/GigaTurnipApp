@@ -80,6 +80,8 @@ class WebAppInterface(
     private val onListenersReady: () -> Unit,
     private val onPickVideos: (String) -> Unit,
     private val onPickPhotos: (String) -> Unit,
+    private val onFileDelete: (String) -> Unit,
+    private val onCancelWork: (String) -> Unit,
 ) {
 
     @JavascriptInterface
@@ -100,6 +102,16 @@ class WebAppInterface(
     @JavascriptInterface
     fun listenersReady(){
         onListenersReady()
+    }
+
+    @JavascriptInterface
+    fun deleteFile(filePath: String){
+        onFileDelete(filePath)
+    }
+
+    @JavascriptInterface
+    fun cancelWork(fileName: String){
+        onCancelWork(fileName)
     }
 }
 
