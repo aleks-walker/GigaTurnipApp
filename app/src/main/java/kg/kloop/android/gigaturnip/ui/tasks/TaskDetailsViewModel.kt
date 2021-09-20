@@ -108,7 +108,7 @@ class TaskDetailsViewModel @Inject constructor(
 
         workManager.beginUniqueWork(
             VIDEO_MANIPULATION_WORK_NAME,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.APPEND,
             compressRequest
         ).then(uploadRequest)
             .then(cleanupRequest)

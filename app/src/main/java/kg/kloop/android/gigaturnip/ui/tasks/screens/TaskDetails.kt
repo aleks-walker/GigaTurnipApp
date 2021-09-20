@@ -189,8 +189,8 @@ private fun TaskDetailsScreenContent(
                     Compressor.isRunning = false
                     cancelAllWork(context)
                 },
-                onPreviewFile = {
-                    Toast.makeText(context, "File preview", Toast.LENGTH_SHORT).show()
+                onPreviewFile = { downloadUrl ->
+                    Toast.makeText(context, "$downloadUrl preview", Toast.LENGTH_SHORT).show()
                 }
             ),
             onUpdate = onUpdate,
