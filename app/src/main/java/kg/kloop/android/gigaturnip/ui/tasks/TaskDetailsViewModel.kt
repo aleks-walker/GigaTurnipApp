@@ -120,7 +120,7 @@ class TaskDetailsViewModel @Inject constructor(
         builder.apply {
             putInt(KEY_WEBVIEW_FILE_KEY, fileKey)
             putString(KEY_VIDEO_URI, videoUri)
-            putString(KEY_UPLOAD_PATH, "test".plus(uploadPath))
+            putString(KEY_UPLOAD_PATH, "test/".plus(uploadPath))
         }
         return builder.build()
     }

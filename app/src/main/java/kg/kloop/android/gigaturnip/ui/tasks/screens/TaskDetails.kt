@@ -65,18 +65,15 @@ fun TaskDetails(
             compressWorkInfo?.forEach { compressProgressInfo ->
                 if (isSuccess(compressProgressInfo)) {
                     Text( text = compressProgressInfo.outputData.getString(KEY_UPLOAD_PATH).toString() )
-                    Button(onClick = {
-                        deleteFileFromStorage(
-                            compressProgressInfo,
-                            context
-                        )
-                    }) { Text("Delete") }
                     updateWebView(compressProgressInfo, viewModel)
                 } else if (isRunning(compressProgressInfo)) {
                     updateWebView(compressProgressInfo, viewModel)
                 }
             }
             uploadProgressInfos?.forEach { progressInfo ->
+                Button(onClick = {
+                    deleteFileFromStorage(progressInfo, context)
+                }) { Text("Delete") }
                 if (isRunning(progressInfo) || isSuccess(progressInfo)) {
                     updateWebView(progressInfo, viewModel)
                 }
@@ -158,6 +155,7 @@ private fun updateWebView(
 private fun deleteFileFromStorage(info: WorkInfo, context: Context) {
     val ref = FirebaseStorage.getInstance().reference
     val filePath = info.outputData.getString(KEY_FILE_PATH)!!
+    Timber.d("file path: $filePath")
     ref.child(filePath).delete().addOnCompleteListener {
         Toast.makeText(
             context,
