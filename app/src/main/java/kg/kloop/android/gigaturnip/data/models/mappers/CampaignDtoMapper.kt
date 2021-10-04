@@ -9,7 +9,9 @@ class CampaignDtoMapper : DomainMapper<CampaignDto, Campaign>(){
         return Campaign(
             id = model.id,
             title = model.name,
-            description = model.description
+            description = model.description,
+            defaultTrack = model.defaultTrack,
+            managers = model.managers
         )
     }
 
@@ -17,7 +19,9 @@ class CampaignDtoMapper : DomainMapper<CampaignDto, Campaign>(){
         return CampaignDto(
             id = domainModel.id,
             name = domainModel.title,
-            description = domainModel.description
+            description = domainModel.description,
+            defaultTrack = domainModel.defaultTrack,
+            managers = domainModel.managers
         )
     }
 }

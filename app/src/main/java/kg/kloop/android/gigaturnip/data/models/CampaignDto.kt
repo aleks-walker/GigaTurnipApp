@@ -10,5 +10,11 @@ data class CampaignDto(
     val name: String,
 
     @SerializedName("description")
-    val description: String = ""
+    val description: String = "",
+
+    @SerializedName("default_track")
+    val defaultTrack: String?,
+
+    @SerializedName("managers")
+    val managers: List<Int>
 )
