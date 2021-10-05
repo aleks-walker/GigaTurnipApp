@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.storage.StorageReference
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,6 +40,7 @@ import javax.inject.Inject
 
 data class TaskDetailsUiState(
     val task: Task? = null,
+    val previousTasks: List<Task>? = null,
     val completed: Boolean = false,
     val loading: Boolean = false,
     val fileProgressState: JsonObject? = null,
@@ -130,20 +130,36 @@ class TaskDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val token = getTokenSynchronously()
-                val task = repository.getTask(token!!, taskId.toInt()).data!!
+                val task = repository.getTaskById(token!!, taskId.toInt()).data!!
+                val previousTasks = getPreviousTasks(task, token)
                 _uiState.update {
                     it.copy(
                         task = task,
-                        loading = false
+                        loading = false,
+                        previousTasks = previousTasks
                     )
                 }
             }
         }
     }
 
+    private suspend fun getPreviousTasks(
+        task: Task,
+        token: String
+    ): MutableList<Task> {
+        val previousTasks = mutableListOf<Task>()
+        task.stage.displayedPrevStages.forEach {
+            previousTasks.addAll(
+                repository.getTasks(
+                    token,
+                    caseId = task.caseId!!,
+                    stageId = it
+                ).data!!
+            )
+        }
+        return previousTasks
+    }
 
-//    private val _isTaskCompleted = MutableLiveData<Boolean>()
-//    val isTaskCompleted: LiveData<Boolean> = _isTaskCompleted
 
     fun completeTask(responses: String) {
         viewModelScope.launch(Dispatchers.Default) {
@@ -167,30 +183,6 @@ class TaskDetailsViewModel @Inject constructor(
         Timber.d("Initial state: $initialState")
     }
 
-//    fun uploadFiles(path: Path, uris: List<Uri>) {
-//        val storageRef = Firebase.storage.reference
-//        val jsonArray = buildJsonArray(uris)
-//        uris.forEachIndexed { index, uri ->
-//            val fileName = getFileName(uri)
-//            val fileRef = getFileRef(storageRef, path, fileName)
-//            val uploadTask = fileRef.putFile(uri)
-//
-//            uploadTask.addOnProgressListener { (bytesTransferred, totalByteCount) ->
-//                val progress = (100.0 * bytesTransferred) / totalByteCount
-//                updateFileInfo(index, progress, fileName, jsonArray)
-//            }.addOnSuccessListener {
-//                fileRef.downloadUrl.addOnSuccessListener {
-//                    updateFileInfo(
-//                        index,
-//                        100.0,
-//                        fileName,
-//                        jsonArray,
-//                        Constants.STORAGE_BASE_URL.plus(it.path!!)
-//                    )
-//                }
-//            }
-//        }
-//    }
 
     fun updateFileInfo(
         fileProgress: FileProgress
@@ -214,50 +206,4 @@ class TaskDetailsViewModel @Inject constructor(
 
         }
     }
-
-//    fun buildJsonArray(uris: List<Uri>): JsonArray {
-//        val jsonArray = JsonArray().asJsonArray
-//        uris.forEach { jsonArray.add(getFileData(getFileName(it))) }
-//        return jsonArray
-//    }
-
-    private fun getFileRef(
-        storageRef: StorageReference,
-        path: Path,
-        fileName: String
-    ): StorageReference {
-        val ref = storageRef.child(
-            """${path.campaignId}/${path.chainId}/${path.stageId}/${path.userId}/${path.taskId}/$fileName""".trimMargin())
-            Timber.d("ref path: ${ref.path}")
-        return(ref)
-    }
-
-//    private fun getFileData(
-//        fileName: String,
-//        progress: String = "0.0",
-//        storagePath: String = "",
-//        downloadUri: String = ""
-//    ): JsonObject =
-//        JsonObject().apply {
-////            addProperty("progressType", progressType)
-//            addProperty("storagePath", storagePath)
-//            addProperty("progress", progress)
-//            addProperty("fileName", fileName)
-//            addProperty("downloadUri", downloadUri)
-//        }
-
-
-//    fun uploadCompressedFiles(uploadPath: Path, fileUris: List<Uri>) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            fileUris.forEach { fileUri ->
-////                compressFile(
-////                    fileUri,
-////                    onSuccess = { filePath -> uploadFiles(uploadPath, listOf(filePath)) })
-//            }
-//
-//        }
-//    }
-
-
-
 }

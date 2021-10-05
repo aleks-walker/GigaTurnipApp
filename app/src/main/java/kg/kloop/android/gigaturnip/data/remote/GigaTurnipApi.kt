@@ -41,10 +41,17 @@ interface GigaTurnipApi {
     ): List<TaskDto>
 
     @GET("tasks/{id}")
-    suspend fun getTask(
+    suspend fun getTaskById(
         @Header("Authorization") token: String,
-        @Path("id") id: Int
+        @Path("id") id: Int?,
     ): TaskDto
+
+    @GET("tasks/")
+    suspend fun getTasks(
+        @Header("Authorization") token: String,
+        @Query("case") caseId: Int,
+        @Query("stage") stageId: Int
+    ): List<TaskDto>
 
 
     @PATCH("tasks/{id}/")

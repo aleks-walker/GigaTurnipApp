@@ -12,6 +12,7 @@ data class TaskStage(
     val jsonSchema: String,
     val uiSchema: String,
     val library: String,
+    val richText: String?,
     val copyInput: Boolean,
     val allowMultipleFiles: Boolean,
     val isCreatable: Boolean,

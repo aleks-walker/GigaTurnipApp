@@ -36,5 +36,12 @@ object Constants {
     const val TAG_UPLOAD = "TAG_UPLOAD"
     const val TAG_CLEANUP = "TAG_CLEANUP"
 
+    // Webview events
+    const val RICH_TEXT_EVENT = "android_rich_text_event"
+    const val PREVIOUS_TASKS_EVENT = "android_previous_tasks_event"
+    const val SCHEMA_EVENT = "android_schema_event"
+    const val DATA_EVENT = "android_data_event"
+    const val FILE_EVENT = "android_file_event"
+
 
 }

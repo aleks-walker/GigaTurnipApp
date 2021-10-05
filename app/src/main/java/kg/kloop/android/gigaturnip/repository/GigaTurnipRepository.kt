@@ -28,9 +28,8 @@ class GigaTurnipRepository(
     private val taskStageMapper: TaskStageDtoMapper
 ) {
 
-    private fun makeToken(token: String) = "JWT $token"
     suspend fun getCampaignsList(token: String): Resource<List<Campaign>> {
-        return getList({ api.getCampaignsList(makeToken(token)) }, campaignMapper)
+        return getList({ api.getCampaignsList(token.toJwtToken()) }, campaignMapper)
     }
 
     suspend fun getCampaign(id: Int): Resource<Campaign> {
@@ -45,7 +44,7 @@ class GigaTurnipRepository(
     ): Resource<List<Task>> {
         return getList({
             api.getTasksList(
-                token = makeToken(token),
+                token = token.toJwtToken(),
                 complete = complete,
                 campaignId = campaignId
             )
@@ -53,10 +52,18 @@ class GigaTurnipRepository(
 
     }
 
-    suspend fun getTask(token: String, id: Int): Resource<Task> {
-        return getSingle({ api.getTask(makeToken(token), id) }, tasksMapper)
+    suspend fun getTaskById(
+        token: String,
+        id: Int?,
+    ): Resource<Task> =
+        getSingle({ api.getTaskById(token.toJwtToken(), id) }, tasksMapper)
 
-    }
+    suspend fun getTasks(
+        token: String,
+        caseId: Int,
+        stageId: Int
+    ): Resource<List<Task>> =
+        getList( { api.getTasks(token.toJwtToken(), caseId, stageId)}, tasksMapper)
 
     suspend fun getTaskStage(id: Int): Resource<TaskStage> {
         return getSingle({ api.getTaskStage(id) }, taskStageMapper)
@@ -70,7 +77,7 @@ class GigaTurnipRepository(
         complete: Boolean
     ): Response<ResponseBody> {
         val body = makeRequestBody(responses, complete)
-        return api.updateTask(makeToken(token), id, body)
+        return api.updateTask(token.toJwtToken(), id, body)
     }
 
     private fun makeRequestBody(
@@ -83,7 +90,7 @@ class GigaTurnipRepository(
 
     suspend fun createTask(token: String, stageId: Int): Response<ResponseBody> {
         val json = Gson().toJson(TaskPostRequestEntity(stageId = stageId))
-        return api.createTask(makeToken(token), json.toRequestBodyWithMediaType())
+        return api.createTask(token.toJwtToken(), json.toRequestBodyWithMediaType())
     }
 
     suspend fun getTasksStagesList(
@@ -94,7 +101,7 @@ class GigaTurnipRepository(
     ): Resource<List<TaskStage>> {
         return getList({
             api.getTasksStagesList(
-                token = makeToken(token),
+                token = token.toJwtToken(),
                 isCreatable = isCreatable,
                 rankLimitsTotalLimit = rankLimitsTotalLimit,
                 campaignId = campaignId
@@ -129,6 +136,8 @@ class GigaTurnipRepository(
         return Resource.Success(mapper.toDomainList(response))
     }
 
-    fun String.toRequestBodyWithMediaType() =
+    private fun String.toRequestBodyWithMediaType() =
         this.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+
+    private fun String.toJwtToken() = "JWT $this"
 }

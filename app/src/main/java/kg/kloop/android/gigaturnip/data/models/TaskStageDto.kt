@@ -36,6 +36,9 @@ data class TaskStageDto (
     @SerializedName("library")
     val library: String,
 
+    @SerializedName("rich_text")
+    val richText: String?,
+
     @SerializedName("copy_input")
     val copyInput: Boolean,
 
@@ -53,10 +56,5 @@ data class TaskStageDto (
 
     @SerializedName("assign_user_from_stage")
     val assignUserFromStage: Int
-
-//    @SerializedName("count_complete")
-//    val countComplete: Boolean,
-//    @SerializedName("polymorphic_ctype")
-//    val polymorphicCType: Int,
 
 )

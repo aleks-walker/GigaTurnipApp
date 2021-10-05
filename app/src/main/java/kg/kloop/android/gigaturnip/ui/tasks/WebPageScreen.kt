@@ -11,6 +11,11 @@ import androidx.webkit.WebSettingsCompat.setForceDark
 import androidx.webkit.WebViewFeature
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import kg.kloop.android.gigaturnip.util.Constants.DATA_EVENT
+import kg.kloop.android.gigaturnip.util.Constants.FILE_EVENT
+import kg.kloop.android.gigaturnip.util.Constants.PREVIOUS_TASKS_EVENT
+import kg.kloop.android.gigaturnip.util.Constants.RICH_TEXT_EVENT
+import kg.kloop.android.gigaturnip.util.Constants.SCHEMA_EVENT
 import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -40,9 +45,11 @@ fun WebPageScreen(
             add("uiSchema", uiState.task.stage.uiSchema.toJsonObject())
             addProperty("isComplete", uiState.task.isComplete)
         }
-        evaluateJs(it, json.toString(), "android_schema_event")
-        evaluateJs(it, uiState.task!!.responses.toString(), "android_data_event")
-        evaluateJs(it, uiState.fileProgressState.toString(), "android_file_event")
+        evaluateJs(it, uiState.task!!.stage.richText.toString(), RICH_TEXT_EVENT)
+        evaluateJs(it, uiState.previousTasks.toString(), PREVIOUS_TASKS_EVENT)
+        evaluateJs(it, json.toString(), SCHEMA_EVENT)
+        evaluateJs(it, uiState.task.responses.toString(), DATA_EVENT)
+        evaluateJs(it, uiState.fileProgressState.toString(), FILE_EVENT)
     })
 }
 
