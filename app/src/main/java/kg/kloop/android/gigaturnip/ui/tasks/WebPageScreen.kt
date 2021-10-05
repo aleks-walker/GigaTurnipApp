@@ -53,6 +53,7 @@ fun WebPageScreen(
     })
 }
 
+
 private fun setDarkMode(webView: WebView) {
     if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
         setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)

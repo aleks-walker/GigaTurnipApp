@@ -40,7 +40,7 @@ import javax.inject.Inject
 
 data class TaskDetailsUiState(
     val task: Task? = null,
-    val previousTasks: List<Task>? = null,
+    val previousTasks: JsonArray? = null,
     val completed: Boolean = false,
     val loading: Boolean = false,
     val fileProgressState: JsonObject? = null,
@@ -132,15 +132,30 @@ class TaskDetailsViewModel @Inject constructor(
                 val token = getTokenSynchronously()
                 val task = repository.getTaskById(token!!, taskId.toInt()).data!!
                 val previousTasks = getPreviousTasks(task, token)
+                val previousTasksJson = getPreviousTasksJson(previousTasks)
                 _uiState.update {
                     it.copy(
                         task = task,
                         loading = false,
-                        previousTasks = previousTasks
+                        previousTasks = previousTasksJson
                     )
                 }
             }
         }
+    }
+
+    private fun getPreviousTasksJson(tasks: MutableList<Task>): JsonArray {
+        val previousTasksJson = JsonArray()
+        tasks.forEach { task ->
+            previousTasksJson.add(
+                JsonObject().apply {
+                    add("jsonSchema", task.stage.jsonSchema.toJsonObject())
+                    add("uiSchema", task.stage.uiSchema.toJsonObject())
+                    add("responses", task.responses)
+                }
+            )
+        }
+        return previousTasksJson
     }
 
     private suspend fun getPreviousTasks(
