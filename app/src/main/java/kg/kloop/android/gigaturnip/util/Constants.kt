@@ -6,6 +6,8 @@ object Constants {
     const val TURNIP_VIEW_URL = "https://kloopmedia.github.io/TurnipView/"
 //    const val TURNIP_VIEW_URL = "http://10.0.2.2:3000"
     const val STORAGE_BASE_URL = "https://firebasestorage.googleapis.com"
+    const val STORAGE_PUBLIC_PREFIX = "public/"
+    const val STORAGE_PRIVATE_PREFIX = "private/"
 
 
     // Notification Channel constants

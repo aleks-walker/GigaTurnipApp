@@ -32,10 +32,7 @@ import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
-import kg.kloop.android.gigaturnip.ui.tasks.TaskDetailsUiState
-import kg.kloop.android.gigaturnip.ui.tasks.TaskDetailsViewModel
-import kg.kloop.android.gigaturnip.ui.tasks.WebAppInterface
-import kg.kloop.android.gigaturnip.ui.tasks.WebPageScreen
+import kg.kloop.android.gigaturnip.ui.tasks.*
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
@@ -89,13 +86,13 @@ fun TaskDetails(
                 }
                 TaskDetailsScreenContent(
                     uiState = uiState,
-                    onPickVideos = { key ->
+                    onPickVideos = { pickedFile ->
                         videoLauncher.launch("video/*")
-                        viewModel.setPickFileKey(key)
+                        viewModel.setPickedFile(pickedFile)
                     },
-                    onPickPhotos = { key ->
+                    onPickPhotos = { pickedFile ->
                         photoLauncher.launch("image/*")
-                        viewModel.setPickFileKey(key)
+                        viewModel.setPickedFile(pickedFile)
                     },
                     onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
                     onListenersReady = { viewModel.setListenersReady(true) },
@@ -162,8 +159,8 @@ private fun deleteFileFromStorage(filePath: String, context: Context) {
 private fun TaskDetailsScreenContent(
     uiState: TaskDetailsUiState,
     onTaskSubmit: (String) -> Unit,
-    onPickVideos: (String) -> Unit,
-    onPickPhotos: (String) -> Unit,
+    onPickVideos: (WebViewPickedFile) -> Unit,
+    onPickPhotos: (WebViewPickedFile) -> Unit,
     onListenersReady: () -> Unit,
     onUpdate: () -> Unit,
     context: Context = LocalContext.current
@@ -182,8 +179,8 @@ private fun TaskDetailsScreenContent(
             webAppInterface = WebAppInterface(
                 onSubmit = { responses -> onTaskSubmit(responses) },
                 onListenersReady = onListenersReady,
-                onPickVideos = { key -> onPickVideos(key) },
-                onPickPhotos = { key -> onPickPhotos(key) },
+                onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
+                onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
                 onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
                 onCancelWork = { fileName ->
                     Compressor.isRunning = false
@@ -265,6 +262,7 @@ private fun TaskStageDetails(
 }
 
 data class Path(
+    val prefix: String = "",
     val userId: String,
     val campaignId: String,
     val chainId: String,
@@ -273,7 +271,7 @@ data class Path(
 )
 
 fun Path.getUploadPath() =
-    "${this.campaignId}/${this.chainId}/${this.stageId}/${this.userId}/${this.taskId}/"
+    "${this.prefix}${this.campaignId}/${this.chainId}/${this.stageId}/${this.userId}/${this.taskId}/"
 
 data class FileProgress(
     val id: Int?,

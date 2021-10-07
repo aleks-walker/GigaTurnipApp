@@ -83,11 +83,16 @@ private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
     ) {}
 }
 
+data class WebViewPickedFile(
+    val key: String,
+    val isPrivate: Boolean = true
+)
+
 class WebAppInterface(
     private val onSubmit: (String) -> Unit,
     private val onListenersReady: () -> Unit,
-    private val onPickVideos: (String) -> Unit,
-    private val onPickPhotos: (String) -> Unit,
+    private val onPickVideos: (WebViewPickedFile) -> Unit,
+    private val onPickPhotos: (WebViewPickedFile) -> Unit,
     private val onFileDelete: (String) -> Unit,
     private val onCancelWork: (String) -> Unit,
     private val onPreviewFile: (String) -> Unit,
@@ -99,13 +104,13 @@ class WebAppInterface(
     }
 
     @JavascriptInterface
-    fun pickVideos(key: String) {
-        onPickVideos(key)
+    fun pickVideos(key: String, isPrivate: Boolean) {
+        onPickVideos(WebViewPickedFile(key, isPrivate))
     }
 
     @JavascriptInterface
-    fun pickPhotos(key: String) {
-        onPickPhotos(key)
+    fun pickPhotos(key: String, isPrivate: Boolean) {
+        onPickPhotos(WebViewPickedFile(key, isPrivate))
     }
 
     @JavascriptInterface

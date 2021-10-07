@@ -21,6 +21,8 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
 import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PRIVATE_PREFIX
+import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PUBLIC_PREFIX
 import kg.kloop.android.gigaturnip.util.Constants.TAG_CLEANUP
 import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_UPLOAD
@@ -75,7 +77,11 @@ class TaskDetailsViewModel @Inject constructor(
     fun setUser(user: FirebaseUser?) { _user = user }
 
     fun compressVideos(videoUris: List<Uri>) {
-        val uploadPath = getPath(_user!!.uid, _uiState.value.task!!).getUploadPath()
+        val uploadPath = getPath(
+            prefix = if (_pickedFile!!.isPrivate) STORAGE_PRIVATE_PREFIX else STORAGE_PUBLIC_PREFIX,
+            userId = _user!!.uid,
+            task = _uiState.value.task!!
+        ).getUploadPath()
         Timber.d("storage path: $uploadPath")
         videoUris.forEachIndexed { i, uri ->
             compressVideo(createInputData(i, uri.toString(), uploadPath))
@@ -83,9 +89,11 @@ class TaskDetailsViewModel @Inject constructor(
     }
 
     private fun getPath(
+        prefix: String,
         userId: String,
         task: Task
     ) = Path(
+        prefix,
         userId,
         task.stage.chain.campaignId.toString(),
         task.stage.chain.id.toString(),
@@ -120,7 +128,7 @@ class TaskDetailsViewModel @Inject constructor(
         builder.apply {
             putInt(KEY_WEBVIEW_FILE_KEY, fileKey)
             putString(KEY_VIDEO_URI, videoUri)
-            putString(KEY_UPLOAD_PATH, "test/".plus(uploadPath))
+            putString(KEY_UPLOAD_PATH, uploadPath)
         }
         return builder.build()
     }
@@ -187,11 +195,11 @@ class TaskDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(listenersReady = value) }
     }
 
-    private var _pickFileKey: String? = null
+    private var _pickedFile: WebViewPickedFile? = null
 
-    fun setPickFileKey(value: String) {
-        _pickFileKey = value
-        val initialState = JsonObject().apply { add(value, JsonArray()) }
+    fun setPickedFile(pickedFile: WebViewPickedFile) {
+        _pickedFile = pickedFile
+        val initialState = JsonObject().apply { add(pickedFile.key, JsonArray()) }
         _uiState.update {
             it.copy(fileProgressState = initialState)
         }
@@ -202,20 +210,18 @@ class TaskDetailsViewModel @Inject constructor(
     fun updateFileInfo(
         fileProgress: FileProgress
     ) {
-//        val json = getFileData(fileName, progress.toString(), downloadUri)
-//        jsonArray.set(i, json)
         val progressStage = _uiState.value.fileProgressState
         if (progressStage != null) {
-            val jsonArray = progressStage.get(_pickFileKey)?.asJsonArray
+            val jsonArray = progressStage.get(_pickedFile?.key)?.asJsonArray
             val currentFileId = fileProgress.id!!.toInt()
             if (jsonArray!!.size() >= currentFileId.plus(1)) {
                 jsonArray.set(currentFileId, fileProgress.toJsonObject())
-                val fileInfo = JsonObject().apply { add(_pickFileKey, jsonArray) }
+                val fileInfo = JsonObject().apply { add(_pickedFile?.key, jsonArray) }
                 Timber.d("file info: $fileInfo")
                 _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
             } else {
                 jsonArray?.add(fileProgress.toJsonObject())
-                val fileInfo = JsonObject().apply { add(_pickFileKey, jsonArray) }
+                val fileInfo = JsonObject().apply { add(_pickedFile?.key, jsonArray) }
                 _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
             }
 
