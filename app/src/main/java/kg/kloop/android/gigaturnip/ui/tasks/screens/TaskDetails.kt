@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -58,7 +57,7 @@ fun TaskDetails(
         compressProgressInfos.let { compressWorkInfo ->
             compressWorkInfo?.forEach { compressProgressInfo ->
                 if (isSuccess(compressProgressInfo)) {
-                    Text( text = compressProgressInfo.outputData.getString(KEY_UPLOAD_PATH).toString() )
+//                    Text( text = compressProgressInfo.outputData.getString(KEY_UPLOAD_PATH).toString() )
                     updateWebView(compressProgressInfo, viewModel)
                 } else if (isRunning(compressProgressInfo)) {
                     updateWebView(compressProgressInfo, viewModel)
@@ -95,6 +94,7 @@ fun TaskDetails(
                         viewModel.setPickedFile(pickedFile)
                     },
                     onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
+                    onTaskChange = { responses -> viewModel.changeTask(responses = responses)},
                     onListenersReady = { viewModel.setListenersReady(true) },
                     onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) }
                 )
@@ -131,34 +131,33 @@ private fun updateWebView(
         && !fileProgress.storagePath.isNullOrBlank()
         && !fileProgress.fileName.isNullOrBlank()
     ) {
-//        val jsonArray = viewModel.buildJsonArray(listOf(fileName.toUri()))
-//        viewModel.updateFileInfo(fileKey, progress.toDouble(), fileName, jsonArray, downloadUrl)
         Timber.d("file progress: $fileProgress")
         viewModel.updateFileInfo(fileProgress)
     }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = fileProgress.progress.toInt().toString())
-        LinearProgressIndicator(progress = fileProgress.progress/100)
-    }
+//    Column(modifier = Modifier.fillMaxWidth()) {
+//        Text(text = fileProgress.progress.toInt().toString())
+//        LinearProgressIndicator(progress = fileProgress.progress/100)
+//    }
 }
 
 private fun deleteFileFromStorage(filePath: String, context: Context) {
     val ref = FirebaseStorage.getInstance().reference
     Timber.d("file path: $filePath")
-    ref.child(filePath).delete().addOnCompleteListener {
-        Toast.makeText(
-            context,
-            "Deleted file:${filePath.substringAfterLast("/")}",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+//    ref.child(filePath).delete().addOnCompleteListener {
+//        Toast.makeText(
+//            context,
+//            "Deleted file:${filePath.substringAfterLast("/")}",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
 }
 
 @Composable
 private fun TaskDetailsScreenContent(
     uiState: TaskDetailsUiState,
     onTaskSubmit: (String) -> Unit,
+    onTaskChange: (String) -> Unit,
     onPickVideos: (WebViewPickedFile) -> Unit,
     onPickPhotos: (WebViewPickedFile) -> Unit,
     onListenersReady: () -> Unit,
@@ -178,6 +177,7 @@ private fun TaskDetailsScreenContent(
             urlToRender = Constants.TURNIP_VIEW_URL,
             webAppInterface = WebAppInterface(
                 onSubmit = { responses -> onTaskSubmit(responses) },
+                onFormChange = { responses -> onTaskChange(responses)},
                 onListenersReady = onListenersReady,
                 onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
                 onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },

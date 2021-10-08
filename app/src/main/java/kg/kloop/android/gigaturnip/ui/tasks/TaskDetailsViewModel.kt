@@ -103,6 +103,7 @@ class TaskDetailsViewModel @Inject constructor(
 
     private fun compressVideo(inputData: Data) {
         Timber.d("compress video input data: $inputData")
+//        workManager.pruneWork()
         val compressRequest = OneTimeWorkRequestBuilder<CompressVideoWorker>()
             .setInputData(inputData)
             .addTag(TAG_COMPRESS)
@@ -188,6 +189,18 @@ class TaskDetailsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Default) {
             val token = getTokenSynchronously()
             val response = repository.updateTask(token!!, taskId.toInt(), responses, true)
+        }
+    }
+
+    fun changeTask(responses: String) {
+        Timber.d(
+            "prev value: ${_uiState.value.task?.responses?.toString()}\nchanged value: $responses".trimMargin()
+        )
+        if (_uiState.value.task?.responses?.toString() != responses) {
+            viewModelScope.launch(Dispatchers.Default) {
+                val token = getTokenSynchronously()
+                val response = repository.updateTask(token!!, taskId.toInt(), responses, false)
+            }
         }
     }
 
