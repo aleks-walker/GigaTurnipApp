@@ -5,6 +5,8 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.browser.customtabs.CustomTabsIntent.SHARE_STATE_OFF
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -190,13 +192,20 @@ private fun TaskDetailsScreenContent(
                     Compressor.isRunning = false
                     cancelAllWork(context)
                 },
-                onPreviewFile = { downloadUrl ->
-                    Toast.makeText(context, "$downloadUrl preview", Toast.LENGTH_SHORT).show()
-                }
+                onPreviewFile = { downloadUrl -> showPreview(context, downloadUrl) }
             ),
             onUpdate = onUpdate,
         )
     }
+}
+
+private fun showPreview(context: Context, url: String) {
+    val customTabsIntent = CustomTabsIntent.Builder()
+        .setUrlBarHidingEnabled(true)
+        .setShowTitle(false)
+        .setShareState(SHARE_STATE_OFF)
+        .build()
+    customTabsIntent.launchUrl(context, Uri.parse(url))
 }
 
 private fun cancelAllWork(context: Context) =
