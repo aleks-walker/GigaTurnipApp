@@ -69,6 +69,7 @@ class TaskDetailsViewModel @Inject constructor(
 
     private val workManager = WorkManager.getInstance(application)
     init {
+        workManager.pruneWork()
         refreshTaskDetails()
         uploadWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_UPLOAD)
         compressWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_COMPRESS)
@@ -213,9 +214,7 @@ class TaskDetailsViewModel @Inject constructor(
     fun setPickedFile(pickedFile: WebViewPickedFile) {
         _pickedFile = pickedFile
         val initialState = JsonObject().apply { add(pickedFile.key, JsonArray()) }
-        _uiState.update {
-            it.copy(fileProgressState = initialState)
-        }
+        updateUi(initialState)
         Timber.d("Initial state: $initialState")
     }
 
@@ -223,21 +222,70 @@ class TaskDetailsViewModel @Inject constructor(
     fun updateFileInfo(
         fileProgress: FileProgress
     ) {
-        val progressStage = _uiState.value.fileProgressState
-        if (progressStage != null) {
-            val jsonArray = progressStage.get(_pickedFile?.key)?.asJsonArray
+        val progressState = _uiState.value.fileProgressState
+        if (progressState != null) {
+            val filesJsonArray = progressState.get(_pickedFile?.key)?.asJsonArray
             val currentFileId = fileProgress.id!!.toInt()
-            if (jsonArray!!.size() >= currentFileId.plus(1)) {
-                jsonArray.set(currentFileId, fileProgress.toJsonObject())
-                val fileInfo = JsonObject().apply { add(_pickedFile?.key, jsonArray) }
-                Timber.d("file info: $fileInfo")
-                _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
-            } else {
-                jsonArray?.add(fileProgress.toJsonObject())
-                val fileInfo = JsonObject().apply { add(_pickedFile?.key, jsonArray) }
-                _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
-            }
+            val fileInfo: JsonObject =
+                if (isFileInArray(filesJsonArray, currentFileId))
+                    updateFileInArray(filesJsonArray, currentFileId, fileProgress)
+                else addFileToArray(filesJsonArray, fileProgress)
+            updateUi(fileInfo)
 
         }
+        if (fileProgress.isFinished) {
+            _uiState.update { it.copy(task = addFileDataToTask(it.task!!)) }
+        }
+    }
+
+    private fun updateUi(fileInfo: JsonObject) {
+        _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
+    }
+
+    private fun addFileToArray(
+        jsonArray: JsonArray?,
+        fileProgress: FileProgress
+    ): JsonObject {
+        jsonArray!!.add(fileProgress.toJsonObject())
+        return JsonObject().apply { add(_pickedFile?.key, jsonArray) }
+    }
+
+    private fun updateFileInArray(
+        jsonArray: JsonArray?,
+        currentFileId: Int,
+        fileProgress: FileProgress
+    ): JsonObject {
+        jsonArray!!.set(currentFileId, fileProgress.toJsonObject())
+        return JsonObject().apply { add(_pickedFile?.key, jsonArray) }
+    }
+
+    private fun isFileInArray(
+        jsonArray: JsonArray?,
+        currentFileId: Int
+    ) = jsonArray!!.size() >= currentFileId.plus(1)
+
+    private fun addFileDataToTask(task: Task): Task {
+        task.responses!!.apply {
+            add(_pickedFile?.key, getFileData())
+        }
+        return task
+    }
+
+    private fun getFileData(): JsonObject {
+        val progresses = _uiState.value
+            .fileProgressState
+            ?.asJsonObject
+            ?.get(_pickedFile?.key)
+            ?.asJsonArray
+        val result = JsonObject()
+        progresses?.forEach {
+            result.apply {
+                add(
+                    it.asJsonObject.get("fileName").asString,
+                    it.asJsonObject.get("storagePath")
+                )
+            }
+        }
+        return result
     }
 }

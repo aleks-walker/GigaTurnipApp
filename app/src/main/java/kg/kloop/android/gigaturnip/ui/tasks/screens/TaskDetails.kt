@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.abedelazizshe.lightcompressorlibrary.Compressor
@@ -56,17 +57,10 @@ fun TaskDetails(
     Column(modifier = Modifier.fillMaxSize()) {
         compressProgressInfos.let { compressWorkInfo ->
             compressWorkInfo?.forEach { compressProgressInfo ->
-                if (isSuccess(compressProgressInfo)) {
-//                    Text( text = compressProgressInfo.outputData.getString(KEY_UPLOAD_PATH).toString() )
-                    updateWebView(compressProgressInfo, viewModel)
-                } else if (isRunning(compressProgressInfo)) {
-                    updateWebView(compressProgressInfo, viewModel)
-                }
+                updateWebView(compressProgressInfo, viewModel)
             }
-            uploadProgressInfos?.forEach { progressInfo ->
-                if (isRunning(progressInfo) || isSuccess(progressInfo)) {
-                    updateWebView(progressInfo, viewModel)
-                }
+            uploadProgressInfos?.forEach { uploadProgressInfo ->
+                updateWebView(uploadProgressInfo, viewModel)
             }
         }
 
@@ -109,24 +103,39 @@ fun TaskDetails(
 
 }
 
+private fun updateWebView(
+    progressInfo: WorkInfo,
+    viewModel: TaskDetailsViewModel
+) {
+    if (isRunning(progressInfo)
+        || isSuccess(progressInfo)
+    ) {
+        updateFileProgress(
+            if (isRunning(progressInfo)) progressInfo.progress else progressInfo.outputData,
+            progressInfo.state.isFinished,
+            viewModel
+        )
+    }
+}
+
 private fun isSuccess(progressInfo: WorkInfo) =
     progressInfo.state == WorkInfo.State.SUCCEEDED
 
 private fun isRunning(progressInfo: WorkInfo) =
     progressInfo.state == WorkInfo.State.RUNNING
 
-@Composable
-private fun updateWebView(
-    progressInfo: WorkInfo,
+private fun updateFileProgress(
+    inputData: Data,
+    isFinished: Boolean,
     viewModel: TaskDetailsViewModel,
 ) {
-    Timber.d("progress info: $progressInfo")
     val fileProgress = FileProgress(
-        id = progressInfo.progress.getInt(KEY_WEBVIEW_FILE_KEY, 0),
-        progress = progressInfo.progress.getInt(PROGRESS, 0).toFloat(),
-        storagePath = progressInfo.progress.getString(KEY_UPLOAD_PATH),
-        fileName = progressInfo.progress.getString(KEY_FILENAME),
-        downloadUrl = progressInfo.outputData.getString(KEY_DOWNLOAD_URI))
+        id = inputData.getInt(KEY_WEBVIEW_FILE_KEY, 0),
+        progress = inputData.getInt(PROGRESS, 0).toFloat(),
+        storagePath = inputData.getString(KEY_UPLOAD_PATH),
+        fileName = inputData.getString(KEY_FILENAME),
+        downloadUrl = inputData.getString(KEY_DOWNLOAD_URI),
+        isFinished = isFinished)
     if (fileProgress.id != null
         && !fileProgress.storagePath.isNullOrBlank()
         && !fileProgress.fileName.isNullOrBlank()
@@ -134,11 +143,6 @@ private fun updateWebView(
         Timber.d("file progress: $fileProgress")
         viewModel.updateFileInfo(fileProgress)
     }
-
-//    Column(modifier = Modifier.fillMaxWidth()) {
-//        Text(text = fileProgress.progress.toInt().toString())
-//        LinearProgressIndicator(progress = fileProgress.progress/100)
-//    }
 }
 
 private fun deleteFileFromStorage(filePath: String, context: Context) {
@@ -278,11 +282,13 @@ data class FileProgress(
     val progress: Float = 0.0f,
     val storagePath: String?,
     val fileName: String?,
-    val downloadUrl: String?
+    val downloadUrl: String?,
+    val isFinished: Boolean = false
 )
 fun FileProgress.toJsonObject(): JsonObject = JsonObject().apply {
     addProperty("progress", progress)
     addProperty("storagePath", storagePath)
     addProperty("fileName", fileName)
     addProperty("downloadUri", downloadUrl)
+    addProperty("isFinished", isFinished)
 }

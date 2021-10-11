@@ -12,11 +12,11 @@ import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
-import kg.kloop.android.gigaturnip.util.getFileName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.File
 
 class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
@@ -64,7 +64,9 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                     )
                     outputData = workDataOf(
                         KEY_VIDEO_URI to uri.toString(),
-                        KEY_UPLOAD_PATH to uploadPath
+                        KEY_UPLOAD_PATH to uploadPath,
+                        KEY_WEBVIEW_FILE_KEY to fileKey,
+                        KEY_FILENAME to getFileName(uri!!)
                     )
                     notificationsHelper.completeNotification(
                         notificationId,
@@ -84,5 +86,7 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
     private fun cancelWork(appContext: Context) {
         WorkManager.getInstance(appContext).cancelAllWorkByTag(TAG_COMPRESS)
     }
+
+    private fun getFileName(uri: Uri): String = File(uri.path!!).name
 
 }
