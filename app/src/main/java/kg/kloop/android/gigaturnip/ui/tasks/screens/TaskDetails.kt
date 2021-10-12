@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -36,15 +37,15 @@ import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.tasks.*
 import kg.kloop.android.gigaturnip.util.Constants
-import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
-import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
-import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
+import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_ORDER_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import timber.log.Timber
 
 @Composable
 fun TaskDetails(
+    navController: NavHostController,
     viewModel: TaskDetailsViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel,
 ) {
@@ -56,13 +57,22 @@ fun TaskDetails(
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
+    if (uiState.completed) {
+//        viewModel.refreshTaskDetails()
+        showTaskCompletedToast()
+        navController.popBackStack()
+        Timber.d("current destination: ${navController.currentDestination}")
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        compressProgressInfos.let { compressWorkInfo ->
-            compressWorkInfo?.forEach { compressProgressInfo ->
-                updateWebView(compressProgressInfo, viewModel)
-            }
-            uploadProgressInfos?.forEach { uploadProgressInfo ->
-                updateWebView(uploadProgressInfo, viewModel)
+        if (uiState.task != null && user.value != null) {
+            compressProgressInfos.let { compressWorkInfo ->
+                compressWorkInfo?.forEach { compressProgressInfo ->
+                    updateWebView(compressProgressInfo, viewModel)
+                }
+                uploadProgressInfos?.forEach { uploadProgressInfo ->
+                    updateWebView(uploadProgressInfo, viewModel)
+                }
             }
         }
 
@@ -96,25 +106,18 @@ fun TaskDetails(
                 )
 
             }
-            if (uiState.completed) {
-                showTaskCompletedToast()
-            }
         }
 
     }
 
 }
 
-private fun updateWebView(
-    progressInfo: WorkInfo,
-    viewModel: TaskDetailsViewModel
-) {
-    if (isRunning(progressInfo)
-        || isSuccess(progressInfo)
-    ) {
+private fun updateWebView(progressInfo: WorkInfo, viewModel: TaskDetailsViewModel) {
+    if (isRunning(progressInfo) || isSuccess(progressInfo)) {
         updateFileProgress(
             if (isRunning(progressInfo)) progressInfo.progress else progressInfo.outputData,
             progressInfo.state.isFinished,
+            progressInfo.tags.last(),
             viewModel
         )
     }
@@ -129,19 +132,17 @@ private fun isRunning(progressInfo: WorkInfo) =
 private fun updateFileProgress(
     inputData: Data,
     isFinished: Boolean,
+    workTag: String,
     viewModel: TaskDetailsViewModel,
 ) {
     val fileProgress = FileProgress(
-        id = inputData.getInt(KEY_WEBVIEW_FILE_KEY, 0),
-        progress = inputData.getInt(PROGRESS, 0).toFloat(),
-        storagePath = inputData.getString(KEY_UPLOAD_PATH),
+        id = inputData.getString(KEY_WEBVIEW_FILE_ORDER_KEY),
         fileName = inputData.getString(KEY_FILENAME),
-        downloadUrl = inputData.getString(KEY_DOWNLOAD_URI),
+        storagePath = inputData.getString(KEY_STORAGE_REF_PATH),
+        progress = inputData.getInt(PROGRESS, 0).toFloat(),
+        workTag = workTag,
         isFinished = isFinished)
-    if (fileProgress.id != null
-        && !fileProgress.storagePath.isNullOrBlank()
-        && !fileProgress.fileName.isNullOrBlank()
-    ) {
+    if (fileProgress.id != null && !fileProgress.fileName.isNullOrBlank()) {
         Timber.d("file progress: $fileProgress")
         viewModel.updateFileInfo(fileProgress)
     }
@@ -287,17 +288,17 @@ fun Path.getUploadPath() =
     "${this.prefix}${this.campaignId}/${this.chainId}/${this.stageId}/${this.userId}/${this.taskId}/"
 
 data class FileProgress(
-    val id: Int?,
-    val progress: Float = 0.0f,
-    val storagePath: String?,
+    val id: String?,
     val fileName: String?,
-    val downloadUrl: String?,
+    val storagePath: String?,
+    val progress: Float = 0.0f,
+    val workTag: String,
     val isFinished: Boolean = false
 )
 fun FileProgress.toJsonObject(): JsonObject = JsonObject().apply {
     addProperty("progress", progress)
     addProperty("storagePath", storagePath)
     addProperty("fileName", fileName)
-    addProperty("downloadUri", downloadUrl)
     addProperty("isFinished", isFinished)
+    addProperty("workTag", workTag)
 }

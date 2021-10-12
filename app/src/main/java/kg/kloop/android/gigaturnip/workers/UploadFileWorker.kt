@@ -9,21 +9,22 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import kg.kloop.android.gigaturnip.R
-import kg.kloop.android.gigaturnip.util.Constants.KEY_DOWNLOAD_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
-import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
+import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
-import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_ORDER_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import kotlinx.coroutines.coroutineScope
 
 class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val context = applicationContext
-        val uri = inputData.getString(KEY_VIDEO_URI)!!.toUri()
-        val uploadPath = inputData.getString(KEY_UPLOAD_PATH)!!
+
+        val fileKey = inputData.getString(KEY_WEBVIEW_FILE_ORDER_KEY)
         val fileName = inputData.getString(KEY_FILENAME)!!
-        val fileKey = inputData.getInt(KEY_WEBVIEW_FILE_KEY, 0)
+        val uri = inputData.getString(KEY_VIDEO_URI)!!.toUri()
+        val uploadPath = inputData.getString(KEY_PATH_TO_UPLOAD)!!
 
         val fileRef = getStorageRef(uploadPath, fileName)
         val uploadTask = fileRef.putFile(uri)
@@ -38,9 +39,10 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
                 val progress = (100.0 * it.bytesTransferred) / it.totalByteCount
                 setProgressAsync(
                     workDataOf(
+                        KEY_WEBVIEW_FILE_ORDER_KEY to fileKey,
+                        KEY_FILENAME to fileName,
+                        KEY_PATH_TO_UPLOAD to uploadPath,
                         PROGRESS to progress.toInt(),
-                        KEY_UPLOAD_PATH to uploadPath,
-                        KEY_FILENAME to fileName.plus(".mp4")
                     )
                 )
                 notificationsHelper.updateNotificationProgress(
@@ -53,18 +55,17 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
                     notificationId, it.localizedMessage!!.toString()
                 )
             })
-            val downloadUri = Tasks.await(fileRef.downloadUrl)
+//            val downloadUri = Tasks.await(fileRef.downloadUrl)
             notificationsHelper.completeNotification(
                 notificationId,
                 context.getString(R.string.file_uploaded)
             )
             Result.success(
                 workDataOf(
-                    KEY_DOWNLOAD_URI to downloadUri.toString(),
-//                    KEY_FILE_PATH to fileRef.path
-                    KEY_UPLOAD_PATH to fileRef.path,
+                    KEY_WEBVIEW_FILE_ORDER_KEY to fileKey,
                     KEY_FILENAME to fileName,
-                    KEY_WEBVIEW_FILE_KEY to fileKey
+//                    KEY_DOWNLOAD_URI to downloadUri.toString(),
+                    KEY_STORAGE_REF_PATH to fileRef.path,
                 )
             )
 

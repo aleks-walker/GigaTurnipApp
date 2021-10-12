@@ -54,7 +54,12 @@ fun MainNavGraph(
             route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
             arguments = listOf(navArgument("id") { type = NavType.StringType },
                 navArgument("stage_id") { type = NavType.StringType })
-        ) { TaskDetails(mainActivityViewModel = viewModel) }
+        ) {
+            TaskDetails(
+                navController = navController,
+                mainActivityViewModel = viewModel
+            )
+        }
 
         composable(
             route = TasksScreen.Creatable.route.plus("/{campaign_id}"),

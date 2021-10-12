@@ -18,9 +18,9 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.ui.tasks.screens.getUploadPath
 import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
-import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
-import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_ORDER_KEY
 import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PRIVATE_PREFIX
 import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PUBLIC_PREFIX
 import kg.kloop.android.gigaturnip.util.Constants.TAG_CLEANUP
@@ -68,6 +68,16 @@ class TaskDetailsViewModel @Inject constructor(
     var compressWorkProgress: LiveData<List<WorkInfo>>
 
     private val workManager = WorkManager.getInstance(application)
+
+    private var _pickedFile: WebViewPickedFile? = null
+
+    fun setPickedFile(pickedFile: WebViewPickedFile) {
+        _pickedFile = pickedFile
+        val initialState = JsonObject().apply { add(pickedFile.key, JsonArray()) }
+        updateUi(initialState)
+        Timber.d("Initial state: $initialState")
+    }
+
     init {
         workManager.pruneWork()
         refreshTaskDetails()
@@ -78,14 +88,13 @@ class TaskDetailsViewModel @Inject constructor(
     fun setUser(user: FirebaseUser?) { _user = user }
 
     fun compressVideos(videoUris: List<Uri>) {
-        val uploadPath = getPath(
+        val pathToUpload = getPath(
             prefix = if (_pickedFile!!.isPrivate) STORAGE_PRIVATE_PREFIX else STORAGE_PUBLIC_PREFIX,
             userId = _user!!.uid,
             task = _uiState.value.task!!
         ).getUploadPath()
-        Timber.d("storage path: $uploadPath")
         videoUris.forEachIndexed { i, uri ->
-            compressVideo(createInputData(i, uri.toString(), uploadPath))
+            compressVideo(createInputData(i.toString(), uri.toString(), pathToUpload))
         }
     }
 
@@ -125,12 +134,12 @@ class TaskDetailsViewModel @Inject constructor(
             .enqueue()
     }
 
-    private fun createInputData(fileKey: Int, videoUri: String, uploadPath: String): Data {
+    private fun createInputData(fileKey: String, videoUri: String, uploadPath: String): Data {
         val builder = Data.Builder()
         builder.apply {
-            putInt(KEY_WEBVIEW_FILE_KEY, fileKey)
+            putString(KEY_WEBVIEW_FILE_ORDER_KEY, fileKey)
             putString(KEY_VIDEO_URI, videoUri)
-            putString(KEY_UPLOAD_PATH, uploadPath)
+            putString(KEY_PATH_TO_UPLOAD, uploadPath)
         }
         return builder.build()
     }
@@ -190,6 +199,7 @@ class TaskDetailsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Default) {
             val token = getTokenSynchronously()
             val response = repository.updateTask(token!!, taskId.toInt(), responses, true)
+            _uiState.update { it.copy(completed = true) }
         }
     }
 
@@ -209,19 +219,7 @@ class TaskDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(listenersReady = value) }
     }
 
-    private var _pickedFile: WebViewPickedFile? = null
-
-    fun setPickedFile(pickedFile: WebViewPickedFile) {
-        _pickedFile = pickedFile
-        val initialState = JsonObject().apply { add(pickedFile.key, JsonArray()) }
-        updateUi(initialState)
-        Timber.d("Initial state: $initialState")
-    }
-
-
-    fun updateFileInfo(
-        fileProgress: FileProgress
-    ) {
+    fun updateFileInfo(fileProgress: FileProgress) {
         val progressState = _uiState.value.fileProgressState
         if (progressState != null) {
             val filesJsonArray = progressState.get(_pickedFile?.key)?.asJsonArray
@@ -231,7 +229,6 @@ class TaskDetailsViewModel @Inject constructor(
                     updateFileInArray(filesJsonArray, currentFileId, fileProgress)
                 else addFileToArray(filesJsonArray, fileProgress)
             updateUi(fileInfo)
-
         }
         if (fileProgress.isFinished) {
             _uiState.update { it.copy(task = addFileDataToTask(it.task!!)) }

@@ -26,11 +26,12 @@ object Constants {
     // Other keys
     const val OUTPUT_PATH = "compress_video_outputs"
     const val KEY_VIDEO_URI = "KEY_VIDEO_URI"
-    const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
-    const val KEY_FILE_PATH = "KEY_FILE_PATH"
-    const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
+//    const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
+    const val KEY_PATH_TO_UPLOAD = "KEY_PATH_TO_UPLOAD"
+    const val KEY_STORAGE_REF_PATH = "KEY_STORAGE_REF_PATH"
+//    const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
     const val KEY_FILENAME = "KEY_FILENAME"
-    const val KEY_WEBVIEW_FILE_KEY = "KEY_WEBVIEW_FILE_KEY"
+    const val KEY_WEBVIEW_FILE_ORDER_KEY = "KEY_WEBVIEW_FILE_KEY"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"

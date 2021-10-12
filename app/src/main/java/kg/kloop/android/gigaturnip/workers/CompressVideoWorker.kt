@@ -7,9 +7,9 @@ import androidx.core.net.toUri
 import androidx.work.*
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
-import kg.kloop.android.gigaturnip.util.Constants.KEY_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
-import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_ORDER_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
 import kotlinx.coroutines.Dispatchers
@@ -21,9 +21,10 @@ import java.io.File
 class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val appContext = applicationContext
+        val fileOrderKey = inputData.getString(KEY_WEBVIEW_FILE_ORDER_KEY)
         val resourceUri = inputData.getString(KEY_VIDEO_URI)
-        val uploadPath = inputData.getString(KEY_UPLOAD_PATH)
-        val fileKey = inputData.getInt(KEY_WEBVIEW_FILE_KEY, 0)
+        val pathToUpload = inputData.getString(KEY_PATH_TO_UPLOAD)
+
         try {
             if (TextUtils.isEmpty(resourceUri)) {
                 Timber.e("Invalid input uri")
@@ -44,10 +45,10 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         uri = Uri.parse(resourceUri),
                         onProgress = { progress ->
                             setProgressAsync(workDataOf(
-                                KEY_WEBVIEW_FILE_KEY to fileKey,
+                                KEY_WEBVIEW_FILE_ORDER_KEY to fileOrderKey,
+                                KEY_FILENAME to getFileName(resourceUri!!.toUri()),
+                                KEY_PATH_TO_UPLOAD to pathToUpload,
                                 PROGRESS to progress.toInt(),
-                                KEY_UPLOAD_PATH to uploadPath,
-                                KEY_FILENAME to getFileName(resourceUri!!.toUri())
                             ))
                             notificationsHelper.updateNotificationProgress(
                                 progress = progress.toInt(),
@@ -63,10 +64,10 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         }
                     )
                     outputData = workDataOf(
+                        KEY_WEBVIEW_FILE_ORDER_KEY to fileOrderKey,
+                        KEY_FILENAME to getFileName(uri!!),
+                        KEY_PATH_TO_UPLOAD to pathToUpload,
                         KEY_VIDEO_URI to uri.toString(),
-                        KEY_UPLOAD_PATH to uploadPath,
-                        KEY_WEBVIEW_FILE_KEY to fileKey,
-                        KEY_FILENAME to getFileName(uri!!)
                     )
                     notificationsHelper.completeNotification(
                         notificationId,
