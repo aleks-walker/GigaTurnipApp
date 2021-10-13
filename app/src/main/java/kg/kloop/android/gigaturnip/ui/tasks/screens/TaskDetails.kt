@@ -57,10 +57,7 @@ fun TaskDetails(
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
     if (uiState.completed) {
-//        viewModel.refreshTaskDetails()
-        showTaskCompletedToast()
-        navController.popBackStack()
-        Timber.d("current destination: ${navController.currentDestination}")
+        closeTask(navController, viewModel)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -109,6 +106,16 @@ fun TaskDetails(
 
     }
 
+}
+
+@Composable
+private fun closeTask(
+    navController: NavHostController,
+    viewModel: TaskDetailsViewModel
+) {
+    showTaskCompletedToast()
+    navController.popBackStack()
+    viewModel.setCompleted(false)
 }
 
 private fun updateWebView(progressInfo: WorkInfo, viewModel: TaskDetailsViewModel) {
@@ -191,20 +198,27 @@ private fun TaskDetailsScreenContent(
                     Compressor.isRunning = false
                     cancelAllWork(context)
                 },
-                onPreviewFile = { downloadUrl -> showPreview(context, downloadUrl) }
+                onPreviewFile = { storagePath ->
+                    showPreview(context, storagePath)
+                }
             ),
             onUpdate = onUpdate,
         )
     }
 }
 
-private fun showPreview(context: Context, url: String) {
+private fun showPreview(context: Context, storagePath: String) {
     val customTabsIntent = CustomTabsIntent.Builder()
         .setUrlBarHidingEnabled(true)
         .setShowTitle(false)
         .setShareState(SHARE_STATE_OFF)
         .build()
-    customTabsIntent.launchUrl(context, Uri.parse(url))
+    FirebaseStorage.getInstance()
+        .getReference(storagePath)
+        .downloadUrl
+        .addOnSuccessListener { uri ->
+            customTabsIntent.launchUrl(context, uri)
+        }
 }
 
 private fun cancelAllWork(context: Context) =

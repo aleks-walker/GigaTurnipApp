@@ -200,6 +200,10 @@ class TaskDetailsViewModel @Inject constructor(
         }
     }
 
+    fun setCompleted(value: Boolean) {
+        _uiState.update { it.copy(completed = value) }
+    }
+
     fun changeTask(responses: String) {
         Timber.d(
             "prev value: ${_uiState.value.task?.responses?.toString()}\nchanged value: $responses".trimMargin()
