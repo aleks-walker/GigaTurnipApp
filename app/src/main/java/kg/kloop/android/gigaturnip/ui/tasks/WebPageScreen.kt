@@ -51,6 +51,7 @@ fun WebPageScreen(
         evaluateJs(it, uiState.task.responses.toString(), DATA_EVENT)
         Timber.d("responses: ${uiState.task.responses}")
         evaluateJs(it, uiState.fileProgressState.toString(), FILE_EVENT)
+        Timber.d("file event: ${uiState.fileProgressState}")
     })
 }
 
