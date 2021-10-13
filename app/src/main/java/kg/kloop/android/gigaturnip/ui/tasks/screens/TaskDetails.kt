@@ -56,34 +56,27 @@ fun TaskDetails(
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
-    if (uiState.completed) {
-        closeTask(navController, viewModel)
-    }
+    if (uiState.completed) closeTask(navController, viewModel)
+    val context = LocalContext.current
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (uiState.task != null && user.value != null) {
-            compressProgressInfos.let { compressWorkInfo ->
-                compressWorkInfo?.forEach { compressProgressInfo ->
-                    updateWebView(compressProgressInfo, viewModel)
-                }
-                uploadProgressInfos?.forEach { uploadProgressInfo ->
-                    updateWebView(uploadProgressInfo, viewModel)
-                }
-            }
-        }
+    if (uiState.task != null && user.value != null) {
+        sendFileProgressToWebView(
+            viewModel,
+            compressProgressInfos,
+            uploadProgressInfos
+        )
 
-        LoadingContent(
-            empty = uiState.initialLoad,
-            emptyContent = { FullScreenLoading() },
-            loading = uiState.loading,
-            onRefresh = { viewModel.refreshTaskDetails() }) {
-            if (uiState.task != null && user.value != null) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            LoadingContent(
+                empty = uiState.initialLoad,
+                emptyContent = { FullScreenLoading() },
+                loading = uiState.loading,
+                onRefresh = { viewModel.refreshTaskDetails() }) {
                 val videoLauncher = getActivityLauncher { uris ->
-//                viewModel.uploadCompressedFiles(getPath(user.value!!.uid, uiState.task!!), urls)
                     viewModel.compressVideos(uris)
                 }
-                val photoLauncher = getActivityLauncher { urls ->
-//                    viewModel.uploadFiles(getPath(user.value!!.uid, uiState.task!!), urls)
+                val photoLauncher = getActivityLauncher { uris ->
+                    //TODO: upload photos
                 }
                 TaskDetailsScreenContent(
                     uiState = uiState,
@@ -98,14 +91,36 @@ fun TaskDetails(
                     onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
                     onTaskChange = { responses -> viewModel.changeTask(responses = responses)},
                     onListenersReady = { viewModel.setListenersReady(true) },
-                    onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) }
+                    onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) },
+                    onCancelWork = {
+                        Compressor.isRunning = false
+                        cancelAllWork(context)
+                    },
+                    onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
+                    onPreviewFile = { storagePath -> showPreview(storagePath, context)}
                 )
 
             }
+
         }
 
     }
+}
 
+@Composable
+private fun sendFileProgressToWebView(
+    viewModel: TaskDetailsViewModel,
+    compressProgressInfos: List<WorkInfo>?,
+    uploadProgressInfos: List<WorkInfo>?
+) {
+    compressProgressInfos.let { compressWorkInfo ->
+        compressWorkInfo?.forEach { compressProgressInfo ->
+            updateWebView(compressProgressInfo, viewModel)
+        }
+        uploadProgressInfos?.forEach { uploadProgressInfo ->
+            updateWebView(uploadProgressInfo, viewModel)
+        }
+    }
 }
 
 @Composable
@@ -174,7 +189,9 @@ private fun TaskDetailsScreenContent(
     onPickPhotos: (WebViewPickedFile) -> Unit,
     onListenersReady: () -> Unit,
     onUpdate: () -> Unit,
-    context: Context = LocalContext.current
+    onCancelWork: (String) -> Unit,
+    onFileDelete: (String) -> Unit,
+    onPreviewFile: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -193,21 +210,16 @@ private fun TaskDetailsScreenContent(
                 onListenersReady = onListenersReady,
                 onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
                 onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
-                onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
-                onCancelWork = { fileName ->
-                    Compressor.isRunning = false
-                    cancelAllWork(context)
-                },
-                onPreviewFile = { storagePath ->
-                    showPreview(context, storagePath)
-                }
+                onFileDelete = { filePath -> onFileDelete(filePath) },
+                onCancelWork = { fileName -> onCancelWork(fileName) },
+                onPreviewFile = { storagePath -> onPreviewFile(storagePath) }
             ),
             onUpdate = onUpdate,
         )
     }
 }
 
-private fun showPreview(context: Context, storagePath: String) {
+private fun showPreview(storagePath: String, context: Context) {
     val customTabsIntent = CustomTabsIntent.Builder()
         .setUrlBarHidingEnabled(true)
         .setShowTitle(false)
@@ -306,6 +318,7 @@ data class FileProgress(
     val workTag: String,
     val isFinished: Boolean = false
 )
+
 fun FileProgress.toJsonObject(): JsonObject = JsonObject().apply {
     addProperty("progress", progress)
     addProperty("storagePath", storagePath)
