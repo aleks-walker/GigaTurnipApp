@@ -7,7 +7,6 @@ import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +17,7 @@ import javax.inject.Inject
 
 data class CampaignsUiState(
     val campaigns: List<Campaign> = emptyList(),
+    val selectableCampaigns: List<Campaign> = emptyList(),
     val loading: Boolean = false
 ) {
     val initialLoad: Boolean
@@ -41,13 +41,17 @@ class CampaignsViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val tokenDeferred = async { getTokenSynchronously() }
-                val token = tokenDeferred.await()
-                val result = repository.getCampaignsList(token!!).data.orEmpty()
+                val token = getTokenSynchronously()
+                val userCampaigns = repository.getCampaignsList(token!!).data.orEmpty()
+                val userSelectableCampaigns =
+                    repository.getUserSelectableCampaignsList(token).data.orEmpty()
                 _uiState.update {
-                    it.copy(campaigns = result, loading = false)
+                    it.copy(
+                        campaigns = userCampaigns,
+                        selectableCampaigns = userSelectableCampaigns,
+                        loading = false
+                    )
                 }
-
             }
         }
     }

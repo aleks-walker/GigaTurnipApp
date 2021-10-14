@@ -26,14 +26,14 @@ class GigaTurnipRepository(
     private val taskStageMapper: TaskStageDtoMapper
 ) {
 
-    suspend fun getCampaignsList(token: String): Resource<List<Campaign>> {
-        return getList({ api.getCampaignsList(token.toJwtToken()) }, campaignMapper)
-    }
+    suspend fun getCampaignsList(token: String): Resource<List<Campaign>> =
+        getList({ api.getCampaignsList(token.toJwtToken()) }, campaignMapper)
 
-    suspend fun getCampaign(id: Int): Resource<Campaign> {
-        return getSingle({ api.getCampaign(id) }, campaignMapper)
+    suspend fun getUserSelectableCampaignsList(token: String): Resource<List<Campaign>> =
+        getList({ api.getUserSelectableCampaignsList(token.toJwtToken()) }, campaignMapper)
 
-    }
+    suspend fun getCampaign(id: Int): Resource<Campaign> =
+        getSingle({ api.getCampaign(id) }, campaignMapper)
 
     suspend fun getTasksList(
         token: String,

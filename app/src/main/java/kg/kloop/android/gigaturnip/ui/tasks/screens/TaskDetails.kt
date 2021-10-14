@@ -59,12 +59,14 @@ fun TaskDetails(
     if (uiState.completed) closeTask(navController, viewModel)
     val context = LocalContext.current
 
-    if (uiState.task != null && user.value != null) {
-        sendFileProgressToWebView(
-            viewModel,
-            compressProgressInfos,
-            uploadProgressInfos
-        )
+    if (user.value != null) {
+        if (uiState.task != null) {
+            sendFileProgressToWebView(
+                viewModel,
+                compressProgressInfos,
+                uploadProgressInfos
+            )
+        }
 
         Column(modifier = Modifier.fillMaxSize()) {
             LoadingContent(

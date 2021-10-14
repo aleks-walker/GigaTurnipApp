@@ -41,7 +41,10 @@ fun CampaignsScreenView(
         loading = uiState.loading,
         onRefresh = { viewModel.refreshCampaigns() }) {
 
-        CampaignsScreenContent(uiState.campaigns) { campaignId ->
+        CampaignsScreenContent(
+            uiState.campaigns,
+            uiState.selectableCampaigns
+        ) { campaignId ->
             mainActivityViewModel.setCampaignId(campaignId)
             navController.navigate(TasksScreen.TasksList.route)
         }
@@ -52,6 +55,7 @@ fun CampaignsScreenView(
 @Composable
 private fun CampaignsScreenContent(
     campaigns: List<Campaign>,
+    selectableCampaigns: List<Campaign>,
     onCampaignClick: (String) -> Unit
 ) {
     LazyColumn(
@@ -63,6 +67,14 @@ private fun CampaignsScreenContent(
             CampaignItem(
                 campaign = it,
                 onClick = { onCampaignClick(it.id) }
+            )
+        }
+        items(selectableCampaigns) {
+            CampaignItem(
+                campaign = it,
+                onClick = {
+                    //TODO: implement "join campaign"
+                }
             )
         }
     }

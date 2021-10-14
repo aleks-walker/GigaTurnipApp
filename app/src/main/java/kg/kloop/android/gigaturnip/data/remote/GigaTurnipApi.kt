@@ -10,7 +10,7 @@ import retrofit2.http.*
 
 interface GigaTurnipApi {
 
-    @GET("campaigns")
+    @GET("campaigns/list_user_campaigns")
     suspend fun getCampaignsList(
         @Header("Authorization") token: String
     ): List<CampaignDto>
@@ -19,6 +19,11 @@ interface GigaTurnipApi {
     suspend fun getCampaign(
         @Path("id") id: Int
     ): CampaignDto
+
+    @GET("campaigns/list_user_selectable")
+    suspend fun getUserSelectableCampaignsList(
+        @Header("Authorization") token: String
+    ): List<CampaignDto>
 
     @GET("taskstages/{id}")
     suspend fun getTaskStage(
