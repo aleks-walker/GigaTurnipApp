@@ -1,6 +1,6 @@
 package kg.kloop.android.gigaturnip.data.models
 
-import com.google.gson.JsonObject
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 
 data class TaskDto (
@@ -9,7 +9,7 @@ data class TaskDto (
     val id: String,
 
     @SerializedName("responses")
-    val responses: JsonObject?,
+    val responses: JsonElement,
 
     @SerializedName("stage")
     val stage: TaskStageDto,

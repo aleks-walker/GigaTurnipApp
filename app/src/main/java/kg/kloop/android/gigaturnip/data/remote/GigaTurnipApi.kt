@@ -53,7 +53,6 @@ interface GigaTurnipApi {
         @Query("stage") stageId: Int
     ): List<TaskDto>
 
-
     @PATCH("tasks/{id}/")
     suspend fun updateTask(
         @Header("Authorization") token: String,
@@ -61,10 +60,10 @@ interface GigaTurnipApi {
         @Body requestBody: RequestBody
     ): Response<ResponseBody>
 
-    @POST("tasks/")
+    @POST("taskstages/{id}/create_task/")
     suspend fun createTask(
         @Header("Authorization") token: String,
-        @Body requestBody: RequestBody,
+        @Path("id") id: Int
     ): Response<ResponseBody>
 
 }

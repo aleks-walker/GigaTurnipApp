@@ -1,6 +1,5 @@
 package kg.kloop.android.gigaturnip.repository
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import dagger.hilt.android.scopes.ActivityScoped
@@ -8,7 +7,6 @@ import kg.kloop.android.gigaturnip.data.models.mappers.CampaignDtoMapper
 import kg.kloop.android.gigaturnip.data.models.mappers.TaskDtoMapper
 import kg.kloop.android.gigaturnip.data.models.mappers.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
-import kg.kloop.android.gigaturnip.data.requests.TaskPostRequestEntity
 import kg.kloop.android.gigaturnip.data.utils.DomainMapper
 import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.domain.Task
@@ -88,10 +86,8 @@ class GigaTurnipRepository(
         add("responses", JsonParser().parse(responses).asJsonObject)
     }.toString().toRequestBodyWithMediaType()
 
-    suspend fun createTask(token: String, stageId: Int): Response<ResponseBody> {
-        val json = Gson().toJson(TaskPostRequestEntity(stageId = stageId))
-        return api.createTask(token.toJwtToken(), json.toRequestBodyWithMediaType())
-    }
+    suspend fun createTask(token: String, stageId: Int): Response<ResponseBody> =
+        api.createTask(token.toJwtToken(), stageId)
 
     suspend fun getTasksStagesList(
         token: String,
