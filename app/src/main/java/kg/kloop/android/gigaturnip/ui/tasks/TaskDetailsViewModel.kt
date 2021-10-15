@@ -145,9 +145,9 @@ class TaskDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = getTokenSynchronously()
-                val task = repository.getTaskById(token!!, taskId.toInt()).data!!
-                val previousTasks = getPreviousTasks(task, token)
+                val token = getTokenSynchronously()!!
+                val task = repository.getTaskById(token, taskId.toInt()).data!!
+                val previousTasks = getPreviousTasks(task.id.toInt(), token)
                 val previousTasksJson = getPreviousTasksJson(previousTasks)
                 _uiState.update {
                     it.copy(
@@ -174,23 +174,8 @@ class TaskDetailsViewModel @Inject constructor(
         return previousTasksJson
     }
 
-    private suspend fun getPreviousTasks(
-        task: Task,
-        token: String
-    ): MutableList<Task> {
-        val previousTasks = mutableListOf<Task>()
-        task.stage.displayedPrevStages.forEach {
-            previousTasks.addAll(
-                repository.getTasks(
-                    token,
-                    caseId = task.caseId!!,
-                    stageId = it
-                ).data!!
-            )
-        }
-        return previousTasks
-    }
-
+    private suspend fun getPreviousTasks(taskId: Int, token: String): MutableList<Task> =
+        repository.getPreviousTasks(token, taskId).data.orEmpty().toMutableList()
 
     fun completeTask(responses: String) {
         viewModelScope.launch(Dispatchers.Default) {

@@ -45,6 +45,12 @@ interface GigaTurnipApi {
         @Query("stage__chain__campaign") campaignId: String
     ): List<TaskDto>
 
+    @GET("tasks/{id}/list_displayed_previous")
+    suspend fun getPreviousTasksList(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): List<TaskDto>
+
     @GET("tasks/{id}")
     suspend fun getTaskById(
         @Header("Authorization") token: String,

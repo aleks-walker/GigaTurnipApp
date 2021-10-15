@@ -63,9 +63,14 @@ class GigaTurnipRepository(
     ): Resource<List<Task>> =
         getList( { api.getTasks(token.toJwtToken(), caseId, stageId)}, tasksMapper)
 
+    suspend fun getPreviousTasks(
+        token: String,
+        taskId: Int
+    ): Resource<List<Task>> =
+        getList({ api.getPreviousTasksList(token.toJwtToken(), taskId) }, tasksMapper)
+
     suspend fun getTaskStage(id: Int): Resource<TaskStage> {
         return getSingle({ api.getTaskStage(id) }, taskStageMapper)
-
     }
 
     suspend fun updateTask(
