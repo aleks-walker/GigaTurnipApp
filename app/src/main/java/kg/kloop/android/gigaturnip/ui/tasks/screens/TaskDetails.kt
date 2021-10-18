@@ -80,32 +80,31 @@ fun TaskDetails(
                 val photoLauncher = getActivityLauncher { uris ->
                     //TODO: upload photos
                 }
-                TaskDetailsScreenContent(
-                    uiState = uiState,
-                    onPickVideos = { pickedFile ->
-                        videoLauncher.launch("video/*")
-                        viewModel.setPickedFile(pickedFile)
-                    },
-                    onPickPhotos = { pickedFile ->
-                        photoLauncher.launch("image/*")
-                        viewModel.setPickedFile(pickedFile)
-                    },
-                    onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
-                    onTaskChange = { responses -> viewModel.changeTask(responses = responses)},
-                    onListenersReady = { viewModel.setListenersReady(true) },
-                    onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) },
-                    onCancelWork = {
-                        Compressor.isRunning = false
-                        cancelAllWork(context)
-                    },
-                    onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
-                    onPreviewFile = { storagePath -> showPreview(storagePath, context)}
-                )
-
+                if (uiState.task != null) {
+                    TaskDetailsScreenContent(
+                        uiState = uiState,
+                        onPickVideos = { pickedFile ->
+                            videoLauncher.launch("video/*")
+                            viewModel.setPickedFile(pickedFile)
+                        },
+                        onPickPhotos = { pickedFile ->
+                            photoLauncher.launch("image/*")
+                            viewModel.setPickedFile(pickedFile)
+                        },
+                        onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
+                        onTaskChange = { responses -> viewModel.changeTask(responses = responses)},
+                        onListenersReady = { viewModel.setListenersReady(true) },
+                        onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) },
+                        onCancelWork = {
+                            Compressor.isRunning = false
+                            cancelAllWork(context)
+                        },
+                        onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
+                        onPreviewFile = { storagePath -> showPreview(storagePath, context)}
+                    )
+                }
             }
-
         }
-
     }
 }
 

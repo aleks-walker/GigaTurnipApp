@@ -40,10 +40,11 @@ fun WebPageScreen(
         }
     }, update = {
         onUpdate()
+        Timber.d("uiState: $uiState")
         val json = JsonObject().apply {
-            add("jsonSchema", uiState.task!!.stage.jsonSchema.toJsonObject())
-            add("uiSchema", uiState.task.stage.uiSchema.toJsonObject())
-            addProperty("isComplete", uiState.task.isComplete)
+            add("jsonSchema", uiState.task?.stage?.jsonSchema?.toJsonObject())
+            add("uiSchema", uiState.task?.stage?.uiSchema?.toJsonObject())
+            addProperty("isComplete", uiState.task?.isComplete)
         }
         evaluateJs(it, uiState.task!!.stage.richText.toString(), RICH_TEXT_EVENT)
         evaluateJs(it, uiState.previousTasks.toString(), PREVIOUS_TASKS_EVENT)
@@ -142,4 +143,5 @@ class WebAppInterface(
     }
 }
 
-fun String.toJsonObject(): JsonObject = JsonParser().parse(this).asJsonObject
+fun String.toJsonObject(): JsonObject = if (this.isBlank()) JsonObject()
+    else JsonParser().parse(this).asJsonObject

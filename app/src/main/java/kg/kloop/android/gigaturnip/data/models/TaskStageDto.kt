@@ -10,7 +10,7 @@ data class TaskStageDto (
     val name: String,
 
     @SerializedName("description")
-    val description: String,
+    val description: String?,
 
     @SerializedName("chain")
     val chain: ChainDto,
@@ -28,10 +28,10 @@ data class TaskStageDto (
     val yPos: String,
 
     @SerializedName("json_schema")
-    val jsonSchema: String,
+    val jsonSchema: String?,
 
     @SerializedName("ui_schema")
-    val uiSchema: String,
+    val uiSchema: String?,
 
     @SerializedName("library")
     val library: String,
