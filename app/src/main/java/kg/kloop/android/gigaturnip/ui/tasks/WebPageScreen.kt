@@ -46,15 +46,16 @@ fun WebPageScreen(
             add("uiSchema", uiState.task?.stage?.uiSchema?.toJsonObject())
             addProperty("isComplete", uiState.task?.isComplete)
         }
-        evaluateJs(it, uiState.task!!.stage.richText.toString(), RICH_TEXT_EVENT)
+        evaluateJs(it, getRichText(uiState.task?.stage?.richText.orEmpty()), RICH_TEXT_EVENT)
         evaluateJs(it, uiState.previousTasks.toString(), PREVIOUS_TASKS_EVENT)
         evaluateJs(it, json.toString(), SCHEMA_EVENT)
-        evaluateJs(it, uiState.task.responses.toString(), DATA_EVENT)
-        Timber.d("responses: ${uiState.task.responses}")
+        evaluateJs(it, uiState.task?.responses.toString(), DATA_EVENT)
         evaluateJs(it, uiState.fileProgressState.toString(), FILE_EVENT)
-        Timber.d("file event: ${uiState.fileProgressState}")
     })
 }
+
+private fun getRichText(text: String): String =
+    JsonObject().apply { addProperty("rich_text", text) }.toString()
 
 
 private fun setDarkMode(webView: WebView) {
