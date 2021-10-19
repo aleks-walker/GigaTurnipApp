@@ -55,8 +55,6 @@ class TasksCreatableViewModel @Inject constructor(
                 val token = getTokenSynchronously()
                 val result = repository.getTasksStagesList(
                     token!!,
-                    true,
-                    0,
                     campaignId
                 ).data.orEmpty()
                 _uiState.update { it.copy(taskStages = result, loading = false) }

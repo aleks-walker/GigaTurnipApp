@@ -96,15 +96,11 @@ class GigaTurnipRepository(
 
     suspend fun getTasksStagesList(
         token: String,
-        isCreatable: Boolean,
-        rankLimitsTotalLimit: Int,
         campaignId: String
     ): Resource<List<TaskStage>> {
         return getList({
             api.getTasksStagesList(
                 token = token.toJwtToken(),
-                isCreatable = isCreatable,
-                rankLimitsTotalLimit = rankLimitsTotalLimit,
                 campaignId = campaignId
             )
         }, taskStageMapper)
