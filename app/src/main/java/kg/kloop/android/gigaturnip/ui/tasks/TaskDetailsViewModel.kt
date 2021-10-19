@@ -18,9 +18,8 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.ui.tasks.screens.getUploadPath
 import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
-import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
-import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_ORDER_KEY
 import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PRIVATE_PREFIX
 import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PUBLIC_PREFIX
 import kg.kloop.android.gigaturnip.util.Constants.TAG_CLEANUP
@@ -85,15 +84,23 @@ class TaskDetailsViewModel @Inject constructor(
     fun setUser(user: FirebaseUser?) { _user = user }
 
     fun compressVideos(videoUris: List<Uri>) {
-        val pathToUpload = getPath(
-            prefix = if (_pickedFile!!.isPrivate) STORAGE_PRIVATE_PREFIX else STORAGE_PUBLIC_PREFIX,
-            userId = _user!!.uid,
-            task = _uiState.value.task!!
-        ).getUploadPath()
-        videoUris.forEachIndexed { i, uri ->
-            compressVideo(createInputData(i.toString(), uri.toString(), pathToUpload))
+        videoUris.forEach { uri ->
+            compressVideo(createInputData(uri.toString()))
         }
     }
+
+    fun uploadPhotos(uris: List<Uri>) {
+        uris.forEach { uri ->
+            Timber.d("photo uri: $uri")
+            uploadPhoto(createInputData(uri.toString()))
+        }
+    }
+
+    private fun makeUploadPath(): String = getPath(
+        prefix = if (_pickedFile!!.isPrivate) STORAGE_PRIVATE_PREFIX else STORAGE_PUBLIC_PREFIX,
+        userId = _user!!.uid,
+        task = _uiState.value.task!!
+    ).getUploadPath()
 
     private fun getPath(
         prefix: String,
@@ -110,7 +117,6 @@ class TaskDetailsViewModel @Inject constructor(
 
     private fun compressVideo(inputData: Data) {
         Timber.d("compress video input data: $inputData")
-//        workManager.pruneWork()
         val compressRequest = OneTimeWorkRequestBuilder<CompressVideoWorker>()
             .setInputData(inputData)
             .addTag(TAG_COMPRESS)
@@ -131,12 +137,25 @@ class TaskDetailsViewModel @Inject constructor(
             .enqueue()
     }
 
-    private fun createInputData(fileKey: String, videoUri: String, uploadPath: String): Data {
+    private fun uploadPhoto(inputData: Data) {
+        val uploadRequest = OneTimeWorkRequestBuilder<UploadFileWorker>()
+            .setInputData(inputData)
+            .addTag(TAG_UPLOAD)
+            .build()
+
+        workManager.beginUniqueWork(
+            VIDEO_MANIPULATION_WORK_NAME,
+            ExistingWorkPolicy.APPEND,
+            uploadRequest
+        ).enqueue()
+
+    }
+
+    private fun createInputData(fileUri: String): Data {
         val builder = Data.Builder()
         builder.apply {
-            putString(KEY_WEBVIEW_FILE_ORDER_KEY, fileKey)
-            putString(KEY_VIDEO_URI, videoUri)
-            putString(KEY_PATH_TO_UPLOAD, uploadPath)
+            putString(KEY_FILE_URI, fileUri)
+            putString(KEY_PATH_TO_UPLOAD, makeUploadPath())
         }
         return builder.build()
     }

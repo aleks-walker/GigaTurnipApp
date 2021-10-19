@@ -5,7 +5,6 @@ object Constants {
 //    const val API_BASE_URL = "http://10.0.2.2:8000/api/v1/"
     const val TURNIP_VIEW_URL = "https://kloopmedia.github.io/TurnipView/"
 //    const val TURNIP_VIEW_URL = "http://10.0.2.2:3000"
-    const val STORAGE_BASE_URL = "https://firebasestorage.googleapis.com"
     const val STORAGE_PUBLIC_PREFIX = "public/"
     const val STORAGE_PRIVATE_PREFIX = "private/"
 
@@ -25,13 +24,12 @@ object Constants {
 
     // Other keys
     const val OUTPUT_PATH = "compress_video_outputs"
-    const val KEY_VIDEO_URI = "KEY_VIDEO_URI"
+    const val KEY_FILE_URI = "KEY_FILE_URI"
 //    const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
     const val KEY_PATH_TO_UPLOAD = "KEY_PATH_TO_UPLOAD"
     const val KEY_STORAGE_REF_PATH = "KEY_STORAGE_REF_PATH"
 //    const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
     const val KEY_FILENAME = "KEY_FILENAME"
-    const val KEY_WEBVIEW_FILE_ORDER_KEY = "KEY_WEBVIEW_FILE_KEY"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"

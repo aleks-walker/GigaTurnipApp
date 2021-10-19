@@ -7,9 +7,8 @@ import androidx.core.net.toUri
 import androidx.work.*
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
-import kg.kloop.android.gigaturnip.util.Constants.KEY_VIDEO_URI
-import kg.kloop.android.gigaturnip.util.Constants.KEY_WEBVIEW_FILE_ORDER_KEY
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +20,7 @@ import java.io.File
 class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val appContext = applicationContext
-        val fileOrderKey = inputData.getString(KEY_WEBVIEW_FILE_ORDER_KEY)
-        val resourceUri = inputData.getString(KEY_VIDEO_URI)
+        val resourceUri = inputData.getString(KEY_FILE_URI)
         val pathToUpload = inputData.getString(KEY_PATH_TO_UPLOAD)
 
         try {
@@ -45,8 +43,7 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         uri = Uri.parse(resourceUri),
                         onProgress = { progress ->
                             setProgressAsync(workDataOf(
-                                KEY_WEBVIEW_FILE_ORDER_KEY to fileOrderKey,
-                                KEY_FILENAME to getFileName(resourceUri!!.toUri()),
+                                KEY_FILENAME to resourceUri!!.toUri().getFileName(),
                                 KEY_PATH_TO_UPLOAD to pathToUpload,
                                 PROGRESS to progress.toInt(),
                             ))
@@ -64,10 +61,9 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         }
                     )
                     outputData = workDataOf(
-                        KEY_WEBVIEW_FILE_ORDER_KEY to fileOrderKey,
-                        KEY_FILENAME to getFileName(uri!!),
+                        KEY_FILENAME to uri!!.getFileName(),
                         KEY_PATH_TO_UPLOAD to pathToUpload,
-                        KEY_VIDEO_URI to uri.toString(),
+                        KEY_FILE_URI to uri.toString(),
                     )
                     notificationsHelper.completeNotification(
                         notificationId,
@@ -88,6 +84,8 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
         WorkManager.getInstance(appContext).cancelAllWorkByTag(TAG_COMPRESS)
     }
 
-    private fun getFileName(uri: Uri): String = File(uri.path!!).name
+//    private fun getFileName(uri: Uri): String = File(uri.path!!).name
 
 }
+
+fun Uri.getFileName(): String = File(this.path!!).name

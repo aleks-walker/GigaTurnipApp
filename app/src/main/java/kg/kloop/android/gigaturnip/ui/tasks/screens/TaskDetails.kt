@@ -78,7 +78,7 @@ fun TaskDetails(
                     viewModel.compressVideos(uris)
                 }
                 val photoLauncher = getActivityLauncher { uris ->
-                    //TODO: upload photos
+                    viewModel.uploadPhotos(uris)
                 }
                 if (uiState.task != null) {
                     TaskDetailsScreenContent(
