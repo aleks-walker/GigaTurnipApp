@@ -226,7 +226,7 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun updateFileInfo(fileProgress: FileProgress) {
         val progressState = _uiState.value.fileProgressState
-        if (progressState == null) {
+        if (progressState?.get(_pickedFile?.key) == null) {
             updateUi(JsonObject().apply { add(_pickedFile?.key, JsonObject()) })
         } else {
             val progressData = appendToProgressData(progressState, fileProgress)
