@@ -47,8 +47,8 @@ fun TasksScreenView(
     viewModel: TasksViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel,
 ) {
-    val campaignId = mainActivityViewModel.campaignId.observeAsState()
-    viewModel.setCampaignId(campaignId.value!!)
+    val campaign = mainActivityViewModel.campaign.observeAsState()
+    viewModel.setCampaignId(campaign.value!!.id)
 
     val uiState by viewModel.uiState.collectAsState()
 

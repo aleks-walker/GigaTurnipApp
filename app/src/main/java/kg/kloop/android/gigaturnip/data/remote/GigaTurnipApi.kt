@@ -25,6 +25,12 @@ interface GigaTurnipApi {
         @Header("Authorization") token: String
     ): List<CampaignDto>
 
+    @GET("campaigns/{id}/join_campaign")
+    suspend fun joinCampaign(
+        @Header("Authorization") token: String,
+        @Path("id") campaignId: String
+    ): Response<ResponseBody>
+
     @GET("taskstages/{id}")
     suspend fun getTaskStage(
         @Path("id") id: Int

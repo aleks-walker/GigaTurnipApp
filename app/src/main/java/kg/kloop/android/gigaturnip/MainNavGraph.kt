@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import kg.kloop.android.gigaturnip.domain.Task
+import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
@@ -31,7 +32,13 @@ fun MainNavGraph(
         composable(CampaignsScreen.CampaignScreen.route) {
             CampaignsScreenView(
                 navController,
-                mainActivityViewModel = viewModel
+                mainActivityViewModel = viewModel,
+            )
+        }
+        composable(CampaignsScreen.CampaignDescription.route) {
+            CampaignsDescriptionScreenView(
+                navController,
+                mainActivityViewModel = viewModel,
             )
         }
         navigation(
@@ -44,7 +51,7 @@ fun MainNavGraph(
                     navigateToDetails = navigateToDetails(navController),
                     onFabClick = {
                         navController.navigate(
-                            TasksScreen.Creatable.route.plus("/${viewModel.campaignId.value}")
+                            TasksScreen.Creatable.route.plus("/${viewModel.campaign.value?.id}")
                         )
                     },
                 )

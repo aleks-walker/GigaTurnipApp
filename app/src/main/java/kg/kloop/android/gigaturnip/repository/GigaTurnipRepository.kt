@@ -35,6 +35,9 @@ class GigaTurnipRepository(
     suspend fun getCampaign(id: Int): Resource<Campaign> =
         getSingle({ api.getCampaign(id) }, campaignMapper)
 
+    suspend fun joinCampaign(token: String, campaignId: String): Response<ResponseBody> =
+        api.joinCampaign(token.toJwtToken(), campaignId)
+
     suspend fun getTasksList(
         token: String,
         complete: Boolean,
