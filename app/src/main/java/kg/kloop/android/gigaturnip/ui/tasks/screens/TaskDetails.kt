@@ -84,10 +84,14 @@ fun TaskDetails(
                     TaskDetailsScreenContent(
                         uiState = uiState,
                         onPickVideos = { pickedFile ->
+//                            viewModel.pruneWork()
                             videoLauncher.launch("video/*")
                             viewModel.setPickedFile(pickedFile)
                         },
                         onPickPhotos = { pickedFile ->
+                            viewModel.pruneWork()
+                            Timber.d("Button click")
+//                            viewModel.clearFileProgress()
                             photoLauncher.launch("image/*")
                             viewModel.setPickedFile(pickedFile)
                         },
@@ -99,7 +103,7 @@ fun TaskDetails(
                             Compressor.isRunning = false
                             cancelAllWork(context)
                         },
-                        onFileDelete = { filePath -> deleteFileFromStorage(filePath, context) },
+                        onFileDelete = { filePath -> Timber.d("onFileDelete")},
                         onPreviewFile = { storagePath -> showPreview(storagePath, context)}
                     )
                 }
@@ -130,7 +134,7 @@ private fun closeTask(
     viewModel: TaskDetailsViewModel
 ) {
     showTaskCompletedToast()
-    navController.popBackStack()
+//    navController.previousBackStackEntry?.savedStateHandle?.set("refresh", true)
     viewModel.setCompleted(false)
 }
 
@@ -167,18 +171,6 @@ private fun updateFileProgress(
         Timber.d("file progress: $fileProgress")
         viewModel.updateFileInfo(fileProgress)
     }
-}
-
-private fun deleteFileFromStorage(filePath: String, context: Context) {
-    val ref = FirebaseStorage.getInstance().reference
-    Timber.d("file path: $filePath")
-//    ref.child(filePath).delete().addOnCompleteListener {
-//        Toast.makeText(
-//            context,
-//            "Deleted file:${filePath.substringAfterLast("/")}",
-//            Toast.LENGTH_SHORT
-//        ).show()
-//    }
 }
 
 @Composable

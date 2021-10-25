@@ -44,7 +44,7 @@ data class TaskDetailsUiState(
     val previousTasks: JsonArray? = null,
     val completed: Boolean = false,
     val loading: Boolean = false,
-    val fileProgressState: JsonObject? = null,
+    val fileProgressState: JsonObject? = JsonObject(),
     val listenersReady: Boolean = false,
 ) {
     val initialLoad: Boolean
@@ -69,6 +69,15 @@ class TaskDetailsViewModel @Inject constructor(
     private val workManager = WorkManager.getInstance(application)
 
     private var _pickedFile: WebViewPickedFile? = null
+
+    fun clearFileProgress() {
+        _uiState.update {
+            it.copy(fileProgressState = null)
+        }
+    }
+    fun pruneWork() {
+        workManager.pruneWork()
+    }
 
     fun setPickedFile(pickedFile: WebViewPickedFile) {
         _pickedFile = pickedFile
@@ -210,7 +219,8 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun changeTask(responses: String) {
         Timber.d(
-            "prev value: ${_uiState.value.task?.responses?.toString()}\nchanged value: $responses".trimMargin()
+            ("prev value: ${_uiState.value.task?.responses?.toString()}\n" +
+                    "changed value: $responses").trimMargin()
         )
         if (_uiState.value.task?.responses?.toString() != responses) {
             viewModelScope.launch(Dispatchers.Default) {
@@ -226,13 +236,18 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun updateFileInfo(fileProgress: FileProgress) {
         val progressState = _uiState.value.fileProgressState
-        if (progressState?.get(_pickedFile?.key) == null) {
-            updateUi(JsonObject().apply { add(_pickedFile?.key, JsonObject()) })
-        } else {
+        Timber.d("progress state before: $progressState")
+        progressState?.let {
+            if (progressState.get(_pickedFile?.key) == null) {
+                updateUi(progressState.apply { add(_pickedFile?.key, JsonObject()) })
+            }
             val progressData = appendToProgressData(progressState, fileProgress)
+            Timber.d("progress data: $progressData")
             val filesProgressInfo = setProgressData(progressState, progressData)
+            Timber.d("files progress info: $filesProgressInfo")
             updateUi(filesProgressInfo)
         }
+        Timber.d("progress state after: ${_uiState.value.fileProgressState}")
     }
 
     private fun appendToProgressData(
