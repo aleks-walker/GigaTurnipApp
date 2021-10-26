@@ -90,13 +90,18 @@ fun TaskDetails(
                         },
                         onPickPhotos = { pickedFile ->
                             viewModel.pruneWork()
-                            Timber.d("Button click")
+                            Timber.d("button click")
 //                            viewModel.clearFileProgress()
                             photoLauncher.launch("image/*")
                             viewModel.setPickedFile(pickedFile)
                         },
                         onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
-                        onTaskChange = { responses -> viewModel.changeTask(responses = responses)},
+                        onTaskChange = { responses ->
+                            viewModel.changeTask(
+                                task = uiState.task!!,
+                                responses = responses
+                            )
+                        },
                         onListenersReady = { viewModel.setListenersReady(true) },
                         onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) },
                         onCancelWork = {
