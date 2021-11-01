@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kg.kloop.android.gigaturnip.data.models.mappers.CampaignDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.NotificationDtoMapper
 import kg.kloop.android.gigaturnip.data.models.mappers.TaskDtoMapper
 import kg.kloop.android.gigaturnip.data.models.mappers.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
@@ -26,7 +27,8 @@ object AppModule {
         api,
         CampaignDtoMapper(),
         TaskDtoMapper(),
-        TaskStageDtoMapper()
+        TaskStageDtoMapper(),
+        NotificationDtoMapper()
     )
 
     @Singleton

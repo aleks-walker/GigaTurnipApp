@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +20,7 @@ fun Toolbar(
     title: String,
     drawerState: DrawerState,
     scope: CoroutineScope,
+    onNotificationsClick: () -> Unit,
     onLogOutClick: () -> Unit
 ) {
     TopAppBar(
@@ -28,9 +30,12 @@ fun Toolbar(
         },
         navigationIcon = {
             IconButton(onClick = { scope.launch { if (drawerState.isClosed) drawerState.open() } }) {
-                Icon(Icons.Default.Menu, null)
+                Icon(Icons.Default.Menu, "menu")
             }
         }, actions = {
+            IconButton(onClick = { onNotificationsClick() }) {
+                Icon(Icons.Default.Notifications, "notifications")
+            }
             Menu(
                 modifier = Modifier.wrapContentSize(),
                 onLogOutClick = onLogOutClick

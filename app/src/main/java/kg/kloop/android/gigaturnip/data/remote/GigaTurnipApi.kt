@@ -1,6 +1,7 @@
 package kg.kloop.android.gigaturnip.data.remote
 
 import kg.kloop.android.gigaturnip.data.models.CampaignDto
+import kg.kloop.android.gigaturnip.data.models.NotificationDto
 import kg.kloop.android.gigaturnip.data.models.TaskDto
 import kg.kloop.android.gigaturnip.data.models.TaskStageDto
 import okhttp3.RequestBody
@@ -80,5 +81,10 @@ interface GigaTurnipApi {
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<ResponseBody>
+
+    @GET("messages")
+    suspend fun getNotifications(
+        @Header("Authorization") token: String,
+    ): List<NotificationDto>
 
 }

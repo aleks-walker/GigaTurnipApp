@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.auth.LoginScreen
+import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreen
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 
 @AndroidEntryPoint
@@ -50,8 +51,14 @@ fun MainScreen(viewModel: MainActivityViewModel, navController: NavHostControlle
                 Toolbar(
                     stringResource(R.string.app_name),
                     scaffoldState.drawerState,
-                    scope
-                ) { logOut(viewModel) }
+                    scope,
+                    onLogOutClick = { logOut(viewModel) },
+                    onNotificationsClick = {
+                        navController.navigate(NotificationsScreen.NotificationsList.route) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
             },
             scaffoldState = scaffoldState,
             drawerContent = { AppDrawer(user) }

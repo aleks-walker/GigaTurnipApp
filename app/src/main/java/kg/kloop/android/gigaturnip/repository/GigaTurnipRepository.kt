@@ -4,11 +4,13 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import dagger.hilt.android.scopes.ActivityScoped
 import kg.kloop.android.gigaturnip.data.models.mappers.CampaignDtoMapper
+import kg.kloop.android.gigaturnip.data.models.mappers.NotificationDtoMapper
 import kg.kloop.android.gigaturnip.data.models.mappers.TaskDtoMapper
 import kg.kloop.android.gigaturnip.data.models.mappers.TaskStageDtoMapper
 import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
 import kg.kloop.android.gigaturnip.data.utils.DomainMapper
 import kg.kloop.android.gigaturnip.domain.Campaign
+import kg.kloop.android.gigaturnip.domain.Notification
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.util.Resource
@@ -23,7 +25,8 @@ class GigaTurnipRepository(
     private val api: GigaTurnipApi,
     private val campaignMapper: CampaignDtoMapper,
     private val tasksMapper: TaskDtoMapper,
-    private val taskStageMapper: TaskStageDtoMapper
+    private val taskStageMapper: TaskStageDtoMapper,
+    private val notificationDtoMapper: NotificationDtoMapper
 ) {
 
     suspend fun getCampaignsList(token: String): Resource<List<Campaign>> =
@@ -109,6 +112,13 @@ class GigaTurnipRepository(
         }, taskStageMapper)
 
     }
+
+    suspend fun getNotifications(
+        token: String
+    ): Resource<List<Notification>> = getList(
+        { api.getNotifications(token = token.toJwtToken()) },
+        notificationDtoMapper
+    )
 
     private suspend fun <T, DomainModel> getSingle(
         func: suspend () -> T,

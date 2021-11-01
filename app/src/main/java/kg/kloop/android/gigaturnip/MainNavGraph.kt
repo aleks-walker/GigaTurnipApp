@@ -12,6 +12,9 @@ import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
+import kg.kloop.android.gigaturnip.ui.notifications.NotificationDetailsScreen
+import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreen
+import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreenView
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
@@ -29,6 +32,22 @@ fun MainNavGraph(
         startDestination = CampaignsScreen.CampaignScreen.route,
         modifier = modifier
     ) {
+        composable(NotificationsScreen.NotificationsList.route) {
+            NotificationsScreenView(
+                navController = navController,
+                mainActivityViewModel = viewModel
+            )
+        }
+        composable(
+            NotificationsScreen.NotificationDetails.route.plus("/{title}/{text}"),
+            arguments = listOf(navArgument("title") { type = NavType.StringType },
+                navArgument("text") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val args = backStackEntry.arguments
+            val title = args?.getString("title").toString()
+            val text = args?.getString("text").toString()
+            NotificationDetailsScreen(title = title, text = text)
+        }
         composable(CampaignsScreen.CampaignScreen.route) {
             CampaignsScreenView(
                 navController,
