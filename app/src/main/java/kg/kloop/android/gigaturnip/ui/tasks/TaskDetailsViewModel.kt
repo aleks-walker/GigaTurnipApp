@@ -10,7 +10,6 @@ import androidx.work.*
 import com.google.firebase.auth.FirebaseUser
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
@@ -218,7 +217,7 @@ class TaskDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(completed = value) }
     }
 
-    fun changeTask(task: Task, responses: String) {
+    fun updateTask(task: Task, responses: String) {
         Timber.d(
             ("prev value: ${_uiState.value.task?.responses?.toString()}\n" +
                     "changed value: $responses").trimMargin()
@@ -227,8 +226,8 @@ class TaskDetailsViewModel @Inject constructor(
             viewModelScope.launch(Dispatchers.Default) {
                 val token = getTokenSynchronously()
                 val response = repository.updateTask(token!!, taskId.toInt(), responses, false)
-                val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)
-                if (response.isSuccessful) _uiState.update { it.copy(task = updatedTask) }
+//                val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)
+//                if (response.isSuccessful) _uiState.update { it.copy(task = updatedTask) }
             }
         }
     }

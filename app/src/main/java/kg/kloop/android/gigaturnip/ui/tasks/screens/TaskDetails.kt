@@ -96,8 +96,8 @@ fun TaskDetails(
                             viewModel.setPickedFile(pickedFile)
                         },
                         onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
-                        onTaskChange = { responses ->
-                            viewModel.changeTask(
+                        onFormBlur = { responses ->
+                            viewModel.updateTask(
                                 task = uiState.task!!,
                                 responses = responses
                             )
@@ -182,7 +182,7 @@ private fun updateFileProgress(
 private fun TaskDetailsScreenContent(
     uiState: TaskDetailsUiState,
     onTaskSubmit: (String) -> Unit,
-    onTaskChange: (String) -> Unit,
+    onFormBlur: (String) -> Unit,
     onPickVideos: (WebViewPickedFile) -> Unit,
     onPickPhotos: (WebViewPickedFile) -> Unit,
     onListenersReady: () -> Unit,
@@ -204,7 +204,7 @@ private fun TaskDetailsScreenContent(
             urlToRender = Constants.TURNIP_VIEW_URL,
             webAppInterface = WebAppInterface(
                 onSubmit = { responses -> onTaskSubmit(responses) },
-                onFormChange = { responses -> onTaskChange(responses)},
+                onFormBlur = { responses -> onFormBlur(responses)},
                 onListenersReady = onListenersReady,
                 onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
                 onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
