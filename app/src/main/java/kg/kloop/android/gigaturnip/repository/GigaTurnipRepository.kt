@@ -114,11 +114,31 @@ class GigaTurnipRepository(
     }
 
     suspend fun getNotifications(
-        token: String
+        token: String,
+        campaignId: String,
+        viewed: Boolean = false,
+        importance: Int? = null,
     ): Resource<List<Notification>> = getList(
-        { api.getNotifications(token = token.toJwtToken()) },
+        {
+            api.getNotifications(
+                token = token.toJwtToken(),
+                campaignId = campaignId,
+                viewed = viewed,
+                importance = importance
+            )
+        },
         notificationDtoMapper
     )
+
+    suspend fun getNotification(
+        token: String,
+        notificationId: Int,
+    ): Resource<Notification> = getSingle({
+        api.getNotification(
+            token.toJwtToken(),
+            notificationId = notificationId
+        )
+    }, notificationDtoMapper)
 
     private suspend fun <T, DomainModel> getSingle(
         func: suspend () -> T,

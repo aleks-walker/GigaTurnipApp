@@ -1,5 +1,7 @@
 package kg.kloop.android.gigaturnip.ui.notifications
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,6 +45,12 @@ class NotificationsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(NotificationsUiState())
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
+    private val _campaignId = MutableLiveData<String>()
+    val campaignId: LiveData<String> = _campaignId
+    fun setCampaignId(value: String) {
+        _campaignId.value = value
+    }
+
     init {
 //        refreshNotifications()
     }
@@ -52,7 +60,11 @@ class NotificationsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val notifications =
-                    repository.getNotifications(getTokenSynchronously()!!).data.orEmpty()
+                    repository.getNotifications(
+                        getTokenSynchronously()!!,
+                        campaignId = _campaignId.value!!,
+                        viewed = false
+                    ).data.orEmpty()
                 _uiState.update {
                     it.copy(
                         unreadNotifications = notifications,

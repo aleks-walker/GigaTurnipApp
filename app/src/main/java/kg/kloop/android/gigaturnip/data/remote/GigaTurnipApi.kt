@@ -82,9 +82,18 @@ interface GigaTurnipApi {
         @Path("id") id: Int
     ): Response<ResponseBody>
 
-    @GET("messages")
+    @GET("notifications")
     suspend fun getNotifications(
         @Header("Authorization") token: String,
+        @Query("campaign") campaignId: String,
+        @Query("viewed") viewed: Boolean,
+        @Query("importance") importance: Int?
     ): List<NotificationDto>
+
+    @GET("notifications/{id}")
+    suspend fun getNotification(
+        @Header("Authorization") token: String,
+        @Path("id") notificationId: Int
+    ): NotificationDto
 
 }

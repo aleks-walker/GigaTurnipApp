@@ -37,6 +37,7 @@ fun NotificationsScreenView(
 ) {
     val user = mainActivityViewModel.user.value
     val uiState by viewModel.uiState.collectAsState()
+    viewModel.setCampaignId(mainActivityViewModel.campaign.value!!.id)
 
     user?.let {
         LoadingContent(
