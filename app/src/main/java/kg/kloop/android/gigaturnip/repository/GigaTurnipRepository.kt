@@ -125,9 +125,9 @@ class GigaTurnipRepository(
                 campaignId = campaignId,
                 viewed = viewed,
                 importance = importance
-            )
+            ).results.orEmpty()
         },
-        notificationDtoMapper
+        mapper = notificationDtoMapper
     )
 
     suspend fun getNotification(
@@ -155,7 +155,7 @@ class GigaTurnipRepository(
 
     private suspend fun <T, DomainModel> getList(
         func: suspend () -> List<T>,
-        mapper: DomainMapper<T, DomainModel>
+        mapper: DomainMapper<T, DomainModel>,
     ): Resource<List<DomainModel>> {
         val response = try {
             func()

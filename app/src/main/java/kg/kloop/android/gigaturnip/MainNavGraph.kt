@@ -39,8 +39,10 @@ fun MainNavGraph(
             )
         }
         composable(
-            NotificationsScreen.NotificationDetails.route.plus("/{title}/{text}"),
-            arguments = listOf(navArgument("title") { type = NavType.StringType },
+            NotificationsScreen.NotificationDetails.route.plus("/{id}/{title}/{text}"),
+            arguments = listOf(
+                navArgument("id") { type = NavType.StringType },
+                navArgument("title") { type = NavType.StringType },
                 navArgument("text") { type = NavType.StringType })
         ) { backStackEntry ->
             val args = backStackEntry.arguments

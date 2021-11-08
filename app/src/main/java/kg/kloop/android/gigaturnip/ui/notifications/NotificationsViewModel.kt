@@ -18,18 +18,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class NotificationsUiState(
-    val unreadNotifications: List<Notification> = listOf(
-        Notification("Title", "Text", 3),
-        Notification("Lorem", "More Text", 3),
-        Notification("Ipsum", "23054uasdjf;laksjdf;laksjdf;ljkasdf", 3),
-
-        ),
-    val readNotifications: List<Notification> = listOf(
-        Notification("readTitle", "Text", 3),
-        Notification("Lorem", "More Text", 3),
-        Notification("Ipsum", "23054uasdjf;laksjdf;laksjdf;ljkasdf", 3),
-
-        ),
+    val unreadNotifications: List<Notification> = emptyList(),
+    val readNotifications: List<Notification> = emptyList(),
     val loading: Boolean = false
 
 ) {
@@ -52,26 +42,29 @@ class NotificationsViewModel @Inject constructor(
     }
 
     init {
-//        refreshNotifications()
+        refreshNotifications()
     }
 
     fun refreshNotifications() {
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val notifications =
-                    repository.getNotifications(
-                        getTokenSynchronously()!!,
-                        campaignId = _campaignId.value!!,
-                        viewed = false
-                    ).data.orEmpty()
+                val unReadNotifications = getNotifications(read = false)
+                val readNotifications = getNotifications(read = true)
                 _uiState.update {
                     it.copy(
-                        unreadNotifications = notifications,
+                        unreadNotifications = unReadNotifications,
+                        readNotifications = readNotifications,
                         loading = false
                     )
                 }
             }
         }
     }
+
+    private suspend fun getNotifications(read: Boolean) = repository.getNotifications(
+        token = getTokenSynchronously()!!,
+        campaignId = _campaignId.value!!,
+        viewed = read
+    ).data.orEmpty()
 }

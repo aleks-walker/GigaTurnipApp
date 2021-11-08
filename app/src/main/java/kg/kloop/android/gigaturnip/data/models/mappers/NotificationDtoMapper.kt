@@ -7,17 +7,27 @@ import kg.kloop.android.gigaturnip.domain.Notification
 class NotificationDtoMapper : DomainMapper<NotificationDto, Notification>() {
     override fun mapToDomainModel(model: NotificationDto): Notification {
         return Notification(
+            id = model.id,
             title = model.title,
             text = model.text,
-            important = model.important
+            importance = model.importance,
+            createdAt = model.createdAt,
+            updatedAt = model.updatedAt,
+            campaignId = model.campaignId,
+            rankId = model.rankId
         )
     }
 
     override fun mapFromDomainModel(domainModel: Notification): NotificationDto {
         return NotificationDto(
+            id = domainModel.id,
             title = domainModel.title,
             text = domainModel.text,
-            important = domainModel.important
+            importance = domainModel.importance,
+            createdAt = domainModel.createdAt,
+            updatedAt = domainModel.updatedAt,
+            campaignId = domainModel.campaignId,
+            rankId = domainModel.rankId
         )
     }
 

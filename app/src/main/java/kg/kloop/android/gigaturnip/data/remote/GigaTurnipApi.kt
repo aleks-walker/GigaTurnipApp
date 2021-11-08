@@ -1,9 +1,6 @@
 package kg.kloop.android.gigaturnip.data.remote
 
-import kg.kloop.android.gigaturnip.data.models.CampaignDto
-import kg.kloop.android.gigaturnip.data.models.NotificationDto
-import kg.kloop.android.gigaturnip.data.models.TaskDto
-import kg.kloop.android.gigaturnip.data.models.TaskStageDto
+import kg.kloop.android.gigaturnip.data.models.*
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -82,13 +79,13 @@ interface GigaTurnipApi {
         @Path("id") id: Int
     ): Response<ResponseBody>
 
-    @GET("notifications")
+    @GET("notifications/list_user_notifications/")
     suspend fun getNotifications(
         @Header("Authorization") token: String,
         @Query("campaign") campaignId: String,
         @Query("viewed") viewed: Boolean,
         @Query("importance") importance: Int?
-    ): List<NotificationDto>
+    ): PaginationDto<NotificationDto>
 
     @GET("notifications/{id}")
     suspend fun getNotification(

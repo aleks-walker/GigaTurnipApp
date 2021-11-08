@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 
 val Green500 = Color(0xFF1EB980)
 val DarkBlue900 = Color(0xFF26282F)
+val LightBlue500 = Color(0xFF484C5A)
+val LightGray500 = Color(0xFFEEEEEE)
 
 val ColorPalette = darkColors(
     primary = Green500,
