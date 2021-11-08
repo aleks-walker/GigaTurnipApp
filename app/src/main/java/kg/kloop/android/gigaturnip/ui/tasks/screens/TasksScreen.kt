@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
+import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
 
@@ -46,6 +47,10 @@ fun TasksScreenView(
     navigateToDetails: (Task) -> Unit,
     viewModel: TasksViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel,
+    onNotificationsClick: () -> Unit,
+    onLogOutClick: () -> Unit,
+    scaffoldState: ScaffoldState = rememberScaffoldState(),
+    openDrawer: () -> Unit
 ) {
     val campaign = mainActivityViewModel.campaign.observeAsState()
     viewModel.setCampaignId(campaign.value!!.id)
@@ -58,6 +63,15 @@ fun TasksScreenView(
         TasksScreen.Finished,
     )
     Scaffold(
+        scaffoldState = scaffoldState,
+        topBar = {
+            Toolbar(
+                stringResource(R.string.app_name),
+                openDrawer = openDrawer,
+                onLogOutClick = { onLogOutClick() },
+                onNotificationsClick = { onNotificationsClick() }
+            )
+        },
         bottomBar = {
             TasksBottomNavigation(navController = navController, items = items)
         },

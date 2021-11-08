@@ -31,4 +31,9 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
     fun setCampaign(value: Campaign) {
         _campaign.value = value
     }
+
+    fun logOut() {
+        FirebaseAuth.getInstance().signOut()
+        _user.postValue(null)
+    }
 }

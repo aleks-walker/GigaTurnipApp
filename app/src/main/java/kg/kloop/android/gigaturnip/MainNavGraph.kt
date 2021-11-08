@@ -1,6 +1,8 @@
 package kg.kloop.android.gigaturnip
 
+import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -19,14 +21,21 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    viewModel: MainActivityViewModel
+    viewModel: MainActivityViewModel,
+    scaffoldState: ScaffoldState
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val openDrawer: () -> Unit = {
+        coroutineScope.launch { scaffoldState.drawerState.open() }
+    }
+
     NavHost(
         navController,
         startDestination = CampaignsScreen.CampaignScreen.route,
@@ -35,7 +44,8 @@ fun MainNavGraph(
         composable(NotificationsScreen.NotificationsList.route) {
             NotificationsScreenView(
                 navController = navController,
-                mainActivityViewModel = viewModel
+                mainActivityViewModel = viewModel,
+                onBack = upPress(navController)
             )
         }
         composable(
@@ -48,7 +58,7 @@ fun MainNavGraph(
             val args = backStackEntry.arguments
             val title = args?.getString("title").toString()
             val text = args?.getString("text").toString()
-            NotificationDetailsScreen(title = title, text = text)
+            NotificationDetailsScreen(title = title, text = text, onBack = upPress(navController))
         }
         composable(CampaignsScreen.CampaignScreen.route) {
             CampaignsScreenView(
@@ -75,24 +85,37 @@ fun MainNavGraph(
                             TasksScreen.Creatable.route.plus("/${viewModel.campaign.value?.id}")
                         )
                     },
+                    onNotificationsClick = {
+                        navController.navigate(NotificationsScreen.NotificationsList.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onLogOutClick = { viewModel.logOut() },
+                    openDrawer = openDrawer
                 )
             }
         }
         composable(
-            route = TasksScreen.Details.route.plus("/{id}/{stage_id}"),
-            arguments = listOf(navArgument("id") { type = NavType.StringType },
-                navArgument("stage_id") { type = NavType.StringType })
-        ) {
+            route = TasksScreen.Details.route.plus("/{id}/{stage_id}/{stage_title}"),
+            arguments = listOf(
+                navArgument("id") { type = NavType.StringType },
+                navArgument("stage_id") { type = NavType.StringType },
+                navArgument("stage_title") { type = NavType.StringType}
+            )
+        ) { backStackEntry ->
+            val stageTitle = backStackEntry.arguments?.getString("stage_title")
             TaskDetails(
                 navController = navController,
-                mainActivityViewModel = viewModel
+                mainActivityViewModel = viewModel,
+                onBack = upPress(navController),
+                stageTitle = stageTitle.orEmpty()
             )
         }
 
         composable(
             route = TasksScreen.Creatable.route.plus("/{campaign_id}"),
             arguments = listOf(navArgument("campaign_id") { type = NavType.StringType })
-        ) { TasksCreatable(navController = navController) }
+        ) { TasksCreatable(navController = navController, onBack = upPress(navController)) }
     }
 
 }
@@ -100,6 +123,7 @@ fun MainNavGraph(
 private fun navigateToDetails(navController: NavHostController) = { task: Task ->
     navController.navigate(
         TasksScreen.Details.route
-            .plus("/${task.id}/${task.stage.id}")
+            .plus("/${task.id}/${task.stage.id}/${task.stage.name}")
     )
 }
+private fun upPress(navController: NavHostController): () -> Unit = { navController.navigateUp() }

@@ -16,4 +16,6 @@
     <string name="cancelled">Cancelled</string>
     <string name="join">Join</string>
     <string name="word_new">New</string>
+    <string name="create_form">Create form</string>
+    <string name="notifications">Notifications</string>
 </resources>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,6 +35,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
+import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.tasks.*
 import kg.kloop.android.gigaturnip.util.Constants
@@ -47,6 +49,8 @@ fun TaskDetails(
     navController: NavHostController,
     viewModel: TaskDetailsViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel,
+    stageTitle: String,
+    onBack: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
@@ -67,8 +71,14 @@ fun TaskDetails(
                 uploadProgressInfos
             )
         }
-
-        Column(modifier = Modifier.fillMaxSize()) {
+        Scaffold (
+            topBar = {
+                DetailsToolbar(
+                    title = stageTitle,
+                    onBack = onBack,
+                )
+            },
+        ) {
             LoadingContent(
                 empty = uiState.initialLoad,
                 emptyContent = { FullScreenLoading() },
@@ -91,7 +101,6 @@ fun TaskDetails(
                         onPickPhotos = { pickedFile ->
                             viewModel.pruneWork()
                             Timber.d("button click")
-//                            viewModel.clearFileProgress()
                             photoLauncher.launch("image/*")
                             viewModel.setPickedFile(pickedFile)
                         },
@@ -108,12 +117,15 @@ fun TaskDetails(
                             Compressor.isRunning = false
                             cancelAllWork(context)
                         },
-                        onFileDelete = { filePath -> Timber.d("onFileDelete")},
-                        onPreviewFile = { storagePath -> showPreview(storagePath, context)}
+                        onFileDelete = { filePath -> Timber.d("onFileDelete") },
+                        onPreviewFile = { storagePath -> showPreview(storagePath, context) }
                     )
                 }
             }
+
         }
+
+
     }
 }
 

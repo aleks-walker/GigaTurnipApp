@@ -1,43 +1,50 @@
 package kg.kloop.android.gigaturnip.ui.tasks.screens
 
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kg.kloop.android.gigaturnip.R
+import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableUiState
 import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
-import timber.log.Timber
 
 
 @Composable
 fun TasksCreatable(
     navController: NavHostController,
-    viewModel: TasksCreatableViewModel = hiltViewModel()
+    viewModel: TasksCreatableViewModel = hiltViewModel(),
+    onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    Timber.d(("ui state: \n" +
-            "creating task ${uiState.creatingTask}\n" +
-            "created task id ${uiState.createdTaskId}\n" +
-            "loading ${uiState.loading}\n" +
-            "initial load ${uiState.initialLoad}").trimMargin())
 
     if (uiState.createdTaskId != null && !uiState.creatingTask) {
         navigateToCreatedTask(navController, uiState, viewModel)
     } else {
-        LoadingContent(empty = uiState.initialLoad,
-            emptyContent = { FullScreenLoading() },
-            loading = uiState.loading,
-            onRefresh = { viewModel.refreshAll() }) {
-            TaskStageList(
-                taskStages = uiState.taskStages,
-                isCreatingTask = uiState.creatingTask,
-                onClick = { stageId -> viewModel.createTask(stageId) },
-            )
+        Scaffold (
+            topBar = {
+                DetailsToolbar(
+                    title = stringResource(id = R.string.create_form),
+                    onBack = onBack,
+                )
+            },
+        ) {
+            LoadingContent(empty = uiState.initialLoad,
+                emptyContent = { FullScreenLoading() },
+                loading = uiState.loading,
+                onRefresh = { viewModel.refreshAll() }) {
+                TaskStageList(
+                    taskStages = uiState.taskStages,
+                    isCreatingTask = uiState.creatingTask,
+                    onClick = { stageId -> viewModel.createTask(stageId) },
+                )
+            }
         }
     }
 

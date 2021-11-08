@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Notification
+import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.LightBlue500
@@ -36,27 +39,36 @@ sealed class NotificationsScreen(val route: String) {
 fun NotificationsScreenView(
     navController: NavController,
     mainActivityViewModel: MainActivityViewModel,
-    viewModel: NotificationsViewModel = hiltViewModel()
+    viewModel: NotificationsViewModel = hiltViewModel(),
+    onBack: () -> Unit,
 ) {
     val user = mainActivityViewModel.user.value
     val uiState by viewModel.uiState.collectAsState()
-    // TODO: campaign id could be null
     viewModel.setCampaignId(mainActivityViewModel.campaign.value!!.id)
 
     user?.let {
-        LoadingContent(
-            empty = uiState.initialLoad,
-            emptyContent = { FullScreenLoading() },
-            loading = uiState.loading,
-            onRefresh = { viewModel.refreshNotifications() }) {
-            NotificationsScreenContent(
-                navController,
-                uiState.unreadNotifications,
-                uiState.readNotifications
-            )
+        Scaffold(
+            topBar = {
+                DetailsToolbar(
+                    title = stringResource(id = R.string.notifications),
+                    onBack = onBack,
+                )
+            },
+        ) {
+            LoadingContent(
+                empty = uiState.initialLoad,
+                emptyContent = { FullScreenLoading() },
+                loading = uiState.loading,
+                onRefresh = { viewModel.refreshNotifications() }) {
+                NotificationsScreenContent(
+                    navController,
+                    uiState.unreadNotifications,
+                    uiState.readNotifications
+                )
+            }
+
         }
     }
-
 }
 
 @Composable
