@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -21,6 +22,7 @@ import kg.kloop.android.gigaturnip.R
 @Composable
 fun Toolbar(
     title: String,
+    newNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
     onLogOutClick: () -> Unit,
     openDrawer: () -> Unit,
@@ -35,8 +37,14 @@ fun Toolbar(
                 Icon(Icons.Default.Menu, "menu")
             }
         }, actions = {
+            if (newNotificationsCount > 0) {
+                Text(text = newNotificationsCount.toString())
+            }
             IconButton(onClick = { onNotificationsClick() }) {
-                Icon(Icons.Default.Notifications, "notifications")
+                Icon(Icons.Default.Notifications,
+                    "notifications",
+                    tint = if (newNotificationsCount > 0) Color.Yellow else Color.White
+                )
             }
             Menu(
                 modifier = Modifier.wrapContentSize(),

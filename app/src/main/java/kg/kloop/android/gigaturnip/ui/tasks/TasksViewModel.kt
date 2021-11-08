@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class TasksUiState(
+    val newNotificationsCount: Int = 0,
     val inProgressTasks: List<Task> = emptyList(),
     val finishedTasks: List<Task> = emptyList(),
     val loading: Boolean = false
@@ -56,8 +57,14 @@ class TasksViewModel @Inject constructor(
                     true,
                     _campaignId.value!!
                 ).data.orEmpty()
+                val newNotificationsCount =
+                    repository.getNotifications(
+                        token, _campaignId.value!!,
+                        viewed = false
+                    ).data.orEmpty().size
                 _uiState.update {
                     it.copy(
+                        newNotificationsCount = newNotificationsCount,
                         inProgressTasks = inProgressTasks,
                         finishedTasks = finishedTasks,
                         loading = false

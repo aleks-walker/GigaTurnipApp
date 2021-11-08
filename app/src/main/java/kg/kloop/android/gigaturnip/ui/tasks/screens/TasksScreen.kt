@@ -66,7 +66,8 @@ fun TasksScreenView(
         scaffoldState = scaffoldState,
         topBar = {
             Toolbar(
-                stringResource(R.string.app_name),
+                title = stringResource(R.string.app_name),
+                newNotificationsCount = uiState.newNotificationsCount,
                 openDrawer = openDrawer,
                 onLogOutClick = { onLogOutClick() },
                 onNotificationsClick = { onNotificationsClick() }
