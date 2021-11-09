@@ -7,6 +7,7 @@ import androidx.core.net.toUri
 import androidx.work.*
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_ID
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
@@ -20,6 +21,7 @@ import java.io.File
 class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val appContext = applicationContext
+        val fileId = inputData.getString(KEY_FILE_ID)
         val resourceUri = inputData.getString(KEY_FILE_URI)
         val pathToUpload = inputData.getString(KEY_PATH_TO_UPLOAD)
 
@@ -43,6 +45,7 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         uri = Uri.parse(resourceUri),
                         onProgress = { progress ->
                             setProgressAsync(workDataOf(
+                                KEY_FILE_ID to fileId,
                                 KEY_FILENAME to resourceUri!!.toUri().getFileName(),
                                 KEY_PATH_TO_UPLOAD to pathToUpload,
                                 PROGRESS to progress.toInt(),
@@ -61,6 +64,7 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
                         }
                     )
                     outputData = workDataOf(
+                        KEY_FILE_ID to fileId,
                         KEY_FILENAME to uri!!.getFileName(),
                         KEY_PATH_TO_UPLOAD to pathToUpload,
                         KEY_FILE_URI to uri.toString(),
@@ -83,8 +87,6 @@ class CompressVideoWorker(ctx: Context, params: WorkerParameters) : CoroutineWor
     private fun cancelWork(appContext: Context) {
         WorkManager.getInstance(appContext).cancelAllWorkByTag(TAG_COMPRESS)
     }
-
-//    private fun getFileName(uri: Uri): String = File(uri.path!!).name
 
 }
 

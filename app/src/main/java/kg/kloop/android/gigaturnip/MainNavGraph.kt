@@ -115,7 +115,13 @@ fun MainNavGraph(
         composable(
             route = TasksScreen.Creatable.route.plus("/{campaign_id}"),
             arguments = listOf(navArgument("campaign_id") { type = NavType.StringType })
-        ) { TasksCreatable(navController = navController, onBack = upPress(navController)) }
+        ) {
+            TasksCreatable(
+                navController = navController,
+                onBack = upPress(navController),
+                navigateToTask = navigateToDetails(navController)
+            )
+        }
     }
 
 }

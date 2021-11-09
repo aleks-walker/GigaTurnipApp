@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.data.responses.TaskResponseEntity
+import kg.kloop.android.gigaturnip.data.responses.toTask
+import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
@@ -16,15 +18,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 
 data class TasksCreatableUiState(
     val taskStages: List<TaskStage> = emptyList(),
     val loading: Boolean = false,
     val creatingTask: Boolean = false,
-    val createdTaskId: Int? = null,
-    val taskStageId: String? = null,
+    val createdTask: Task? = null,
+    val taskStage: TaskStage? = null,
 ) {
     val initialLoad: Boolean
         get() = taskStages.isEmpty() && loading
@@ -44,8 +45,8 @@ class TasksCreatableViewModel @Inject constructor(
     init {
         refreshAll()
     }
-    fun setCreatedTaskId(value: Int?) {
-        _uiState.update { it.copy(createdTaskId = value) }
+    fun setCreatedTask(value: Task?) {
+        _uiState.update { it.copy(createdTask = value) }
     }
 
     fun refreshAll() {
@@ -63,21 +64,20 @@ class TasksCreatableViewModel @Inject constructor(
     }
 
 
-    fun createTask(stageId: String) {
+    fun createTask(stage: TaskStage) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 _uiState.update { it.copy(creatingTask = true) }
                 val token = getTokenSynchronously()
-                val response = repository.createTask(token!!, stageId.toInt())
+                val response = repository.createTask(token!!, stage.id.toInt())
                 val taskResponse = Gson().fromJson(
                     response.body()?.string(),
                     TaskResponseEntity::class.java
                 )
-                Timber.d("task response id: ${taskResponse.id}")
                 _uiState.update {
                     it.copy(
-                        taskStageId = stageId,
-                        createdTaskId = taskResponse.id,
+                        taskStage = stage,
+                        createdTask = taskResponse.toTask(stage),
                         creatingTask = false
                     )
                 }

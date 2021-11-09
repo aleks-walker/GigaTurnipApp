@@ -19,6 +19,7 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.ui.tasks.screens.getUploadPath
 import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
 import kg.kloop.android.gigaturnip.util.Constants.INPUT_DELAY_IN_MILL
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_ID
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PRIVATE_PREFIX
@@ -100,7 +101,6 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun uploadPhotos(uris: List<Uri>) {
         uris.forEach { uri ->
-            Timber.d("photo uri: $uri")
             uploadPhoto(createInputData(uri.toString()))
         }
     }
@@ -163,6 +163,7 @@ class TaskDetailsViewModel @Inject constructor(
     private fun createInputData(fileUri: String): Data {
         val builder = Data.Builder()
         builder.apply {
+            putString(KEY_FILE_ID, _pickedFile!!.key)
             putString(KEY_FILE_URI, fileUri)
             putString(KEY_PATH_TO_UPLOAD, makeUploadPath())
         }
@@ -242,12 +243,16 @@ class TaskDetailsViewModel @Inject constructor(
         val progressState = _uiState.value.fileProgressState
         Timber.d("progress state before: $progressState")
         progressState?.let {
-            if (progressState.get(_pickedFile?.key) == null) {
-                updateUi(progressState.apply { add(_pickedFile?.key, JsonObject()) })
+            if (progressState.get(fileProgress.fileId) == null) {
+                updateUi(progressState.apply { add(fileProgress.fileId, JsonObject()) })
             }
             val progressData = appendToProgressData(progressState, fileProgress)
             Timber.d("progress data: $progressData")
-            val filesProgressInfo = setProgressData(progressState, progressData)
+            val filesProgressInfo = setProgressData(
+                fileProgress.fileId,
+                progressState,
+                progressData
+            )
             Timber.d("files progress info: $filesProgressInfo")
             updateUi(filesProgressInfo)
         }
@@ -258,7 +263,7 @@ class TaskDetailsViewModel @Inject constructor(
         progressState: JsonObject,
         fileProgress: FileProgress
     ): JsonObject? {
-        val progressData = progressState.getAsJsonObject(_pickedFile?.key)
+        val progressData = progressState.getAsJsonObject(fileProgress.fileId)
         progressData.apply {
             add(fileProgress.fileName, fileProgress.toJsonObject())
         }
@@ -270,11 +275,12 @@ class TaskDetailsViewModel @Inject constructor(
     }
 
     private fun setProgressData(
+        fileId: String,
         progressState: JsonObject,
         progressData: JsonObject?
     ): JsonObject {
         val filesProgressInfo = progressState.apply {
-            add(_pickedFile?.key, progressData)
+            add(fileId, progressData)
         }
         return filesProgressInfo
     }

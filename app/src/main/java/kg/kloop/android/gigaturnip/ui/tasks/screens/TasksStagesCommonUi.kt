@@ -20,13 +20,13 @@ import kg.kloop.android.gigaturnip.domain.TaskStage
 fun TaskStageList(
     taskStages: List<TaskStage>,
     isCreatingTask: Boolean,
-    onClick: (String) -> Unit,
+    onClick: (TaskStage) -> Unit,
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(taskStages) { stage ->
             TaskStageCard(
                 stage,
-                onClick = { onClick(stage.id) },
+                onClick = { onClick(stage) },
                 isCreatingTask
             )
         }

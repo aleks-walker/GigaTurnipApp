@@ -10,9 +10,9 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kg.kloop.android.gigaturnip.R
+import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
-import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableUiState
 import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
 
 
@@ -20,12 +20,15 @@ import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
 fun TasksCreatable(
     navController: NavHostController,
     viewModel: TasksCreatableViewModel = hiltViewModel(),
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navigateToTask: (Task) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    if (uiState.createdTaskId != null && !uiState.creatingTask) {
-        navigateToCreatedTask(navController, uiState, viewModel)
+    if (uiState.createdTask != null && !uiState.creatingTask) {
+        navController.popBackStack()
+        navigateToTask(uiState.createdTask!!)
+        viewModel.setCreatedTask(null)
     } else {
         Scaffold (
             topBar = {
@@ -42,24 +45,12 @@ fun TasksCreatable(
                 TaskStageList(
                     taskStages = uiState.taskStages,
                     isCreatingTask = uiState.creatingTask,
-                    onClick = { stageId -> viewModel.createTask(stageId) },
+                    onClick = { stage -> viewModel.createTask(stage) },
                 )
             }
         }
     }
 
-}
-
-private fun navigateToCreatedTask(
-    navController: NavHostController,
-    uiState: TasksCreatableUiState,
-    viewModel: TasksCreatableViewModel
-) {
-    navController.popBackStack()
-    navController.navigate(
-        TasksScreen.Details.route.plus("/${uiState.createdTaskId}/${uiState.taskStageId}")
-    )
-    viewModel.setCreatedTaskId(null)
 }
 
 @Composable

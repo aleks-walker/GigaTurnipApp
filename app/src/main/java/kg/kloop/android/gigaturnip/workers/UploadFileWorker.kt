@@ -10,6 +10,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_ID
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
@@ -20,6 +21,7 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
     override suspend fun doWork(): Result {
         val context = applicationContext
 
+        val fileId = inputData.getString(KEY_FILE_ID)
         val uri = inputData.getString(KEY_FILE_URI)!!.toUri()
         val fileName = uri.getFileName()
         val uploadPath = inputData.getString(KEY_PATH_TO_UPLOAD)!!
@@ -37,6 +39,7 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
                 val progress = (100.0 * it.bytesTransferred) / it.totalByteCount
                 setProgressAsync(
                     workDataOf(
+                        KEY_FILE_ID to fileId,
                         KEY_FILENAME to fileName,
                         KEY_PATH_TO_UPLOAD to uploadPath,
                         PROGRESS to progress.toInt(),
@@ -59,6 +62,7 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
             )
             Result.success(
                 workDataOf(
+                    KEY_FILE_ID to fileId,
                     KEY_FILENAME to fileName,
 //                    KEY_DOWNLOAD_URI to downloadUri.toString(),
                     KEY_STORAGE_REF_PATH to fileRef.path,

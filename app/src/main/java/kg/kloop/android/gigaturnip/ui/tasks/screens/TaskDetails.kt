@@ -40,14 +40,11 @@ import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.tasks.*
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
+import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_ID
 import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import timber.log.Timber
 
-@FlowPreview
-@ExperimentalCoroutinesApi
 @Composable
 fun TaskDetails(
     navController: NavHostController,
@@ -183,12 +180,15 @@ private fun updateFileProgress(
     viewModel: TaskDetailsViewModel,
 ) {
     val fileProgress = FileProgress(
+        fileId = inputData.getString(KEY_FILE_ID).orEmpty(),
         fileName = inputData.getString(KEY_FILENAME),
         storagePath = inputData.getString(KEY_STORAGE_REF_PATH),
         progress = inputData.getInt(PROGRESS, 0).toFloat(),
         workTag = workTag,
         isFinished = isFinished)
-    if (!fileProgress.fileName.isNullOrBlank()) {
+    if (fileProgress.fileId.isNotBlank()
+        && !fileProgress.fileName.isNullOrBlank()
+    ) {
         Timber.d("file progress: $fileProgress")
         viewModel.updateFileInfo(fileProgress)
     }
@@ -326,6 +326,7 @@ fun Path.getUploadPath() =
     "${this.prefix}${this.campaignId}/${this.chainId}/${this.stageId}/${this.userId}/${this.taskId}/"
 
 data class FileProgress(
+    val fileId: String,
     val fileName: String?,
     val storagePath: String?,
     val progress: Float = 0.0f,

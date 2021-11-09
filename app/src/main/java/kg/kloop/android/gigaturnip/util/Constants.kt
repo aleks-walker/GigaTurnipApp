@@ -28,6 +28,7 @@ object Constants {
     const val KEY_PATH_TO_UPLOAD = "KEY_PATH_TO_UPLOAD"
     const val KEY_STORAGE_REF_PATH = "KEY_STORAGE_REF_PATH"
     const val KEY_FILENAME = "KEY_FILENAME"
+    const val KEY_FILE_ID = "KEY_FILE_ID"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"
