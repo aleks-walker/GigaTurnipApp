@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -37,14 +38,16 @@ fun Toolbar(
                 Icon(Icons.Default.Menu, "menu")
             }
         }, actions = {
-            if (newNotificationsCount > 0) {
-                Text(text = newNotificationsCount.toString())
-            }
-            IconButton(onClick = { onNotificationsClick() }) {
-                Icon(Icons.Default.Notifications,
-                    "notifications",
-                    tint = if (newNotificationsCount > 0) Color.Yellow else Color.White
-                )
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(onClick = { onNotificationsClick() }) {
+                    Icon(Icons.Default.Notifications,
+                        "notifications",
+                        tint = if (newNotificationsCount > 0) Color.Yellow else Color.White
+                    )
+                }
+                if (newNotificationsCount > 0) {
+                    Text(text = newNotificationsCount.toString())
+                }
             }
             Menu(
                 modifier = Modifier.wrapContentSize(),

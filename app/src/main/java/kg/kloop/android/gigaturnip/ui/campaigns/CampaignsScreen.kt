@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -111,22 +112,35 @@ private fun CampaignsScreenContent(
     onCampaignClick: (Campaign) -> Unit,
     onSelectableCampaignClick: (Campaign) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 8.dp)
-    ) {
-        items(campaigns) {
-            CampaignItem(
-                campaign = it,
-                onClick = { onCampaignClick(it) }
-            )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.choose_campaign),
+                        style = MaterialTheme.typography.h5
+                    )
+                })
         }
-        items(selectableCampaigns) {
-            CampaignItem(
-                campaign = it,
-                onClick = { onSelectableCampaignClick(it) }
-            )
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 8.dp)
+        ) {
+            items(campaigns) {
+                CampaignItem(
+                    campaign = it,
+                    onClick = { onCampaignClick(it) }
+                )
+            }
+            items(selectableCampaigns) {
+                CampaignItem(
+                    campaign = it,
+                    onClick = { onSelectableCampaignClick(it) }
+                )
+            }
         }
     }
 }

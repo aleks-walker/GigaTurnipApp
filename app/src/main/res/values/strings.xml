@@ -18,4 +18,8 @@
     <string name="word_new">New</string>
     <string name="create_form">Create form</string>
     <string name="notifications">Notifications</string>
+    <string name="empty">Empty</string>
+    <string name="try_again">Try again</string>
+    <string name="nothing_found">Nothing found</string>
+    <string name="choose_campaign">Choose a campaign</string>
 </resources>
