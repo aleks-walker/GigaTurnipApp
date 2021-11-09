@@ -96,7 +96,7 @@ data class WebViewPickedFile(
 
 class WebAppInterface(
     private val onSubmit: (String) -> Unit,
-    private val onFormBlur: (String) -> Unit,
+    private val onFormChange: (String) -> Unit,
     private val onListenersReady: () -> Unit,
     private val onPickVideos: (WebViewPickedFile) -> Unit,
     private val onPickPhotos: (WebViewPickedFile) -> Unit,
@@ -111,8 +111,8 @@ class WebAppInterface(
     }
 
     @JavascriptInterface
-    fun onBlur(data: String) {
-        onFormBlur(data)
+    fun onChange(data: String) {
+        onFormChange(data)
     }
 
     @JavascriptInterface

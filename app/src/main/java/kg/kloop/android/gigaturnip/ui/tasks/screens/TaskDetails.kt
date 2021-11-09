@@ -42,8 +42,12 @@ import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
 import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import timber.log.Timber
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @Composable
 fun TaskDetails(
     navController: NavHostController,
@@ -105,7 +109,7 @@ fun TaskDetails(
                             viewModel.setPickedFile(pickedFile)
                         },
                         onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
-                        onFormBlur = { responses ->
+                        onFormChange = { responses ->
                             viewModel.updateTask(
                                 task = uiState.task!!,
                                 responses = responses
@@ -194,7 +198,7 @@ private fun updateFileProgress(
 private fun TaskDetailsScreenContent(
     uiState: TaskDetailsUiState,
     onTaskSubmit: (String) -> Unit,
-    onFormBlur: (String) -> Unit,
+    onFormChange: (String) -> Unit,
     onPickVideos: (WebViewPickedFile) -> Unit,
     onPickPhotos: (WebViewPickedFile) -> Unit,
     onListenersReady: () -> Unit,
@@ -216,7 +220,7 @@ private fun TaskDetailsScreenContent(
             urlToRender = Constants.TURNIP_VIEW_URL,
             webAppInterface = WebAppInterface(
                 onSubmit = { responses -> onTaskSubmit(responses) },
-                onFormBlur = { responses -> onFormBlur(responses)},
+                onFormChange = { responses -> onFormChange(responses)},
                 onListenersReady = onListenersReady,
                 onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
                 onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },

@@ -18,6 +18,7 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.ui.tasks.screens.getUploadPath
 import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
+import kg.kloop.android.gigaturnip.util.Constants.INPUT_DELAY_IN_MILL
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PRIVATE_PREFIX
@@ -29,13 +30,11 @@ import kg.kloop.android.gigaturnip.util.Constants.VIDEO_MANIPULATION_WORK_NAME
 import kg.kloop.android.gigaturnip.workers.CleanupWorker
 import kg.kloop.android.gigaturnip.workers.CompressVideoWorker
 import kg.kloop.android.gigaturnip.workers.UploadFileWorker
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -62,6 +61,7 @@ class TaskDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TaskDetailsUiState(loading = true))
     val uiState: StateFlow<TaskDetailsUiState> = _uiState.asStateFlow()
     private var _user: FirebaseUser? = null
+    private var updateJob: Job? = null
 
     var uploadWorkProgress: LiveData<List<WorkInfo>>
     var compressWorkProgress: LiveData<List<WorkInfo>>
@@ -223,7 +223,9 @@ class TaskDetailsViewModel @Inject constructor(
                     "changed value: $responses").trimMargin()
         )
         if (_uiState.value.task?.responses?.toString() != responses) {
-            viewModelScope.launch(Dispatchers.Default) {
+            updateJob?.cancel()
+            updateJob = viewModelScope.launch(Dispatchers.Default) {
+                delay(INPUT_DELAY_IN_MILL)
                 val token = getTokenSynchronously()
                 val response = repository.updateTask(token!!, taskId.toInt(), responses, false)
 //                val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)

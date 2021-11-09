@@ -25,10 +25,8 @@ object Constants {
     // Other keys
     const val OUTPUT_PATH = "compress_video_outputs"
     const val KEY_FILE_URI = "KEY_FILE_URI"
-//    const val KEY_UPLOAD_PATH = "KEY_UPLOAD_PATH"
     const val KEY_PATH_TO_UPLOAD = "KEY_PATH_TO_UPLOAD"
     const val KEY_STORAGE_REF_PATH = "KEY_STORAGE_REF_PATH"
-//    const val KEY_DOWNLOAD_URI = "KEY_DOWNLOAD_URI"
     const val KEY_FILENAME = "KEY_FILENAME"
 
     // Progress Data Key
@@ -44,5 +42,5 @@ object Constants {
     const val DATA_EVENT = "android_data_event"
     const val FILE_EVENT = "android_file_event"
 
-
+    const val INPUT_DELAY_IN_MILL = 2000L
 }
