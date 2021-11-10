@@ -11,11 +11,6 @@ import androidx.webkit.WebSettingsCompat.setForceDark
 import androidx.webkit.WebViewFeature
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import kg.kloop.android.gigaturnip.util.Constants.DATA_EVENT
-import kg.kloop.android.gigaturnip.util.Constants.FILE_EVENT
-import kg.kloop.android.gigaturnip.util.Constants.PREVIOUS_TASKS_EVENT
-import kg.kloop.android.gigaturnip.util.Constants.RICH_TEXT_EVENT
-import kg.kloop.android.gigaturnip.util.Constants.SCHEMA_EVENT
 import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -24,8 +19,7 @@ fun WebPageScreen(
     modifier: Modifier,
     urlToRender: String,
     webAppInterface: WebAppInterface,
-    onUpdate: () -> Unit,
-    uiState: TaskDetailsUiState
+    onUpdate: (WebView) -> Unit,
 ) {
     AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
@@ -38,27 +32,7 @@ fun WebPageScreen(
 //            setDarkMode(this)
 
         }
-    }, update = {
-        onUpdate()
-        Timber.d("uiState: $uiState")
-        val json = JsonObject().apply {
-            add("jsonSchema", uiState.task?.stage?.jsonSchema?.toJsonObject())
-            add("uiSchema", uiState.task?.stage?.uiSchema?.toJsonObject())
-            addProperty("isComplete", uiState.task?.isComplete)
-        }
-        evaluateJs(it, getRichText(uiState.task?.stage?.richText.orEmpty()), RICH_TEXT_EVENT)
-        evaluateJs(it, uiState.previousTasks.toString(), PREVIOUS_TASKS_EVENT)
-        evaluateJs(it, json.toString(), SCHEMA_EVENT)
-        evaluateJs(it, uiState.task?.responses.toString(), DATA_EVENT)
-        Timber.d("data state: ${uiState.task?.responses}")
-        Timber.d("file progress state: ${uiState.fileProgressState}")
-        evaluateJs(it, uiState.fileProgressState.toString(), FILE_EVENT)
-    })
-}
-
-private fun getRichText(text: String): String =
-    JsonObject().apply { addProperty("rich_text", text) }.toString()
-
+    }, update = { onUpdate(it) }) }
 
 private fun setDarkMode(webView: WebView) {
     if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
@@ -79,14 +53,6 @@ private fun webChromeClient() = object : WebChromeClient() {
         )
         return true
     }
-}
-
-private fun evaluateJs(webView: WebView, detail: String, eventName: String) {
-    Timber.d("Event name: '$eventName'")
-    webView.evaluateJavascript(
-        "(function() { window.dispatchEvent(new CustomEvent(\'$eventName\', " +
-                "{detail: '$detail'})); })();"
-    ) {}
 }
 
 data class WebViewPickedFile(

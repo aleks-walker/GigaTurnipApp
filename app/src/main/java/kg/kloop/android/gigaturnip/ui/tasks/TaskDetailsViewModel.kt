@@ -71,11 +71,6 @@ class TaskDetailsViewModel @Inject constructor(
 
     private var _pickedFile: WebViewPickedFile? = null
 
-    fun clearFileProgress() {
-        _uiState.update {
-            it.copy(fileProgressState = null)
-        }
-    }
     fun pruneWork() {
         workManager.pruneWork()
     }

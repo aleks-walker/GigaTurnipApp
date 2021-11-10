@@ -2,6 +2,7 @@ package kg.kloop.android.gigaturnip.ui.tasks.screens
 
 import android.content.Context
 import android.net.Uri
+import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -95,13 +96,10 @@ fun TaskDetails(
                     TaskDetailsScreenContent(
                         uiState = uiState,
                         onPickVideos = { pickedFile ->
-//                            viewModel.pruneWork()
                             videoLauncher.launch("video/*")
                             viewModel.setPickedFile(pickedFile)
                         },
                         onPickPhotos = { pickedFile ->
-                            viewModel.pruneWork()
-                            Timber.d("button click")
                             photoLauncher.launch("image/*")
                             viewModel.setPickedFile(pickedFile)
                         },
@@ -113,7 +111,13 @@ fun TaskDetails(
                             )
                         },
                         onListenersReady = { viewModel.setListenersReady(true) },
-                        onUpdate = { if (uiState.listenersReady) viewModel.setListenersReady(false) },
+                        onUpdate = { webview ->
+                            if (uiState.listenersReady) {
+                                webViewInitialLoad(uiState, webview)
+                                viewModel.setListenersReady(false)
+                            }
+                            webViewFileProgressLoad(webview, uiState)
+                        },
                         onCancelWork = {
                             Compressor.isRunning = false
                             cancelAllWork(context)
@@ -125,9 +129,42 @@ fun TaskDetails(
             }
 
         }
-
-
     }
+}
+
+private fun webViewFileProgressLoad(
+    webview: WebView,
+    uiState: TaskDetailsUiState
+) {
+    evaluateJs(
+        webview, uiState.fileProgressState.toString(),
+        Constants.FILE_EVENT
+    )
+}
+
+private fun webViewInitialLoad(
+    uiState: TaskDetailsUiState,
+    webview: WebView
+) {
+    val json = JsonObject().apply {
+        add("jsonSchema", uiState.task?.stage?.jsonSchema?.toJsonObject())
+        add("uiSchema", uiState.task?.stage?.uiSchema?.toJsonObject())
+        addProperty("isComplete", uiState.task?.isComplete)
+    }
+    evaluateJs(
+        webview, getRichText(uiState.task?.stage?.richText.orEmpty()),
+        Constants.RICH_TEXT_EVENT
+    )
+    evaluateJs(
+        webview, uiState.previousTasks.toString(),
+        Constants.PREVIOUS_TASKS_EVENT
+    )
+    evaluateJs(webview, json.toString(), Constants.SCHEMA_EVENT)
+    evaluateJs(
+        webview, uiState.task?.responses.toString(),
+        Constants.DATA_EVENT
+    )
+    Timber.d("data state: ${uiState.task?.responses}")
 }
 
 @Composable
@@ -202,7 +239,7 @@ private fun TaskDetailsScreenContent(
     onPickVideos: (WebViewPickedFile) -> Unit,
     onPickPhotos: (WebViewPickedFile) -> Unit,
     onListenersReady: () -> Unit,
-    onUpdate: () -> Unit,
+    onUpdate: (WebView) -> Unit,
     onCancelWork: (String) -> Unit,
     onFileDelete: (String) -> Unit,
     onPreviewFile: (String) -> Unit,
@@ -216,7 +253,6 @@ private fun TaskDetailsScreenContent(
         TaskStageDetails(uiState)
         WebPageScreen(
             modifier = Modifier.wrapContentSize(),
-            uiState = uiState,
             urlToRender = Constants.TURNIP_VIEW_URL,
             webAppInterface = WebAppInterface(
                 onSubmit = { responses -> onTaskSubmit(responses) },
@@ -321,6 +357,18 @@ data class Path(
     val stageId: String,
     val taskId: String
 )
+
+fun evaluateJs(webView: WebView, detail: String, eventName: String) {
+    Timber.d("Event name: '$eventName'")
+    webView.evaluateJavascript(
+        "(function() { window.dispatchEvent(new CustomEvent(\'$eventName\', " +
+                "{detail: '$detail'})); })();"
+    ) {}
+}
+
+private fun getRichText(text: String): String =
+    JsonObject().apply { addProperty("rich_text", text) }.toString()
+
 
 fun Path.getUploadPath() =
     "${this.prefix}${this.campaignId}/${this.chainId}/${this.stageId}/${this.userId}/${this.taskId}/"
