@@ -124,7 +124,6 @@ private fun navigateToNotification(
     navController.navigate(
         NotificationsScreen.NotificationDetails.route
             .plus("/${it.id}")
-            .plus("/${it.title}")
     )
 }
 
@@ -147,34 +146,28 @@ fun NotificationItem(
             .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = notification.title,
-                        style = MaterialTheme.typography.h5
-                    )
-                    Text(
-                        text = HtmlCompat.fromHtml(
-                            notification.text,
-                            HtmlCompat.FROM_HTML_MODE_COMPACT
-                        ).toString(),
-                        style = MaterialTheme.typography.caption,
-                        maxLines = 1,
-
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                if (!read) {
-                    Text(
-                        text = context.getString(R.string.word_new).lowercase(),
-                        color = Color.Yellow
-                    )
-                }
+            Column(modifier = Modifier.weight(1F)) {
+                Text(
+                    text = notification.title,
+                    style = MaterialTheme.typography.h5,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = HtmlCompat.fromHtml(
+                        notification.text,
+                        HtmlCompat.FROM_HTML_MODE_COMPACT
+                    ).toString(),
+                    style = MaterialTheme.typography.caption,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (!read) {
+                Text(
+                    text = context.getString(R.string.word_new).lowercase(),
+                    color = Color.Yellow
+                )
             }
         }
     }
@@ -205,7 +198,7 @@ fun NotificationItemPreview() {
     NotificationItem(
         notification = Notification(
             id = 1,
-            title = "title",
+            title = "title".repeat(50),
             text = "text ".repeat(50),
             importance = 3,
             createdAt = "asdf",
@@ -213,6 +206,6 @@ fun NotificationItemPreview() {
             campaignId = 1,
             rankId = 1
         ),
-        read = true,
+        read = false,
         onNotificationItemClick = {})
 }

@@ -20,13 +20,12 @@ import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 fun NotificationDetailsScreen(
     viewModel: NotificationDetailsViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    title: String,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     Scaffold(
         topBar = {
             DetailsToolbar(
-                title = title,
+                title = uiState.notification?.title.orEmpty(),
                 onBack = onBack,
             )
         },
@@ -36,32 +35,44 @@ fun NotificationDetailsScreen(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            Text(text = title, style = MaterialTheme.typography.h5)
-            if (uiState.loading) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentSize()
-                        .padding(top = 8.dp)
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 8.dp),
-                    factory = { context -> TextView(context).apply {
-                        textSize = 16F
-                    } },
-                    update = {
-                        it.text = HtmlCompat.fromHtml(
-                            uiState.notification?.text.orEmpty(),
-                            HtmlCompat.FROM_HTML_MODE_COMPACT
-                        )
-                    }
-                )
-            }
+            Text(
+                text = uiState.notification?.title.orEmpty(),
+                style = MaterialTheme.typography.h5
+            )
+            if (uiState.loading) ProgressBar()
+            else TextView(uiState)
         }
     }
+}
+
+@Composable
+private fun ProgressBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentSize()
+            .padding(top = 8.dp)
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun TextView(uiState: NotificationDetailsUiState) {
+    AndroidView(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 8.dp),
+        factory = { context ->
+            TextView(context).apply {
+                textSize = 16F
+            }
+        },
+        update = {
+            it.text = HtmlCompat.fromHtml(
+                uiState.notification?.text.orEmpty(),
+                HtmlCompat.FROM_HTML_MODE_COMPACT
+            )
+        }
+    )
 }
