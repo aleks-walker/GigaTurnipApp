@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -124,7 +125,6 @@ private fun navigateToNotification(
         NotificationsScreen.NotificationDetails.route
             .plus("/${it.id}")
             .plus("/${it.title}")
-            .plus("/${it.text}")
     )
 }
 
@@ -145,28 +145,37 @@ fun NotificationItem(
         Row(modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween) {
-            Column(
-                modifier = Modifier
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.TopEnd
             ) {
-                Text(
-                    text = notification.title,
-                    style = MaterialTheme.typography.h5
-                )
-                Text(
-                    text = notification.text,
-                    style = MaterialTheme.typography.caption,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            if (!read) {
-                Text(
-                    text = context.getString(R.string.word_new).lowercase(),
-                    color = Color.Yellow
-                )
-            }
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = notification.title,
+                        style = MaterialTheme.typography.h5
+                    )
+                    Text(
+                        text = HtmlCompat.fromHtml(
+                            notification.text,
+                            HtmlCompat.FROM_HTML_MODE_COMPACT
+                        ).toString(),
+                        style = MaterialTheme.typography.caption,
+                        maxLines = 1,
 
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                if (!read) {
+                    Text(
+                        text = context.getString(R.string.word_new).lowercase(),
+                        color = Color.Yellow
+                    )
+                }
+            }
         }
     }
 }

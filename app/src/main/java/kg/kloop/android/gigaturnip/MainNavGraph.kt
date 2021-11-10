@@ -49,16 +49,14 @@ fun MainNavGraph(
             )
         }
         composable(
-            NotificationsScreen.NotificationDetails.route.plus("/{id}/{title}/{text}"),
+            NotificationsScreen.NotificationDetails.route.plus("/{id}/{title}"),
             arguments = listOf(
                 navArgument("id") { type = NavType.StringType },
-                navArgument("title") { type = NavType.StringType },
-                navArgument("text") { type = NavType.StringType })
+                navArgument("title") { type = NavType.StringType },)
         ) { backStackEntry ->
             val args = backStackEntry.arguments
             val title = args?.getString("title").toString()
-            val text = args?.getString("text").toString()
-            NotificationDetailsScreen(title = title, text = text, onBack = upPress(navController))
+            NotificationDetailsScreen(title = title, onBack = upPress(navController))
         }
         composable(CampaignsScreen.CampaignScreen.route) {
             CampaignsScreenView(

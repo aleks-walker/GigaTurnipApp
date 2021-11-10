@@ -36,17 +36,16 @@ class NotificationDetailsViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                getNotification(notificationId.toInt())
+                val notification = getNotification(notificationId.toInt())
+                _uiState.update { it.copy(notification = notification, loading = false) }
             }
         }
     }
 
-    private suspend fun getNotification(id: Int) {
-        val response = repository.getNotification(
+    private suspend fun getNotification(id: Int): Notification? =
+        repository.getNotification(
             token = getTokenSynchronously()!!,
             notificationId = id
-        )
-        _uiState.update { it.copy(notification = response.data) }
-    }
+        ).data
 }
 
