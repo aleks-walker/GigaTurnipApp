@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GigaTurnip</string>
+    <string name="campaigns_list">Список кампаний</string>
+    <string name="tasks_list">Список форм</string>
+    <string name="finished">Выполнены</string>
+    <string name="pending">В ожидании</string>
+    <string name="details">Подробности</string>
+    <string name="login">Войти</string>
+    <string name="task_completed">Форма выполнена</string>
+    <string name="logout">Выйти</string>
+    <string name="video_compression">Сжатие видео</string>
+    <string name="compression_complete">Сжатие завершено</string>
+    <string name="uploading_file">Отправка файла</string>
+    <string name="file_uploaded">Файл отправлен</string>
+    <string name="cancelled">Отменено</string>
+    <string name="join">Присоединиться</string>
+    <string name="word_new">Новое</string>
+    <string name="create_form">Создайте форму</string>
+    <string name="notifications">Уведомления</string>
+    <string name="empty">Пусто</string>
+    <string name="try_again">Попробуйте ещё раз</string>
+    <string name="nothing_found">Ничего не найдено</string>
+    <string name="choose_campaign">Выберите кампанию</string>
+</resources>
