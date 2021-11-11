@@ -6,9 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -54,10 +52,11 @@ fun TasksScreenView(
 ) {
     val campaign = mainActivityViewModel.campaign.observeAsState()
     viewModel.setCampaignId(campaign.value!!.id)
+    refreshOnce(viewModel)
 
     val uiState by viewModel.uiState.collectAsState()
-
     val navController = rememberNavController()
+
     val items = listOf(
         TasksScreen.InProgress,
         TasksScreen.Finished,
@@ -89,7 +88,6 @@ fun TasksScreenView(
         floatingActionButtonPosition = FabPosition.Center,
     )
     { innerPadding ->
-
         NavHost(
             navController,
             startDestination = TasksScreen.InProgress.route,
@@ -112,6 +110,15 @@ fun TasksScreenView(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun refreshOnce(viewModel: TasksViewModel) {
+    var refresh by remember { mutableStateOf(true) }
+    if (refresh) {
+        viewModel.refreshTasks()
+        refresh = false
     }
 }
 

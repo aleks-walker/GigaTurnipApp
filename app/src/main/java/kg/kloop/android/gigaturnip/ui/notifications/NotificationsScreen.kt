@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +43,7 @@ fun NotificationsScreenView(
     val user = mainActivityViewModel.user.value
     val uiState by viewModel.uiState.collectAsState()
     viewModel.setCampaignId(mainActivityViewModel.campaign.value!!.id)
+    refreshOnce(viewModel)
 
     user?.let {
         Scaffold(
@@ -69,6 +68,15 @@ fun NotificationsScreenView(
             }
 
         }
+    }
+}
+
+@Composable
+private fun refreshOnce(viewModel: NotificationsViewModel) {
+    var refreshing by remember { mutableStateOf(true) }
+    if (refreshing) {
+        viewModel.refreshNotifications()
+        refreshing = false
     }
 }
 
@@ -101,13 +109,12 @@ fun NotificationsScreenContent(
                 .fillMaxSize()
                 .padding(bottom = 8.dp)
         ) {
-            items(unreadNotifications) { notification ->
+            items(unreadNotifications.sortedBy { it.createdAt }.reversed()) { notification ->
                 NotificationItem(notification) {
-
                     navigateToNotification(navController, it)
                 }
             }
-            items(readNotifications) { notification ->
+            items(readNotifications.sortedBy { it.createdAt }.reversed()) { notification ->
                 NotificationItem(notification, read = true) {
                     navigateToNotification(navController, it)
                 }
