@@ -62,74 +62,74 @@ fun TaskDetails(
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
-    if (uiState.completed) closeTask(viewModel)
+    if (uiState.completed) closeTask(viewModel) { onBack() }
     val context = LocalContext.current
 
-        if (user.value != null) {
-            if (uiState.task != null) {
-                sendFileProgressToWebView(
-                    viewModel,
-                    compressProgressInfos,
-                    uploadProgressInfos
-                )
-            }
-            Scaffold(
-                topBar = {
-                    DetailsToolbar(
-                        title = stageTitle,
-                        onBack = onBack,
-                    )
-                },
-            ) {
-                LoadingContent(
-                    empty = uiState.initialLoad,
-                    emptyContent = { FullScreenLoading() },
-                    loading = uiState.loading,
-                    onRefresh = { viewModel.refreshTaskDetails() }) {
-                    val videoLauncher = getActivityLauncher { uris ->
-                        viewModel.compressVideos(uris)
-                    }
-                    val photoLauncher = getActivityLauncher { uris ->
-                        viewModel.uploadPhotos(uris)
-                    }
-                    if (uiState.task != null) {
-                        TaskDetailsScreenContent(
-                            uiState = uiState,
-                            onPickVideos = { pickedFile ->
-                                videoLauncher.launch("video/*")
-                                viewModel.setPickedFile(pickedFile)
-                            },
-                            onPickPhotos = { pickedFile ->
-                                photoLauncher.launch("image/*")
-                                viewModel.setPickedFile(pickedFile)
-                            },
-                            onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
-                            onFormChange = { responses ->
-                                viewModel.updateTask(
-                                    task = uiState.task!!,
-                                    responses = responses
-                                )
-                            },
-                            onListenersReady = { viewModel.setListenersReady(true) },
-                            onUpdate = { webview ->
-                                if (uiState.listenersReady) {
-                                    webViewInitialLoad(uiState, webview)
-                                    viewModel.setListenersReady(false)
-                                }
-                                webViewFileProgressLoad(webview, uiState)
-                            },
-                            onCancelWork = {
-                                Compressor.isRunning = false
-                                cancelAllWork(context)
-                            },
-                            onFileDelete = { filePath -> Timber.d("onFileDelete") },
-                            onPreviewFile = { storagePath -> showPreview(storagePath, context) }
-                        )
-                    }
-                }
-
-            }
+    if (user.value != null) {
+        if (uiState.task != null) {
+            sendFileProgressToWebView(
+                viewModel,
+                compressProgressInfos,
+                uploadProgressInfos
+            )
         }
+        Scaffold(
+            topBar = {
+                DetailsToolbar(
+                    title = stageTitle,
+                    onBack = onBack,
+                )
+            },
+        ) {
+            LoadingContent(
+                empty = uiState.initialLoad,
+                emptyContent = { FullScreenLoading() },
+                loading = uiState.loading,
+                onRefresh = { viewModel.refreshTaskDetails() }) {
+                val videoLauncher = getActivityLauncher { uris ->
+                    viewModel.compressVideos(uris)
+                }
+                val photoLauncher = getActivityLauncher { uris ->
+                    viewModel.uploadPhotos(uris)
+                }
+                if (uiState.task != null) {
+                    TaskDetailsScreenContent(
+                        uiState = uiState,
+                        onPickVideos = { pickedFile ->
+                            videoLauncher.launch("video/*")
+                            viewModel.setPickedFile(pickedFile)
+                        },
+                        onPickPhotos = { pickedFile ->
+                            photoLauncher.launch("image/*")
+                            viewModel.setPickedFile(pickedFile)
+                        },
+                        onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
+                        onFormChange = { responses ->
+                            viewModel.updateTask(
+                                task = uiState.task!!,
+                                responses = responses
+                            )
+                        },
+                        onListenersReady = { viewModel.setListenersReady(true) },
+                        onUpdate = { webview ->
+                            if (uiState.listenersReady) {
+                                webViewInitialLoad(uiState, webview)
+                                viewModel.setListenersReady(false)
+                            }
+                            webViewFileProgressLoad(webview, uiState)
+                        },
+                        onCancelWork = {
+                            Compressor.isRunning = false
+                            cancelAllWork(context)
+                        },
+                        onFileDelete = { filePath -> Timber.d("onFileDelete") },
+                        onPreviewFile = { storagePath -> showPreview(storagePath, context) }
+                    )
+                }
+            }
+
+        }
+    }
 }
 
 private fun webViewFileProgressLoad(
@@ -185,10 +185,12 @@ private fun sendFileProgressToWebView(
 
 @Composable
 private fun closeTask(
-    viewModel: TaskDetailsViewModel
+    viewModel: TaskDetailsViewModel,
+    onBack: () -> Unit
 ) {
     showTaskCompletedToast()
     viewModel.setCompleted(false)
+    onBack()
 }
 
 private fun updateWebView(progressInfo: WorkInfo, viewModel: TaskDetailsViewModel) {
