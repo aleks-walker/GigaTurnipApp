@@ -2,6 +2,8 @@ package kg.kloop.android.gigaturnip.ui.notifications
 
 import android.widget.TextView
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -34,6 +36,7 @@ fun NotificationDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = uiState.notification?.title.orEmpty(),

@@ -1,5 +1,6 @@
 package kg.kloop.android.gigaturnip.ui.notifications
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +28,7 @@ import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.LightBlue500
+import kg.kloop.android.gigaturnip.util.toTimeAgoFormat
 
 sealed class NotificationsScreen(val route: String) {
     object NotificationsList: NotificationsScreen("notifications_list")
@@ -134,6 +136,7 @@ private fun navigateToNotification(
     )
 }
 
+@SuppressLint("SimpleDateFormat")
 @Composable
 fun NotificationItem(
     notification: Notification,
@@ -161,11 +164,15 @@ fun NotificationItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
+                    text = notification.createdAt.toTimeAgoFormat(),
+                    style = MaterialTheme.typography.subtitle2
+                )
+                Text(
                     text = HtmlCompat.fromHtml(
                         notification.text,
                         HtmlCompat.FROM_HTML_MODE_COMPACT
                     ).toString(),
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.subtitle1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
