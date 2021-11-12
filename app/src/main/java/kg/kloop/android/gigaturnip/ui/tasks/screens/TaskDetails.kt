@@ -361,8 +361,7 @@ data class Path(
 fun evaluateJs(webView: WebView, detail: String, eventName: String) {
     Timber.d("Event name: '$eventName'")
     webView.evaluateJavascript(
-        "(function() { window.dispatchEvent(new CustomEvent(\'$eventName\', " +
-                "{detail: '$detail'})); })();"
+        """(function() { window.dispatchEvent(new CustomEvent('$eventName', {detail: $detail})); })();"""
     ) {}
 }
 
