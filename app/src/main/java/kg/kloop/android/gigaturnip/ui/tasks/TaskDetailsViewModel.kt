@@ -120,7 +120,6 @@ class TaskDetailsViewModel @Inject constructor(
     )
 
     private fun compressVideo(inputData: Data) {
-        Timber.d("compress video input data: $inputData")
         val compressRequest = OneTimeWorkRequestBuilder<CompressVideoWorker>()
             .setInputData(inputData)
             .addTag(TAG_COMPRESS)
@@ -215,8 +214,8 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun updateTask(task: Task, responses: String) {
         Timber.d(
-            ("prev value: ${_uiState.value.task?.responses?.toString()}\n" +
-                    "changed value: $responses").trimMargin()
+            ("""old value: ${_uiState.value.task?.responses?.toString()}
+                new value: $responses""").trimMargin()
         )
         if (_uiState.value.task?.responses?.toString() != responses) {
             updateJob?.cancel()
@@ -226,12 +225,30 @@ class TaskDetailsViewModel @Inject constructor(
                 val response = repository.updateTask(token!!, taskId.toInt(), responses, false)
 //                val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)
 //                if (response.isSuccessful) _uiState.update { it.copy(task = updatedTask) }
+                Timber.d("task updated")
             }
         }
     }
 
     fun setListenersReady(value: Boolean) {
         _uiState.update { it.copy(listenersReady = value) }
+    }
+
+    fun removeFromFileProgressState(fieldId: String, fileName: String) {
+        val progressState = _uiState.value.fileProgressState
+        Timber.d("before remove: $progressState")
+        if (progressState?.get(fieldId) != null) {
+            val fieldAfterRemove = progressState.get(fieldId)?.let {
+                it.asJsonObject.apply {
+                    remove(fileName)
+                }
+            }
+            val updatedProgressState = progressState.apply {
+                    add(fieldId, fieldAfterRemove)
+            }
+            Timber.d("after remove: $updatedProgressState")
+            updateUi(updatedProgressState)
+        }
     }
 
     fun updateFileInfo(fileProgress: FileProgress) {

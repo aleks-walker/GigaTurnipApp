@@ -96,12 +96,14 @@ fun TaskDetails(
                     TaskDetailsScreenContent(
                         uiState = uiState,
                         onPickVideos = { pickedFile ->
-                            videoLauncher.launch("video/*")
+                            viewModel.pruneWork()
                             viewModel.setPickedFile(pickedFile)
+                            videoLauncher.launch("video/*")
                         },
                         onPickPhotos = { pickedFile ->
-                            photoLauncher.launch("image/*")
+                            viewModel.pruneWork()
                             viewModel.setPickedFile(pickedFile)
+                            photoLauncher.launch("image/*")
                         },
                         onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
                         onFormChange = { responses ->
@@ -112,6 +114,7 @@ fun TaskDetails(
                         },
                         onListenersReady = { viewModel.setListenersReady(true) },
                         onUpdate = { webview ->
+                            Timber.d("WebView update")
                             if (uiState.listenersReady) {
                                 webViewInitialLoad(uiState, webview)
                                 viewModel.setListenersReady(false)
@@ -122,7 +125,10 @@ fun TaskDetails(
                             Compressor.isRunning = false
                             cancelAllWork(context)
                         },
-                        onFileDelete = { filePath -> Timber.d("onFileDelete") },
+                        onFileDelete = { fieldId, fileName ->
+                            viewModel.pruneWork()
+                            viewModel.removeFromFileProgressState(fieldId, fileName)
+                        },
                         onPreviewFile = { storagePath -> showPreview(storagePath, context) }
                     )
                 }
@@ -136,6 +142,7 @@ private fun webViewFileProgressLoad(
     webview: WebView,
     uiState: TaskDetailsUiState
 ) {
+    Timber.d("FILE EVENT: ${uiState.fileProgressState}")
     evaluateJs(
         webview, uiState.fileProgressState.toString(),
         Constants.FILE_EVENT
@@ -241,7 +248,7 @@ private fun TaskDetailsScreenContent(
     onListenersReady: () -> Unit,
     onUpdate: (WebView) -> Unit,
     onCancelWork: (String) -> Unit,
-    onFileDelete: (String) -> Unit,
+    onFileDelete: (String, String) -> Unit,
     onPreviewFile: (String) -> Unit,
 ) {
     Column(
@@ -260,7 +267,7 @@ private fun TaskDetailsScreenContent(
                 onListenersReady = onListenersReady,
                 onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
                 onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
-                onFileDelete = { filePath -> onFileDelete(filePath) },
+                onFileDelete = { fieldId, filePath -> onFileDelete(fieldId, filePath) },
                 onCancelWork = { fileName -> onCancelWork(fileName) },
                 onPreviewFile = { storagePath -> onPreviewFile(storagePath) }
             ),

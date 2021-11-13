@@ -96,7 +96,7 @@ fun TasksScreenView(
             composable(TasksScreen.InProgress.route) {
                 TasksInProgress(
                     navigateToDetails,
-                    uiState.inProgressTasks,
+                    uiState.inProgressTasks.sortedByDescending { it.id.toInt() },
                     uiState.loading,
                     onRefresh = { viewModel.refreshTasks() }
                 )
@@ -104,7 +104,7 @@ fun TasksScreenView(
             composable(TasksScreen.Finished.route) {
                 TasksFinished(
                     navigateToDetails,
-                    uiState.finishedTasks,
+                    uiState.finishedTasks.sortedByDescending { it.id.toInt() },
                     uiState.loading,
                     onRefresh = { viewModel.refreshTasks() }
                 )

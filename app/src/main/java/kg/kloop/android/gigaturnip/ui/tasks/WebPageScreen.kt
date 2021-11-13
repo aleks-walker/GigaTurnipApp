@@ -66,28 +66,32 @@ class WebAppInterface(
     private val onListenersReady: () -> Unit,
     private val onPickVideos: (WebViewPickedFile) -> Unit,
     private val onPickPhotos: (WebViewPickedFile) -> Unit,
-    private val onFileDelete: (String) -> Unit,
+    private val onFileDelete: (String, String) -> Unit,
     private val onCancelWork: (String) -> Unit,
     private val onPreviewFile: (String) -> Unit,
 ) {
 
     @JavascriptInterface
     fun onFormSubmit(data: String) {
+        Timber.d("CALLBACK onFromSubmit: $data")
         onSubmit(data)
     }
 
     @JavascriptInterface
     fun onChange(data: String) {
+        Timber.d("CALLBACK onChange: $data")
         onFormChange(data)
     }
 
     @JavascriptInterface
     fun pickVideos(key: String, isPrivate: Boolean) {
+        Timber.d("CALLBACK pickVideos")
         onPickVideos(WebViewPickedFile(key, isPrivate))
     }
 
     @JavascriptInterface
     fun pickPhotos(key: String, isPrivate: Boolean) {
+        Timber.d("CALLBACK pickPhotos")
         onPickPhotos(WebViewPickedFile(key, isPrivate))
     }
 
@@ -97,12 +101,14 @@ class WebAppInterface(
     }
 
     @JavascriptInterface
-    fun deleteFile(filePath: String){
-        onFileDelete(filePath)
+    fun deleteFile(fieldId: String, filePath: String){
+        Timber.d("CALLBACK onFileDelete")
+        onFileDelete(fieldId, filePath)
     }
 
     @JavascriptInterface
     fun cancelWork(fileName: String){
+        Timber.d("CALLBACK cancelWork")
         onCancelWork(fileName)
     }
 
