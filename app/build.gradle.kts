@@ -14,7 +14,7 @@ android {
         applicationId = "kg.kloop.android.gigaturnip"
         minSdk = 23
         targetSdk = 31
-        versionCode = 4
+        versionCode = 5
         versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -45,8 +45,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.1.0-alpha03"
-//        kotlinCompilerVersion = "1.4.32"
+        kotlinCompilerExtensionVersion = "1.1.0-beta03"
     }
 }
 
@@ -76,8 +75,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.0-rc01")
 
     //Accompanist
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.16.0")
-    implementation("com.google.accompanist:accompanist-placeholder-material:0.16.0")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.21.2-beta")
+    implementation("com.google.accompanist:accompanist-placeholder-material:0.21.2-beta")
+    implementation("com.google.accompanist:accompanist-insets-ui:0.21.2-beta")
 
     //Firebase
     implementation("com.firebaseui:firebase-ui-auth:7.2.0")

@@ -169,15 +169,22 @@ class TaskDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val token = getTokenSynchronously()!!
-                val task = repository.getTaskById(token, taskId.toInt()).data!!
-                val previousTasks = getPreviousTasks(task.id.toInt(), token)
-                val previousTasksJson = getPreviousTasksJson(previousTasks)
-                _uiState.update {
-                    it.copy(
-                        task = task,
-                        loading = false,
-                        previousTasks = previousTasksJson
-                    )
+                val response = repository.getTaskById(token, taskId.toInt())
+                val task = response.data
+                if (response.message.isNullOrEmpty()
+                    && task != null
+                ) {
+                    val previousTasks = getPreviousTasks(task.id.toInt(), token)
+                    val previousTasksJson = getPreviousTasksJson(previousTasks)
+                    _uiState.update {
+                        it.copy(
+                            task = task,
+                            loading = false,
+                            previousTasks = previousTasksJson
+                        )
+                    }
+                } else if (!response.message.isNullOrEmpty()) {
+                    // TODO: show error message
                 }
             }
         }

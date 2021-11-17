@@ -14,6 +14,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.insets.ProvideWindowInsets
 import dagger.hilt.android.AndroidEntryPoint
 import kg.kloop.android.gigaturnip.ui.auth.LoginScreen
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
@@ -26,7 +27,9 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val viewModel by viewModels<MainActivityViewModel>()
             GigaTurnipTheme {
-                MainScreen(viewModel, navController)
+                ProvideWindowInsets(windowInsetsAnimationsEnabled = true) {
+                    MainScreen(viewModel, navController)
+                }
             }
         }
     }

@@ -30,6 +30,7 @@ import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.abedelazizshe.lightcompressorlibrary.Compressor
+import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.firebase.storage.FirebaseStorage
@@ -259,7 +260,9 @@ private fun TaskDetailsScreenContent(
     ) {
         TaskStageDetails(uiState)
         WebPageScreen(
-            modifier = Modifier.wrapContentSize(),
+            modifier = Modifier
+                .wrapContentSize()
+                .navigationBarsWithImePadding(),
             urlToRender = Constants.TURNIP_VIEW_URL,
             webAppInterface = WebAppInterface(
                 onSubmit = { responses -> onTaskSubmit(responses) },
