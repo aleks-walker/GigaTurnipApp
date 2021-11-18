@@ -1,15 +1,19 @@
 package kg.kloop.android.gigaturnip
 
+import android.content.Context
 import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import com.firebase.ui.auth.AuthUI
+import com.google.firebase.auth.FirebaseAuth
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
@@ -35,6 +39,7 @@ fun MainNavGraph(
     val openDrawer: () -> Unit = {
         coroutineScope.launch { scaffoldState.drawerState.open() }
     }
+    val context = LocalContext.current
 
     NavHost(
         navController,
@@ -85,7 +90,7 @@ fun MainNavGraph(
                             launchSingleTop = true
                         }
                     },
-                    onLogOutClick = { viewModel.logOut() },
+                    onLogOutClick = { logOut(context, viewModel) },
                     openDrawer = openDrawer
                 )
             }
@@ -119,6 +124,15 @@ fun MainNavGraph(
         }
     }
 
+}
+
+private fun logOut(
+    context: Context,
+    viewModel: MainActivityViewModel
+) {
+    AuthUI.getInstance().signOut(context)
+    FirebaseAuth.getInstance().signOut()
+    viewModel.setUser(null)
 }
 
 private fun navigateToDetails(navController: NavHostController) = { task: Task ->
