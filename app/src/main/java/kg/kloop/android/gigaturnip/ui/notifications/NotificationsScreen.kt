@@ -22,7 +22,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Notification
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
@@ -40,38 +39,33 @@ sealed class NotificationsScreen(val route: String) {
 @Composable
 fun NotificationsScreenView(
     navController: NavController,
-    mainActivityViewModel: MainActivityViewModel,
     viewModel: NotificationsViewModel = hiltViewModel(),
     onBack: () -> Unit,
 ) {
-    val user = mainActivityViewModel.user.value
     val uiState by viewModel.uiState.collectAsState()
-    viewModel.setCampaignId(mainActivityViewModel.campaign.value!!.id)
     refreshOnce(viewModel)
 
-    user?.let {
-        Scaffold(
-            topBar = {
-                DetailsToolbar(
-                    title = stringResource(id = R.string.notifications),
-                    onBack = onBack,
-                )
-            },
-        ) {
-            LoadingContent(
-                empty = uiState.initialLoad,
-                emptyContent = { FullScreenLoading() },
-                loading = uiState.loading,
-                onRefresh = { viewModel.refreshNotifications() }) {
-                NotificationsScreenContent(
-                    navController,
-                    uiState.unreadNotifications,
-                    uiState.readNotifications,
-                    onRefresh = { viewModel.refreshNotifications() }
-                )
-            }
-
+    Scaffold(
+        topBar = {
+            DetailsToolbar(
+                title = stringResource(id = R.string.notifications),
+                onBack = onBack,
+            )
+        },
+    ) {
+        LoadingContent(
+            empty = uiState.initialLoad,
+            emptyContent = { FullScreenLoading() },
+            loading = uiState.loading,
+            onRefresh = { viewModel.refreshNotifications() }) {
+            NotificationsScreenContent(
+                navController,
+                uiState.unreadNotifications,
+                uiState.readNotifications,
+                onRefresh = { viewModel.refreshNotifications() }
+            )
         }
+
     }
 }
 

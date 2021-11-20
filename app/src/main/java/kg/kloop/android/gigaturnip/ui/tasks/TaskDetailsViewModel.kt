@@ -27,6 +27,7 @@ import kg.kloop.android.gigaturnip.util.Constants.STORAGE_PUBLIC_PREFIX
 import kg.kloop.android.gigaturnip.util.Constants.TAG_CLEANUP
 import kg.kloop.android.gigaturnip.util.Constants.TAG_COMPRESS
 import kg.kloop.android.gigaturnip.util.Constants.TAG_UPLOAD
+import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
 import kg.kloop.android.gigaturnip.util.Constants.VIDEO_MANIPULATION_WORK_NAME
 import kg.kloop.android.gigaturnip.workers.CleanupWorker
 import kg.kloop.android.gigaturnip.workers.CompressVideoWorker
@@ -58,7 +59,7 @@ class TaskDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val taskId: String = savedStateHandle.get<String>("id")!!
+    private val taskId: String = savedStateHandle.get<String>(TASK_ID)!!
     private val _uiState = MutableStateFlow(TaskDetailsUiState(loading = true))
     val uiState: StateFlow<TaskDetailsUiState> = _uiState.asStateFlow()
     private var _user: FirebaseUser? = null

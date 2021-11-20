@@ -1,13 +1,13 @@
 package kg.kloop.android.gigaturnip.ui.notifications
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Notification
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
+import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,17 +29,14 @@ data class NotificationsUiState(
 
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
-    private val repository: GigaTurnipRepository
+    private val repository: GigaTurnipRepository,
+    savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationsUiState())
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
-    private val _campaignId = MutableLiveData<String>()
-    val campaignId: LiveData<String> = _campaignId
-    fun setCampaignId(value: String) {
-        _campaignId.value = value
-    }
+    private val campaignId = savedStateHandle.get<String>(CAMPAIGN_ID)!!
 
     init {
         refreshNotifications()
@@ -64,7 +61,7 @@ class NotificationsViewModel @Inject constructor(
 
     private suspend fun getNotifications(read: Boolean) = repository.getNotifications(
         token = getTokenSynchronously()!!,
-        campaignId = _campaignId.value!!,
+        campaignId = campaignId,
         viewed = read
     ).data.orEmpty()
 }

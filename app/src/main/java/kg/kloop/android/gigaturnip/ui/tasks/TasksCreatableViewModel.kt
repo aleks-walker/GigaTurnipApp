@@ -11,6 +11,7 @@ import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
+import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +38,7 @@ class TasksCreatableViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val campaignId: String = savedStateHandle.get<String>("campaign_id")!!
+    val campaignId: String = savedStateHandle.get<String>(CAMPAIGN_ID)!!
 
     private val _uiState = MutableStateFlow(TasksCreatableUiState(loading = true))
     val uiState: StateFlow<TasksCreatableUiState> = _uiState.asStateFlow()

@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Notification
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
+import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,7 @@ class NotificationDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(NotificationDetailsUiState())
     val uiState: StateFlow<NotificationDetailsUiState> = _uiState.asStateFlow()
 
-    private val notificationId = savedStateHandle.get<String>("id")!!
+    private val notificationId = savedStateHandle.get<String>(NOTIFICATION_ID)!!
 
     init {
         _uiState.update { it.copy(loading = true) }

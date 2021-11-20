@@ -48,10 +48,11 @@ fun CampaignsScreenView(
             uiState.selectableCampaigns,
             onCampaignClick = { campaign ->
                 mainActivityViewModel.setCampaign(campaign)
-                navController.navigate(TasksScreen.TasksList.route) },
+                navController.navigate(TasksScreen.TasksList.route.plus("/${campaign.id}"))
+            },
             onSelectableCampaignClick = { campaign ->
                 mainActivityViewModel.setCampaign(campaign)
-                navController.navigate(CampaignsScreen.CampaignDescription.route)
+                navController.navigate(CampaignsScreen.CampaignDescription.route.plus("/${campaign.id}"))
             }
         )
     }

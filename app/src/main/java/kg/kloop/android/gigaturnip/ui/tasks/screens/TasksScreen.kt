@@ -7,7 +7,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -19,7 +18,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.Toolbar
@@ -45,14 +43,11 @@ fun TasksScreenView(
     onFabClick: () -> Unit,
     navigateToDetails: (Task) -> Unit,
     viewModel: TasksViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel,
     onNotificationsClick: () -> Unit,
     onLogOutClick: () -> Unit,
     scaffoldState: ScaffoldState = rememberScaffoldState(),
     openDrawer: () -> Unit
 ) {
-    val campaign = mainActivityViewModel.campaign.observeAsState()
-    viewModel.setCampaignId(campaign.value!!.id)
     refreshOnce(viewModel)
 
     val uiState by viewModel.uiState.collectAsState()

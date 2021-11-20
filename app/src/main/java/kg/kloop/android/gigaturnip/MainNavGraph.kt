@@ -25,6 +25,11 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
+import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
+import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
+import kg.kloop.android.gigaturnip.util.Constants.STAGE_ID
+import kg.kloop.android.gigaturnip.util.Constants.STAGE_TITLE
+import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
 import kotlinx.coroutines.launch
 
 
@@ -46,17 +51,19 @@ fun MainNavGraph(
         startDestination = CampaignsScreen.CampaignScreen.route,
         modifier = modifier
     ) {
-        composable(NotificationsScreen.NotificationsList.route) {
+        composable(
+            NotificationsScreen.NotificationsList.route.plus("/{$CAMPAIGN_ID}"),
+            arguments = listOf(navArgument(CAMPAIGN_ID) { type = NavType.StringType })
+        ) {
             NotificationsScreenView(
                 navController = navController,
-                mainActivityViewModel = viewModel,
                 onBack = upPress(navController)
             )
         }
         composable(
-            NotificationsScreen.NotificationDetails.route.plus("/{id}"),
+            NotificationsScreen.NotificationDetails.route.plus("/{$NOTIFICATION_ID}"),
             arguments = listOf(
-                navArgument("id") { type = NavType.StringType })
+                navArgument(NOTIFICATION_ID) { type = NavType.StringType })
         ) {
             NotificationDetailsScreen(onBack = upPress(navController))
         }
@@ -66,7 +73,7 @@ fun MainNavGraph(
                 mainActivityViewModel = viewModel,
             )
         }
-        composable(CampaignsScreen.CampaignDescription.route) {
+        composable(CampaignsScreen.CampaignDescription.route.plus("/{$CAMPAIGN_ID}")) {
             CampaignsDescriptionScreenView(
                 navController,
                 mainActivityViewModel = viewModel,
@@ -74,11 +81,12 @@ fun MainNavGraph(
         }
         navigation(
             startDestination = TasksScreen.InProgress.route,
-            route = TasksScreen.TasksList.route
+            route = TasksScreen.TasksList.route.plus("/{$CAMPAIGN_ID}")
         ) {
-            composable(route = TasksScreen.InProgress.route) {
+            composable(route = TasksScreen.InProgress.route,
+                arguments = listOf(navArgument(CAMPAIGN_ID) { type = NavType.StringType })
+            ) {
                 TasksScreenView(
-                    mainActivityViewModel = viewModel,
                     navigateToDetails = navigateToDetails(navController),
                     onFabClick = {
                         navController.navigate(
@@ -86,7 +94,11 @@ fun MainNavGraph(
                         )
                     },
                     onNotificationsClick = {
-                        navController.navigate(NotificationsScreen.NotificationsList.route) {
+                        navController.navigate(
+                            NotificationsScreen
+                                .NotificationsList.route
+                                .plus("/${viewModel.campaign.value?.id}")
+                        ) {
                             launchSingleTop = true
                         }
                     },
@@ -96,14 +108,14 @@ fun MainNavGraph(
             }
         }
         composable(
-            route = TasksScreen.Details.route.plus("/{id}/{stage_id}/{stage_title}"),
+            route = TasksScreen.Details.route.plus("/{$TASK_ID}/{$STAGE_ID}/{$STAGE_TITLE}"),
             arguments = listOf(
-                navArgument("id") { type = NavType.StringType },
-                navArgument("stage_id") { type = NavType.StringType },
-                navArgument("stage_title") { type = NavType.StringType}
+                navArgument(TASK_ID) { type = NavType.StringType },
+                navArgument(STAGE_ID) { type = NavType.StringType },
+                navArgument(STAGE_TITLE) { type = NavType.StringType}
             )
         ) { backStackEntry ->
-            val stageTitle = backStackEntry.arguments?.getString("stage_title")
+            val stageTitle = backStackEntry.arguments?.getString(STAGE_TITLE)
             TaskDetails(
                 navController = navController,
                 mainActivityViewModel = viewModel,
@@ -113,8 +125,8 @@ fun MainNavGraph(
         }
 
         composable(
-            route = TasksScreen.Creatable.route.plus("/{campaign_id}"),
-            arguments = listOf(navArgument("campaign_id") { type = NavType.StringType })
+            route = TasksScreen.Creatable.route.plus("/{$CAMPAIGN_ID}"),
+            arguments = listOf(navArgument(CAMPAIGN_ID) { type = NavType.StringType })
         ) {
             TasksCreatable(
                 navController = navController,

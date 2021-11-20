@@ -8,6 +8,13 @@ object Constants {
     const val STORAGE_PUBLIC_PREFIX = "public/"
     const val STORAGE_PRIVATE_PREFIX = "private/"
 
+    //Navigation keys
+    const val CAMPAIGN_ID = "campaignId"
+    const val STAGE_ID = "stageId"
+    const val STAGE_TITLE = "stageTitle"
+    const val TASK_ID = "taskId"
+    const val NOTIFICATION_ID = "notificationId"
+
 
     // Notification Channel constants
 
