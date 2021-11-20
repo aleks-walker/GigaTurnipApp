@@ -42,15 +42,17 @@ class CampaignsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val token = getTokenSynchronously()
-                val userCampaigns = repository.getCampaignsList(token!!).data.orEmpty()
-                val userSelectableCampaigns =
-                    repository.getUserSelectableCampaignsList(token).data.orEmpty()
-                _uiState.update {
-                    it.copy(
-                        campaigns = userCampaigns,
-                        selectableCampaigns = userSelectableCampaigns,
-                        loading = false
-                    )
+                token?.let {
+                    val userCampaigns = repository.getCampaignsList(it).data.orEmpty()
+                    val userSelectableCampaigns =
+                        repository.getUserSelectableCampaignsList(it).data.orEmpty()
+                    _uiState.update {
+                        it.copy(
+                            campaigns = userCampaigns,
+                            selectableCampaigns = userSelectableCampaigns,
+                            loading = false
+                        )
+                    }
                 }
             }
         }

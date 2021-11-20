@@ -21,7 +21,8 @@ data class TasksUiState(
     val newNotificationsCount: Int = 0,
     val inProgressTasks: List<Task> = emptyList(),
     val finishedTasks: List<Task> = emptyList(),
-    val loading: Boolean = false
+    val loading: Boolean = false,
+    val error: Boolean = false
 )
 
 @HiltViewModel
@@ -43,35 +44,51 @@ class TasksViewModel @Inject constructor(
     }
 
     fun refreshTasks() {
-        _uiState.update { it.copy(loading = true) }
+        _uiState.update { it.copy(loading = true, error = false) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = getTokenSynchronously()
-                val inProgressTasks = repository.getTasksList(
-                    token!!,
-                    false,
-                    _campaignId.value!!
-                ).data.orEmpty()
-                val finishedTasks = repository.getTasksList(
-                    token,
-                    true,
-                    _campaignId.value!!
-                ).data.orEmpty()
-                val newNotificationsCount =
-                    repository.getNotifications(
-                        token, _campaignId.value!!,
-                        viewed = false
-                    ).data.orEmpty().size
-                _uiState.update {
-                    it.copy(
-                        newNotificationsCount = newNotificationsCount,
-                        inProgressTasks = inProgressTasks,
-                        finishedTasks = finishedTasks,
-                        loading = false
-                    )
+                val token = getToken()
+                token?.let { tkn ->
+                    _uiState.update {
+                        it.copy(
+                            newNotificationsCount = getNotificationsCount(tkn),
+                            inProgressTasks = getInProgressTasks(tkn),
+                            finishedTasks = getFinishedTasks(tkn),
+                            loading = false
+                        )
+                    }
                 }
             }
         }
+    }
+
+    private suspend fun getNotificationsCount(token: String): Int = repository.getNotifications(
+        token, _campaignId.value!!,
+        viewed = false
+    ).data.orEmpty().size
+
+    private suspend fun getInProgressTasks(token: String): List<Task> = repository.getTasksList(
+        token,
+        false,
+        _campaignId.value!!
+    ).data.orEmpty()
+
+    private suspend fun getFinishedTasks(token: String): List<Task> = repository.getTasksList(
+        token,
+        true,
+        _campaignId.value!!
+    ).data.orEmpty()
+
+    private fun getToken(): String? {
+        val token = getTokenSynchronously(onError = {
+            _uiState.update {
+                it.copy(
+                    loading = false,
+                    error = true
+                )
+            }
+        })
+        return token
     }
 
 }

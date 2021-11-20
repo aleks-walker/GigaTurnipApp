@@ -5,11 +5,16 @@ import com.google.firebase.auth.FirebaseAuth
 import java.util.*
 
 
-fun getTokenSynchronously(): String? {
+fun getTokenSynchronously(onError: () -> Unit = {}): String? {
     val user = FirebaseAuth.getInstance().currentUser
-    if (user != null) {
-        val result = Tasks.await(user.getIdToken(true));
-        return Objects.requireNonNull(result).token!!
+    user?.let {
+        try {
+            val result = Tasks.await(user.getIdToken(true))
+            return Objects.requireNonNull(result).token
+        } catch (e: Exception) {
+            onError()
+            e.printStackTrace()
+        }
     }
     return null
 }

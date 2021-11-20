@@ -5,14 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Notification
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
+import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.LightBlue500
 import kg.kloop.android.gigaturnip.util.toTimeAgoFormat
@@ -90,21 +92,7 @@ fun NotificationsScreenContent(
     onRefresh: () -> Unit
 ) {
     if (unreadNotifications.isEmpty() && readNotifications.isEmpty()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = stringResource(id = R.string.nothing_found))
-            Button(
-                onClick = { onRefresh() },
-            ) {
-                Text(
-                    text = stringResource(id = R.string.try_again),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
+        TryAgainScreen(stringResource(id = R.string.nothing_found)) { onRefresh() }
     } else {
         LazyColumn(
             modifier = Modifier

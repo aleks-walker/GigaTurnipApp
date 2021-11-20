@@ -23,6 +23,7 @@ import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.Toolbar
+import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
 
@@ -88,26 +89,32 @@ fun TasksScreenView(
         floatingActionButtonPosition = FabPosition.Center,
     )
     { innerPadding ->
-        NavHost(
-            navController,
-            startDestination = TasksScreen.InProgress.route,
-            Modifier.padding(innerPadding)
-        ) {
-            composable(TasksScreen.InProgress.route) {
-                TasksInProgress(
-                    navigateToDetails,
-                    uiState.inProgressTasks.sortedByDescending { it.id.toInt() },
-                    uiState.loading,
-                    onRefresh = { viewModel.refreshTasks() }
-                )
+        if (uiState.error) {
+            TryAgainScreen(text = stringResource(id = R.string.error_occured)) {
+                viewModel.refreshTasks()
             }
-            composable(TasksScreen.Finished.route) {
-                TasksFinished(
-                    navigateToDetails,
-                    uiState.finishedTasks.sortedByDescending { it.id.toInt() },
-                    uiState.loading,
-                    onRefresh = { viewModel.refreshTasks() }
-                )
+        } else {
+            NavHost(
+                navController,
+                startDestination = TasksScreen.InProgress.route,
+                Modifier.padding(innerPadding)
+            ) {
+                composable(TasksScreen.InProgress.route) {
+                    TasksInProgress(
+                        navigateToDetails,
+                        uiState.inProgressTasks.sortedByDescending { it.id.toInt() },
+                        uiState.loading,
+                        onRefresh = { viewModel.refreshTasks() }
+                    )
+                }
+                composable(TasksScreen.Finished.route) {
+                    TasksFinished(
+                        navigateToDetails,
+                        uiState.finishedTasks.sortedByDescending { it.id.toInt() },
+                        uiState.loading,
+                        onRefresh = { viewModel.refreshTasks() }
+                    )
+                }
             }
         }
     }
