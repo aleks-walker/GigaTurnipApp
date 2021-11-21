@@ -28,7 +28,6 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.STAGE_ID
-import kg.kloop.android.gigaturnip.util.Constants.STAGE_TITLE
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
 import kotlinx.coroutines.launch
 
@@ -108,19 +107,16 @@ fun MainNavGraph(
             }
         }
         composable(
-            route = TasksScreen.Details.route.plus("/{$TASK_ID}/{$STAGE_ID}/{$STAGE_TITLE}"),
+            route = TasksScreen.Details.route.plus("/{$TASK_ID}/{$STAGE_ID}"),
             arguments = listOf(
                 navArgument(TASK_ID) { type = NavType.StringType },
                 navArgument(STAGE_ID) { type = NavType.StringType },
-                navArgument(STAGE_TITLE) { type = NavType.StringType}
             )
-        ) { backStackEntry ->
-            val stageTitle = backStackEntry.arguments?.getString(STAGE_TITLE)
+        ) {
             TaskDetails(
                 navController = navController,
                 mainActivityViewModel = viewModel,
                 onBack = upPress(navController),
-                stageTitle = stageTitle.orEmpty()
             )
         }
 
@@ -150,7 +146,7 @@ private fun logOut(
 private fun navigateToDetails(navController: NavHostController) = { task: Task ->
     navController.navigate(
         TasksScreen.Details.route
-            .plus("/${task.id}/${task.stage.id}/${task.stage.name}")
+            .plus("/${task.id}/${task.stage.id}")
     )
 }
 private fun upPress(navController: NavHostController): () -> Unit = { navController.navigateUp() }

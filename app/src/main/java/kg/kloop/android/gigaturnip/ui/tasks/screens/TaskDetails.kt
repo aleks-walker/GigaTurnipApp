@@ -52,7 +52,6 @@ fun TaskDetails(
     navController: NavHostController,
     viewModel: TaskDetailsViewModel = hiltViewModel(),
     mainActivityViewModel: MainActivityViewModel,
-    stageTitle: String,
     onBack: () -> Unit
 ) {
 
@@ -77,7 +76,7 @@ fun TaskDetails(
         Scaffold(
             topBar = {
                 DetailsToolbar(
-                    title = stageTitle,
+                    title = uiState.task?.stage?.name.orEmpty(),
                     onBack = onBack,
                 )
             },
