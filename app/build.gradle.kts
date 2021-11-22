@@ -14,7 +14,7 @@ android {
         applicationId = "kg.kloop.android.gigaturnip"
         minSdk = 23
         targetSdk = 31
-        versionCode = 8
+        versionCode = 9
         versionName = "1.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

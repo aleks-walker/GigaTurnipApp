@@ -15,7 +15,10 @@ import androidx.compose.ui.unit.dp
 import kg.kloop.android.gigaturnip.R
 
 @Composable
-fun TryAgainScreen(text: String, onRefresh: () -> Unit) {
+fun TryAgainScreen(
+    text: String = stringResource(id = R.string.error_occured),
+    onRefresh: () -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

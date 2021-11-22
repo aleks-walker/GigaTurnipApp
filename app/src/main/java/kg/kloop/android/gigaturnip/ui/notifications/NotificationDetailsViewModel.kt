@@ -19,7 +19,8 @@ import javax.inject.Inject
 
 data class NotificationDetailsUiState(
     val notification: Notification? = null,
-    val loading: Boolean = false
+    val loading: Boolean = false,
+    val error: Boolean = false
 )
 
 @HiltViewModel
@@ -34,19 +35,38 @@ class NotificationDetailsViewModel @Inject constructor(
     private val notificationId = savedStateHandle.get<String>(NOTIFICATION_ID)!!
 
     init {
-        _uiState.update { it.copy(loading = true) }
+        refreshNotificationDetails()
+    }
+
+    fun refreshNotificationDetails() {
+        _uiState.update { it.copy(loading = true, error = false) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val notification = getNotification(notificationId.toInt())
-                _uiState.update { it.copy(notification = notification, loading = false) }
+                notification?.let {
+                    _uiState.update {
+                        it.copy(
+                            notification = notification,
+                            loading = false
+                        )
+                    }
+                }
             }
         }
     }
 
-    private suspend fun getNotification(id: Int): Notification? =
-        repository.getNotification(
-            token = getTokenSynchronously()!!,
-            notificationId = id
-        ).data
+    private suspend fun getNotification(id: Int): Notification? {
+        val token = getToken()
+        return if (token != null) {
+            repository.getNotification(
+                token = token,
+                notificationId = id
+            ).data
+        } else null
+    }
+
+    private fun getToken(): String? = getTokenSynchronously(onError = {
+        _uiState.update { it.copy(loading = false, error = true) }
+    })
 }
 

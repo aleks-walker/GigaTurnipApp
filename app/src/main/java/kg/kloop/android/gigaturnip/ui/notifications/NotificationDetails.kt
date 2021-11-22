@@ -17,6 +17,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
+import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 
 @Composable
 fun NotificationDetailsScreen(
@@ -32,19 +33,28 @@ fun NotificationDetailsScreen(
             )
         },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text(
-                text = uiState.notification?.title.orEmpty(),
-                style = MaterialTheme.typography.h5
-            )
-            if (uiState.loading) ProgressBar()
-            else TextView(uiState)
+        if (uiState.error) {
+            TryAgainScreen { viewModel.refreshNotificationDetails() }
+        } else {
+            ScreenContent(uiState)
         }
+    }
+}
+
+@Composable
+private fun ScreenContent(uiState: NotificationDetailsUiState) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = uiState.notification?.title.orEmpty(),
+            style = MaterialTheme.typography.h5
+        )
+        if (uiState.loading) ProgressBar()
+        else TextView(uiState)
     }
 }
 

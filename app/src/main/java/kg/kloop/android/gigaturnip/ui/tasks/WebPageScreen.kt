@@ -118,5 +118,5 @@ class WebAppInterface(
     }
 }
 
-fun String.toJsonObject(): JsonObject = if (this.isBlank()) JsonObject()
+fun String?.toJsonObject(): JsonObject = if (this.isNullOrBlank()) JsonObject()
     else JsonParser().parse(this).asJsonObject
