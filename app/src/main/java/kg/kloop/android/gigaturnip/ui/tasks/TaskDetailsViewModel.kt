@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,6 +47,7 @@ data class TaskDetailsUiState(
     val loading: Boolean = false,
     val fileProgressState: JsonObject? = JsonObject(),
     val listenersReady: Boolean = false,
+    val error: Boolean = false
 ) {
     val initialLoad: Boolean
         get() = task == null && loading
@@ -62,7 +63,6 @@ class TaskDetailsViewModel @Inject constructor(
     private val taskId: String = savedStateHandle.get<String>(TASK_ID)!!
     private val _uiState = MutableStateFlow(TaskDetailsUiState(loading = true))
     val uiState: StateFlow<TaskDetailsUiState> = _uiState.asStateFlow()
-    private var _user: FirebaseUser? = null
     private var updateJob: Job? = null
 
     var uploadWorkProgress: LiveData<List<WorkInfo>>
@@ -87,8 +87,6 @@ class TaskDetailsViewModel @Inject constructor(
         compressWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_COMPRESS)
     }
 
-    fun setUser(user: FirebaseUser?) { _user = user }
-
     fun compressVideos(videoUris: List<Uri>) {
         videoUris.forEach { uri ->
             compressVideo(createInputData(uri.toString()))
@@ -103,7 +101,7 @@ class TaskDetailsViewModel @Inject constructor(
 
     private fun makeUploadPath(): String = getPath(
         prefix = if (_pickedFile!!.isPrivate) STORAGE_PRIVATE_PREFIX else STORAGE_PUBLIC_PREFIX,
-        userId = _user!!.uid,
+        userId = FirebaseAuth.getInstance().currentUser!!.uid,
         task = _uiState.value.task!!
     ).getUploadPath()
 
@@ -166,28 +164,40 @@ class TaskDetailsViewModel @Inject constructor(
     }
 
     fun refreshTaskDetails() {
-        _uiState.update { it.copy(loading = true) }
+        loadingState()
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = getTokenSynchronously()!!
-                val response = repository.getTaskById(token, taskId.toInt())
-                val task = response.data
-                if (response.message.isNullOrEmpty()
-                    && task != null
-                ) {
-                    val previousTasks = getPreviousTasks(task.id.toInt(), token)
-                    val previousTasksJson = getPreviousTasksJson(previousTasks)
-                    _uiState.update {
-                        it.copy(
-                            task = task,
-                            loading = false,
-                            previousTasks = previousTasksJson
-                        )
-                    }
-                } else if (!response.message.isNullOrEmpty()) {
-                    // TODO: show error message
-                }
+                val token = getTokenSynchronously { errorState() }
+                token?.let { loadTask(it) }
             }
+        }
+    }
+
+    private fun errorState() {
+        _uiState.update { it.copy(loading = false, error = true) }
+    }
+
+    private fun loadingState() {
+        _uiState.update { it.copy(loading = true, error = false) }
+    }
+
+    private suspend fun loadTask(token: String) {
+        val response = repository.getTaskById(token, taskId.toInt())
+        val task = response.data
+        if (response.message.isNullOrEmpty()
+            && task != null
+        ) {
+            val previousTasks = getPreviousTasks(task.id.toInt(), token)
+            val previousTasksJson = getPreviousTasksJson(previousTasks)
+            _uiState.update {
+                it.copy(
+                    task = task,
+                    loading = false,
+                    previousTasks = previousTasksJson
+                )
+            }
+        } else if (!response.message.isNullOrEmpty()) {
+            errorState()
         }
     }
 

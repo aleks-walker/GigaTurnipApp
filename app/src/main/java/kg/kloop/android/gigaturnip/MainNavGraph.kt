@@ -113,11 +113,7 @@ fun MainNavGraph(
                 navArgument(STAGE_ID) { type = NavType.StringType },
             )
         ) {
-            TaskDetails(
-                navController = navController,
-                mainActivityViewModel = viewModel,
-                onBack = upPress(navController),
-            )
+            TaskDetails(onBack = upPress(navController))
         }
 
         composable(

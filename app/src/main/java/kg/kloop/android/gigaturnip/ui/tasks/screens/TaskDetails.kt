@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -35,10 +34,10 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.JsonObject
-import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
+import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.*
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
@@ -49,38 +48,43 @@ import timber.log.Timber
 
 @Composable
 fun TaskDetails(
-    navController: NavHostController,
     viewModel: TaskDetailsViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel,
     onBack: () -> Unit
 ) {
-
     val uiState by viewModel.uiState.collectAsState()
-    val user = mainActivityViewModel.user.observeAsState()
-    viewModel.setUser(user.value)
 
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
     if (uiState.completed) closeTask(viewModel) { onBack() }
-    val context = LocalContext.current
+    if (uiState.task != null) {
+        sendFileProgressToWebView(
+            viewModel,
+            compressProgressInfos,
+            uploadProgressInfos
+        )
+    }
+    ScreenContent(uiState, onBack, viewModel)
+}
 
-    if (user.value != null) {
-        if (uiState.task != null) {
-            sendFileProgressToWebView(
-                viewModel,
-                compressProgressInfos,
-                uploadProgressInfos
+@Composable
+private fun ScreenContent(
+    uiState: TaskDetailsUiState,
+    onBack: () -> Unit,
+    viewModel: TaskDetailsViewModel,
+) {
+    val context = LocalContext.current
+    Scaffold(
+        topBar = {
+            DetailsToolbar(
+                title = uiState.task?.stage?.name.orEmpty(),
+                onBack = onBack,
             )
-        }
-        Scaffold(
-            topBar = {
-                DetailsToolbar(
-                    title = uiState.task?.stage?.name.orEmpty(),
-                    onBack = onBack,
-                )
-            },
-        ) {
+        },
+    ) {
+        if (uiState.error) {
+            TryAgainScreen { viewModel.refreshTaskDetails() }
+        } else {
             LoadingContent(
                 empty = uiState.initialLoad,
                 emptyContent = { FullScreenLoading() },
@@ -108,7 +112,7 @@ fun TaskDetails(
                         onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
                         onFormChange = { responses ->
                             viewModel.updateTask(
-                                task = uiState.task!!,
+                                task = uiState.task,
                                 responses = responses
                             )
                         },
@@ -133,7 +137,6 @@ fun TaskDetails(
                     )
                 }
             }
-
         }
     }
 }
