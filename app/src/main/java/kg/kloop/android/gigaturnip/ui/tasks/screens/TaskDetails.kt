@@ -57,6 +57,7 @@ fun TaskDetails(
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
     if (uiState.completed) closeTask(viewModel) { onBack() }
+    if (uiState.showErrorMessage) showErrorMessage(LocalContext.current, viewModel)
     if (uiState.task != null) {
         sendFileProgressToWebView(
             viewModel,
@@ -109,7 +110,9 @@ private fun ScreenContent(
                             viewModel.setPickedFile(pickedFile)
                             photoLauncher.launch("image/*")
                         },
-                        onTaskSubmit = { responses -> viewModel.completeTask(responses = responses) },
+                        onTaskSubmit = { responses ->
+                            viewModel.completeTask(responses = responses)
+                        },
                         onFormChange = { responses ->
                             viewModel.updateTask(
                                 task = uiState.task,
@@ -349,17 +352,23 @@ private fun TaskStageDetails(
         SelectionContainer {
             Text(
                 modifier = Modifier,
-                text = "id: ${uiState.task.id}",
+                text = "id: ${uiState.task!!.id}",
                 style = MaterialTheme.typography.subtitle2,
                 color = Color.LightGray
             )
         }
         Text(
-            text = uiState.task.stage.description,
+            text = uiState.task!!.stage.description,
             style = MaterialTheme.typography.body1
         )
     }
 }
+
+fun showErrorMessage(context: Context, viewModel: TaskDetailsViewModel) {
+    Toast.makeText(context, context.getString(R.string.error_occured), Toast.LENGTH_LONG).show()
+    viewModel.setErrorMessage(false)
+}
+
 
 data class Path(
     val prefix: String = "",

@@ -47,7 +47,8 @@ data class TaskDetailsUiState(
     val loading: Boolean = false,
     val fileProgressState: JsonObject? = JsonObject(),
     val listenersReady: Boolean = false,
-    val error: Boolean = false
+    val error: Boolean = false,
+    val showErrorMessage: Boolean = false
 ) {
     val initialLoad: Boolean
         get() = task == null && loading
@@ -220,14 +221,20 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun completeTask(responses: String) {
         viewModelScope.launch(Dispatchers.Default) {
-            val token = getTokenSynchronously()
-            val response = repository.updateTask(token!!, taskId.toInt(), responses, true)
-            _uiState.update { it.copy(completed = true) }
+            val token = getTokenSynchronously { _uiState.update { it.copy(showErrorMessage = true) } }
+            token?.let { tkn ->
+                val response = repository.updateTask(tkn, taskId.toInt(), responses, true)
+                _uiState.update { it.copy(completed = true) }
+            }
         }
     }
 
     fun setCompleted(value: Boolean) {
         _uiState.update { it.copy(completed = value) }
+    }
+
+    fun setErrorMessage(value: Boolean) {
+        _uiState.update { it.copy(showErrorMessage = value) }
     }
 
     fun updateTask(task: Task, responses: String) {
