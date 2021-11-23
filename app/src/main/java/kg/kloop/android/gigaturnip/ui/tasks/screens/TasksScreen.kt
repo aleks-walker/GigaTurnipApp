@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -18,12 +19,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import kg.kloop.android.gigaturnip.AppDrawer
+import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
 import kg.kloop.android.gigaturnip.ui.theme.ColorPalette
+import kotlinx.coroutines.launch
 
 
 sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val icon: ImageVector) {
@@ -40,14 +44,19 @@ sealed class TasksScreen(val route: String, @StringRes val resourceId: Int, val 
 
 @Composable
 fun TasksScreenView(
+    mainActivityViewModel: MainActivityViewModel,
+    viewModel: TasksViewModel = hiltViewModel(),
     onFabClick: () -> Unit,
     navigateToDetails: (Task) -> Unit,
-    viewModel: TasksViewModel = hiltViewModel(),
     onNotificationsClick: () -> Unit,
     onLogOutClick: () -> Unit,
-    scaffoldState: ScaffoldState = rememberScaffoldState(),
-    openDrawer: () -> Unit
 ) {
+    val user by mainActivityViewModel.user.observeAsState()
+    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+    val coroutineScope = rememberCoroutineScope()
+    val openDrawer: () -> Unit = {
+        coroutineScope.launch { scaffoldState.drawerState.open() }
+    }
     refreshOnce(viewModel)
 
     val uiState by viewModel.uiState.collectAsState()
@@ -59,6 +68,7 @@ fun TasksScreenView(
     )
     Scaffold(
         scaffoldState = scaffoldState,
+        drawerContent = { AppDrawer(user) },
         topBar = {
             Toolbar(
                 title = stringResource(R.string.app_name),

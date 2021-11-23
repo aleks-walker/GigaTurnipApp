@@ -8,10 +8,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.browser.customtabs.CustomTabsIntent.SHARE_STATE_OFF
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -99,7 +101,6 @@ private fun ScreenContent(
                 }
                 if (uiState.task != null) {
                     TaskDetailsScreenContent(
-                        uiState = uiState,
                         onPickVideos = { pickedFile ->
                             viewModel.pruneWork()
                             viewModel.setPickedFile(pickedFile)
@@ -246,7 +247,6 @@ private fun updateFileProgress(
 
 @Composable
 private fun TaskDetailsScreenContent(
-    uiState: TaskDetailsUiState,
     onTaskSubmit: (String) -> Unit,
     onFormChange: (String) -> Unit,
     onPickVideos: (WebViewPickedFile) -> Unit,
@@ -257,31 +257,24 @@ private fun TaskDetailsScreenContent(
     onFileDelete: (String, String) -> Unit,
     onPreviewFile: (String) -> Unit,
 ) {
-    Column(
+    WebPageScreen(
         modifier = Modifier
-            .padding(8.dp)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        TaskStageDetails(uiState)
-        WebPageScreen(
-            modifier = Modifier
-                .wrapContentSize()
-                .navigationBarsWithImePadding(),
-            urlToRender = Constants.TURNIP_VIEW_URL,
-            webAppInterface = WebAppInterface(
-                onSubmit = { responses -> onTaskSubmit(responses) },
-                onFormChange = { responses -> onFormChange(responses)},
-                onListenersReady = onListenersReady,
-                onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
-                onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
-                onFileDelete = { fieldId, filePath -> onFileDelete(fieldId, filePath) },
-                onCancelWork = { fileName -> onCancelWork(fileName) },
-                onPreviewFile = { storagePath -> onPreviewFile(storagePath) }
-            ),
-            onUpdate = onUpdate,
-        )
-    }
+            .padding(start = 8.dp, end = 8.dp)
+            .wrapContentSize()
+            .navigationBarsWithImePadding(),
+        urlToRender = Constants.TURNIP_VIEW_URL,
+        webAppInterface = WebAppInterface(
+            onSubmit = { responses -> onTaskSubmit(responses) },
+            onFormChange = { responses -> onFormChange(responses) },
+            onListenersReady = onListenersReady,
+            onPickVideos = { pickedFile -> onPickVideos(pickedFile) },
+            onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
+            onFileDelete = { fieldId, filePath -> onFileDelete(fieldId, filePath) },
+            onCancelWork = { fileName -> onCancelWork(fileName) },
+            onPreviewFile = { storagePath -> onPreviewFile(storagePath) }
+        ),
+        onUpdate = onUpdate,
+    )
 }
 
 private fun showPreview(storagePath: String, context: Context) {
@@ -313,6 +306,7 @@ private fun LoadingContent(
         emptyContent()
     } else {
         SwipeRefresh(
+            modifier = Modifier.background(Color.White),
             state = rememberSwipeRefreshState(loading),
             onRefresh = onRefresh,
             content = content,

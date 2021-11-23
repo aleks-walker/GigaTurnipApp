@@ -4,14 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.DrawerValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.rememberDrawerState
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ProvideWindowInsets
@@ -41,23 +35,11 @@ fun MainScreen(viewModel: MainActivityViewModel, navController: NavHostControlle
     if (user.value == null) {
         LoginScreen { currentUser -> viewModel.setUser(currentUser) }
     } else {
-        val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-//        val scope = rememberCoroutineScope()
-
-        Scaffold(
-            scaffoldState = scaffoldState,
-            drawerContent = { AppDrawer(user) }
+        MainNavGraph(
+            navController = navController,
+            viewModel = viewModel,
         )
-        { innerPadding ->
-            MainNavGraph(
-                navController = navController,
-                modifier = Modifier.padding(innerPadding),
-                viewModel = viewModel,
-                scaffoldState = scaffoldState
-            )
-        }
     }
-
 }
 
 

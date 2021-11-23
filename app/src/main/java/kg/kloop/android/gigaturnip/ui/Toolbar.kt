@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kg.kloop.android.gigaturnip.R
@@ -31,7 +32,12 @@ fun Toolbar(
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
         title = {
-            Text(text = title, style = MaterialTheme.typography.h5)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.h5,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         },
         navigationIcon = {
             IconButton(onClick = openDrawer) {

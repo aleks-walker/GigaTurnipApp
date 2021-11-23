@@ -1,9 +1,7 @@
 package kg.kloop.android.gigaturnip
 
 import android.content.Context
-import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -29,7 +27,6 @@ import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.STAGE_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -37,12 +34,7 @@ fun MainNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     viewModel: MainActivityViewModel,
-    scaffoldState: ScaffoldState
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    val openDrawer: () -> Unit = {
-        coroutineScope.launch { scaffoldState.drawerState.open() }
-    }
     val context = LocalContext.current
 
     NavHost(
@@ -86,6 +78,7 @@ fun MainNavGraph(
                 arguments = listOf(navArgument(CAMPAIGN_ID) { type = NavType.StringType })
             ) {
                 TasksScreenView(
+                    mainActivityViewModel = viewModel,
                     navigateToDetails = navigateToDetails(navController),
                     onFabClick = {
                         navController.navigate(
@@ -102,7 +95,6 @@ fun MainNavGraph(
                         }
                     },
                     onLogOutClick = { logOut(context, viewModel) },
-                    openDrawer = openDrawer
                 )
             }
         }

@@ -1,6 +1,7 @@
 package kg.kloop.android.gigaturnip.ui.tasks
 
 import android.annotation.SuppressLint
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ fun WebPageScreen(
             webViewClient = WebViewClient()
             webChromeClient = webChromeClient()
             addJavascriptInterface(webAppInterface, "Android")
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
             loadUrl(urlToRender)
 //            setDarkMode(this)
 
