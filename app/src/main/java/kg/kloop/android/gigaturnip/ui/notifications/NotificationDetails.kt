@@ -1,5 +1,6 @@
 package kg.kloop.android.gigaturnip.ui.notifications
 
+import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -79,6 +80,7 @@ private fun TextView(uiState: NotificationDetailsUiState) {
         factory = { context ->
             TextView(context).apply {
                 textSize = 16F
+                movementMethod = LinkMovementMethod.getInstance()
             }
         },
         update = {
