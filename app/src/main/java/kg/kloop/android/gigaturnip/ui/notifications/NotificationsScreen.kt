@@ -58,14 +58,16 @@ fun NotificationsScreenView(
             emptyContent = { FullScreenLoading() },
             loading = uiState.loading,
             onRefresh = { viewModel.refreshNotifications() }) {
-            NotificationsScreenContent(
-                navController,
-                uiState.unreadNotifications,
-                uiState.readNotifications,
-                onRefresh = { viewModel.refreshNotifications() }
-            )
+            if (uiState.error) {
+                TryAgainScreen { viewModel.refreshNotifications() }
+            } else {
+                NotificationsScreenContent(
+                    navController,
+                    uiState.unreadNotifications,
+                    uiState.readNotifications,
+                )
+            }
         }
-
     }
 }
 
@@ -83,28 +85,22 @@ fun NotificationsScreenContent(
     navController: NavController,
     unreadNotifications: List<Notification>,
     readNotifications: List<Notification>,
-    onRefresh: () -> Unit
 ) {
-    if (unreadNotifications.isEmpty() && readNotifications.isEmpty()) {
-        TryAgainScreen(stringResource(id = R.string.nothing_found)) { onRefresh() }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 8.dp)
-        ) {
-            items(unreadNotifications.sortedBy { it.createdAt }.reversed()) { notification ->
-                NotificationItem(notification) {
-                    navigateToNotification(navController, it)
-                }
-            }
-            items(readNotifications.sortedBy { it.createdAt }.reversed()) { notification ->
-                NotificationItem(notification, read = true) {
-                    navigateToNotification(navController, it)
-                }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 8.dp)
+    ) {
+        items(unreadNotifications.sortedBy { it.createdAt }.reversed()) { notification ->
+            NotificationItem(notification) {
+                navigateToNotification(navController, it)
             }
         }
-
+        items(readNotifications.sortedBy { it.createdAt }.reversed()) { notification ->
+            NotificationItem(notification, read = true) {
+                navigateToNotification(navController, it)
+            }
+        }
     }
 }
 

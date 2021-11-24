@@ -221,12 +221,17 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun completeTask(responses: String) {
         viewModelScope.launch(Dispatchers.Default) {
-            val token = getTokenSynchronously { _uiState.update { it.copy(showErrorMessage = true) } }
+            val token = getTokenSynchronously { showErrorState() }
             token?.let { tkn ->
                 val response = repository.updateTask(tkn, taskId.toInt(), responses, true)
-                _uiState.update { it.copy(completed = true) }
+                if (response.isSuccessful) _uiState.update { it.copy(completed = true) }
+                else showErrorState()
             }
         }
+    }
+
+    private fun showErrorState() {
+        _uiState.update { it.copy(showErrorMessage = true) }
     }
 
     fun setCompleted(value: Boolean) {

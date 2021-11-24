@@ -27,6 +27,7 @@ data class TasksCreatableUiState(
     val creatingTask: Boolean = false,
     val createdTask: Task? = null,
     val taskStage: TaskStage? = null,
+    val error: Boolean = false
 ) {
     val initialLoad: Boolean
         get() = taskStages.isEmpty() && loading
@@ -51,17 +52,35 @@ class TasksCreatableViewModel @Inject constructor(
     }
 
     fun refreshAll() {
-        _uiState.update { it.copy(loading = true) }
+        loadingState()
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = getTokenSynchronously()
-                val result = repository.getTasksStagesList(
-                    token!!,
-                    campaignId
-                ).data.orEmpty()
-                _uiState.update { it.copy(taskStages = result, loading = false) }
+                loadTasks()
             }
         }
+    }
+
+    private suspend fun loadTasks() {
+        val token = getTokenSynchronously { errorState() }
+        token?.let {
+            val result = repository.getTasksStagesList(
+                it,
+                campaignId
+            ).data.orEmpty()
+            updateUi(result)
+        }
+    }
+
+    private fun errorState() {
+        _uiState.update { it.copy(loading = false, error = true) }
+    }
+
+    private fun updateUi(result: List<TaskStage>) {
+        _uiState.update { it.copy(taskStages = result, loading = false) }
+    }
+
+    private fun loadingState() {
+        _uiState.update { it.copy(loading = true, error = false) }
     }
 
 

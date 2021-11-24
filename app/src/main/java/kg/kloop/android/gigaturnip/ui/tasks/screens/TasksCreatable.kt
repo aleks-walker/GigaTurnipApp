@@ -13,6 +13,7 @@ import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
+import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.TasksCreatableViewModel
 
 
@@ -38,15 +39,20 @@ fun TasksCreatable(
                 )
             },
         ) {
-            LoadingContent(empty = uiState.initialLoad,
+            LoadingContent(
+                empty = uiState.initialLoad,
                 emptyContent = { FullScreenLoading() },
                 loading = uiState.loading,
                 onRefresh = { viewModel.refreshAll() }) {
-                TaskStageList(
-                    taskStages = uiState.taskStages,
-                    isCreatingTask = uiState.creatingTask,
-                    onClick = { stage -> viewModel.createTask(stage) },
-                )
+                if (uiState.error) {
+                    TryAgainScreen { viewModel.refreshAll() }
+                } else {
+                    TaskStageList(
+                        taskStages = uiState.taskStages,
+                        isCreatingTask = uiState.creatingTask,
+                        onClick = { stage -> viewModel.createTask(stage) },
+                    )
+                }
             }
         }
     }

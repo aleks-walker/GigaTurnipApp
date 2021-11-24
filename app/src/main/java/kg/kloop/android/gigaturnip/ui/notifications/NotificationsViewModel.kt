@@ -20,7 +20,8 @@ import javax.inject.Inject
 data class NotificationsUiState(
     val unreadNotifications: List<Notification> = emptyList(),
     val readNotifications: List<Notification> = emptyList(),
-    val loading: Boolean = false
+    val loading: Boolean = false,
+    val error: Boolean = false
 
 ) {
     val initialLoad: Boolean
@@ -31,7 +32,7 @@ data class NotificationsUiState(
 class NotificationsViewModel @Inject constructor(
     private val repository: GigaTurnipRepository,
     savedStateHandle: SavedStateHandle
-): ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationsUiState())
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
@@ -43,25 +44,59 @@ class NotificationsViewModel @Inject constructor(
     }
 
     fun refreshNotifications() {
-        _uiState.update { it.copy(loading = true) }
+        loadingState()
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val unReadNotifications = getNotifications(read = false)
-                val readNotifications = getNotifications(read = true)
-                _uiState.update {
-                    it.copy(
-                        unreadNotifications = unReadNotifications,
-                        readNotifications = readNotifications,
-                        loading = false
-                    )
+                val token = getTokenSynchronously { errorState() }
+                token?.let {
+                    loadNotifications(it)
                 }
             }
         }
     }
 
-    private suspend fun getNotifications(read: Boolean) = repository.getNotifications(
-        token = getTokenSynchronously()!!,
-        campaignId = campaignId,
-        viewed = read
-    ).data.orEmpty()
+    private suspend fun loadNotifications(token: String) {
+        val unReadNotifications = getNotifications(token, read = false)
+        val readNotifications = getNotifications(token, read = true)
+        if (unReadNotifications == null || readNotifications == null) {
+            errorState()
+        } else {
+            updateUi(unReadNotifications, readNotifications)
+        }
+    }
+
+    private fun updateUi(
+        unReadNotifications: List<Notification>?,
+        readNotifications: List<Notification>?
+    ) {
+        _uiState.update {
+            it.copy(
+                unreadNotifications = unReadNotifications.orEmpty(),
+                readNotifications = readNotifications.orEmpty(),
+                loading = false
+            )
+        }
+    }
+
+    private fun loadingState() {
+        _uiState.update { it.copy(loading = true, error = false) }
+    }
+
+    private fun errorState() {
+        _uiState.update { it.copy(loading = false, error = true) }
+    }
+
+    private suspend fun getNotifications(
+        token: String,
+        read: Boolean
+    ): List<Notification>? {
+        val response = repository.getNotifications(
+            token = token,
+            campaignId = campaignId,
+            viewed = read
+        )
+        return if (response.message.isNullOrEmpty()) {
+            response.data
+        } else null
+    }
 }
