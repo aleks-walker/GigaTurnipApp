@@ -252,10 +252,12 @@ class TaskDetailsViewModel @Inject constructor(
             updateJob = viewModelScope.launch(Dispatchers.Default) {
                 delay(INPUT_DELAY_IN_MILL)
                 val token = getTokenSynchronously()
-                val response = repository.updateTask(token!!, taskId.toInt(), responses, false)
-//                val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)
-//                if (response.isSuccessful) _uiState.update { it.copy(task = updatedTask) }
-                Timber.d("task updated")
+                token?.let {
+                    val response = repository.updateTask(it, taskId.toInt(), responses, false)
+//                  val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)
+//                  if (response.isSuccessful) _uiState.update { it.copy(task = updatedTask) }
+                    if (response.isSuccessful) Timber.d("task updated")
+                }
             }
         }
     }
