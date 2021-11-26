@@ -18,6 +18,6 @@ data class TaskStage(
     val isCreatable: Boolean,
     val displayedPrevStages: List<Int>,
     val assignUserBy: String,
-    val assignUserFromStage: Int
-
+    val assignUserFromStage: Int,
+    val canGoBack: Boolean
 )

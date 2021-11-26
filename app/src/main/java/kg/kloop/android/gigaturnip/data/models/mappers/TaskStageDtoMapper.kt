@@ -24,7 +24,8 @@ class TaskStageDtoMapper : DomainMapper<TaskStageDto, TaskStage>() {
             isCreatable = model.isCreatable,
             displayedPrevStages = model.displayedPrevStages,
             assignUserBy = model.assignUserBy,
-            assignUserFromStage = model.assignUserFromStage
+            assignUserFromStage = model.assignUserFromStage,
+            canGoBack = model.canGoBack
         )
     }
 
@@ -47,7 +48,8 @@ class TaskStageDtoMapper : DomainMapper<TaskStageDto, TaskStage>() {
             isCreatable = domainModel.isCreatable,
             displayedPrevStages = domainModel.displayedPrevStages,
             assignUserBy = domainModel.assignUserBy,
-            assignUserFromStage = domainModel.assignUserFromStage
+            assignUserFromStage = domainModel.assignUserFromStage,
+            canGoBack = domainModel.canGoBack
         )
     }
 }

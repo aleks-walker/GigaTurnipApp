@@ -12,15 +12,21 @@ data class TaskResponseEntity(
     @SerializedName("in_tasks")
     val inTasks: List<Int>?,
     val responses: JsonObject?,
-    val stage: Int
+    val stage: Int,
+    val isReopened: Boolean,
+    val createdAt: String,
+    val updatedAt: String,
 )
 
 fun TaskResponseEntity.toTask(stage: TaskStage) =
     Task(
-    this.id.toString(),
-    this.responses,
-    stage,
-    this.complete,
-    this.case,
-    this.inTasks
+    id = this.id.toString(),
+    responses = this.responses,
+    stage = stage,
+    isComplete = this.complete,
+    caseId = this.case,
+    inTasks = this.inTasks,
+    isReopened = this.isReopened,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt
 )

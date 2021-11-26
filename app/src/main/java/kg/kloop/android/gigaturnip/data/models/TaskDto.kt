@@ -23,4 +23,12 @@ data class TaskDto (
     @SerializedName("in_tasks")
     val inTasks: List<Int>?,
 
+    @SerializedName("reopened")
+    val isReopened: Boolean,
+
+    @SerializedName("created_at")
+    val createdAt: String,
+
+    @SerializedName("updated_at")
+    val updatedAt: String
 )

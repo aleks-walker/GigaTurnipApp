@@ -23,4 +23,6 @@
     <string name="nothing_found">Ничего не найдено</string>
     <string name="choose_campaign">Выберите кампанию</string>
     <string name="error_occured">Произошла ошибка</string>
+    <string name="returned">Возвращено</string>
+    <string name="created">Создано</string>
 </resources>

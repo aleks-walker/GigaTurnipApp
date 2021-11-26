@@ -10,10 +10,15 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.domain.Task
+import kg.kloop.android.gigaturnip.ui.theme.DarkRed
+import kg.kloop.android.gigaturnip.util.toTimeAgoFormat
 
 @Composable
 fun TasksList(
@@ -45,16 +50,42 @@ private fun TaskCard(task: Task, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.large
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = task.stage.name, style = MaterialTheme.typography.h5)
-            SelectionContainer() {
-                Text(text = "id: ${task.id}", style = MaterialTheme.typography.caption)
+            Column(modifier = Modifier.weight(1F)) {
+                Text(
+                    text = task.stage.name,
+                    style = MaterialTheme.typography.h5,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                SelectionContainer() {
+                    Text(
+                        text = "id: ${task.id}",
+                        style = MaterialTheme.typography.subtitle2
+                    )
+                }
+                Text(
+                    text = task.createdAt.toTimeAgoFormat(),
+                    style = MaterialTheme.typography.subtitle2
+                )
+                Text(
+                    text = task.stage.description,
+                    style = MaterialTheme.typography.body1,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
-            Text(text = task.stage.description, style = MaterialTheme.typography.body1)
+            if (task.isReopened) {
+                Text(
+                    text = stringResource(id = R.string.returned).lowercase(),
+                    color = DarkRed
+                )
+            }
         }
     }
 }

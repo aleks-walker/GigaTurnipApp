@@ -55,6 +55,9 @@ data class TaskStageDto (
     val assignUserBy: String,
 
     @SerializedName("assign_user_from_stage")
-    val assignUserFromStage: Int
+    val assignUserFromStage: Int,
+
+    @SerializedName("allow_go_back")
+    val canGoBack: Boolean
 
 )

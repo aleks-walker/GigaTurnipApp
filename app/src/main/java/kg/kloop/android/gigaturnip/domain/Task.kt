@@ -8,5 +8,8 @@ data class Task(
     val stage: TaskStage,
     val isComplete: Boolean,
     val caseId: Int?,
-    val inTasks: List<Int>?
+    val inTasks: List<Int>?,
+    val isReopened: Boolean,
+    val createdAt: String,
+    val updatedAt: String
 )
