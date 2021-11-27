@@ -64,7 +64,7 @@ class GigaTurnipRepository(
     suspend fun openPreviousTask(
         token: String,
         taskId: Int,
-    ): Response<ResponseBody> = api.openPreviousTask(token, taskId)
+    ): Response<ResponseBody> = api.openPreviousTask(token.toJwtToken(), taskId)
 
     suspend fun getTasks(
         token: String,

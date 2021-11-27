@@ -295,10 +295,10 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun openPreviousTask(task: Task) {
         loadingState()
-        getTokenSynchronously { showErrorState() }?.let { token ->
-            viewModelScope.launch(Dispatchers.Default) {
-                val response = repository.openPreviousTask(token, task.id.toInt())
-                Timber.d("response: $response")
+        viewModelScope.launch(Dispatchers.Default) {
+            val token = getTokenSynchronously { showErrorState() }
+            token?.let {
+                val response = repository.openPreviousTask(it, task.id.toInt())
                 if (response.isSuccessful) {
                     try {
                         val openedTaskId = parseResponse(response).id
@@ -308,8 +308,8 @@ class TaskDetailsViewModel @Inject constructor(
                         showErrorState()
                     }
                 } else showErrorState()
-            }
-        } ?: showErrorState()
+            } ?: showErrorState()
+        }
     }
 
     private fun parseResponse(response: Response<ResponseBody>) = Gson().fromJson(
