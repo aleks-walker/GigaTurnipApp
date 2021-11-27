@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
+import retrofit2.Response
 import javax.inject.Inject
 
 data class TasksCreatableUiState(
@@ -72,7 +74,7 @@ class TasksCreatableViewModel @Inject constructor(
     }
 
     private fun errorState() {
-        _uiState.update { it.copy(loading = false, error = true) }
+        _uiState.update { it.copy(creatingTask = false, loading = false, error = true) }
     }
 
     private fun updateUi(result: List<TaskStage>) {
@@ -89,20 +91,32 @@ class TasksCreatableViewModel @Inject constructor(
             withContext(Dispatchers.Default) {
                 _uiState.update { it.copy(creatingTask = true) }
                 val token = getTokenSynchronously()
-                val response = repository.createTask(token!!, stage.id.toInt())
-                val taskResponse = Gson().fromJson(
-                    response.body()?.string(),
-                    TaskResponseEntity::class.java
-                )
-                _uiState.update {
-                    it.copy(
-                        taskStage = stage,
-                        createdTask = taskResponse.toTask(stage),
-                        creatingTask = false
-                    )
-                }
+                token?.let { tkn ->
+                    val response = repository.createTask(tkn, stage.id.toInt())
+                    if (response.isSuccessful) {
+                        try {
+                            val taskResponse = parseResponse(response)
+                            _uiState.update {
+                                it.copy(
+                                    taskStage = stage,
+                                    createdTask = taskResponse.toTask(stage),
+                                    creatingTask = false
+                                )
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            errorState()
+                        }
+
+                    }
+                } ?: errorState()
             }
         }
     }
+
+    private fun parseResponse(response: Response<ResponseBody>) = Gson().fromJson(
+        response.body()?.string(),
+        TaskResponseEntity::class.java
+    )
 
 }

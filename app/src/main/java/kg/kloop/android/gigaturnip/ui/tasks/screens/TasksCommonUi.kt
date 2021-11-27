@@ -22,7 +22,7 @@ import kg.kloop.android.gigaturnip.util.toTimeAgoFormat
 
 @Composable
 fun TasksList(
-    onDetailsClick: (Task) -> Unit,
+    onDetailsClick: (String) -> Unit,
     tasks: List<Task>,
     isRefreshing: Boolean,
     onRefresh: () -> Unit
@@ -36,7 +36,7 @@ fun TasksList(
             contentPadding = PaddingValues(bottom = 30.dp)
         ) {
             items(tasks) { task ->
-                TaskCard(task, onClick = { onDetailsClick(task) })
+                TaskCard(task, onClick = { onDetailsClick(task.id) })
             }
         }
     }

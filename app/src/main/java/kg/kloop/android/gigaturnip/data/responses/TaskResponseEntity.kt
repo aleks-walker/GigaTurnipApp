@@ -14,8 +14,8 @@ data class TaskResponseEntity(
     val responses: JsonObject?,
     val stage: Int,
     val isReopened: Boolean,
-    val createdAt: String,
-    val updatedAt: String,
+    val createdAt: String?,
+    val updatedAt: String?,
 )
 
 fun TaskResponseEntity.toTask(stage: TaskStage) =
@@ -27,6 +27,6 @@ fun TaskResponseEntity.toTask(stage: TaskStage) =
     caseId = this.case,
     inTasks = this.inTasks,
     isReopened = this.isReopened,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt
+    createdAt = this.createdAt.toString(),
+    updatedAt = this.updatedAt.toString()
 )

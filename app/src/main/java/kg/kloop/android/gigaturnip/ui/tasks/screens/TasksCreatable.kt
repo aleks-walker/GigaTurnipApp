@@ -10,7 +10,6 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kg.kloop.android.gigaturnip.R
-import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
@@ -22,13 +21,13 @@ fun TasksCreatable(
     navController: NavHostController,
     viewModel: TasksCreatableViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    navigateToTask: (Task) -> Unit
+    navigateToTask: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     if (uiState.createdTask != null && !uiState.creatingTask) {
         navController.popBackStack()
-        navigateToTask(uiState.createdTask!!)
+        navigateToTask(uiState.createdTask!!.id)
         viewModel.setCreatedTask(null)
     } else {
         Scaffold (

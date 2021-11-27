@@ -51,6 +51,7 @@ import timber.log.Timber
 @Composable
 fun TaskDetails(
     viewModel: TaskDetailsViewModel = hiltViewModel(),
+    navigateToTask: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -58,6 +59,11 @@ fun TaskDetails(
     val compressProgressInfos by viewModel.compressWorkProgress.observeAsState()
     val uploadProgressInfos by viewModel.uploadWorkProgress.observeAsState()
 
+    uiState.openTaskId?.let { taskId ->
+        viewModel.setOpenTaskId(null)
+        closeTask(viewModel) { onBack() }
+        navigateToTask(taskId.toString())
+    }
     if (uiState.completed) closeTask(viewModel) { onBack() }
     if (uiState.showErrorMessage) showErrorMessage(LocalContext.current, viewModel)
     if (uiState.task != null) {
@@ -112,7 +118,7 @@ private fun ScreenContent(
                             photoLauncher.launch("image/*")
                         },
                         onTaskSubmit = { responses ->
-                            viewModel.completeTask(responses = responses)
+                             viewModel.completeTask(responses = responses)
                         },
                         onFormChange = { responses ->
                             viewModel.updateTask(
@@ -137,7 +143,8 @@ private fun ScreenContent(
                             viewModel.pruneWork()
                             viewModel.removeFromFileProgressState(fieldId, fileName)
                         },
-                        onPreviewFile = { storagePath -> showPreview(storagePath, context) }
+                        onPreviewFile = { storagePath -> showPreview(storagePath, context) },
+                        onGoToPreviousTask = { viewModel.openPreviousTask(uiState.task) }
                     )
                 }
             }
@@ -164,6 +171,7 @@ private fun webViewInitialLoad(
         add("jsonSchema", uiState.task?.stage?.jsonSchema?.toJsonObject())
         add("uiSchema", uiState.task?.stage?.uiSchema?.toJsonObject())
         addProperty("isComplete", uiState.task?.isComplete)
+        addProperty("canGoBack", uiState.task?.stage?.canGoBack)
     }
     evaluateJs(
         webview, getRichText(uiState.task?.stage?.richText.orEmpty()),
@@ -256,6 +264,7 @@ private fun TaskDetailsScreenContent(
     onCancelWork: (String) -> Unit,
     onFileDelete: (String, String) -> Unit,
     onPreviewFile: (String) -> Unit,
+    onGoToPreviousTask: () -> Unit
 ) {
     WebPageScreen(
         modifier = Modifier
@@ -271,7 +280,8 @@ private fun TaskDetailsScreenContent(
             onPickPhotos = { pickedFile -> onPickPhotos(pickedFile) },
             onFileDelete = { fieldId, filePath -> onFileDelete(fieldId, filePath) },
             onCancelWork = { fileName -> onCancelWork(fileName) },
-            onPreviewFile = { storagePath -> onPreviewFile(storagePath) }
+            onPreviewFile = { storagePath -> onPreviewFile(storagePath) },
+            onGoToPreviousTask = { onGoToPreviousTask() }
         ),
         onUpdate = onUpdate,
     )

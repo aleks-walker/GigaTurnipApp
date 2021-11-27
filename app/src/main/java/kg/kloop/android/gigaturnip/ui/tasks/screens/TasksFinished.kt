@@ -5,7 +5,7 @@ import kg.kloop.android.gigaturnip.domain.Task
 
 @Composable
 fun TasksFinished(
-    onDetailsClick: (Task) -> Unit,
+    onDetailsClick: (String) -> Unit,
     tasks: List<Task>,
     isRefreshing: Boolean,
     onRefresh: () -> Unit

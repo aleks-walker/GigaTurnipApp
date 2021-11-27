@@ -53,7 +53,6 @@ class GigaTurnipRepository(
                 campaignId = campaignId
             )
         }, tasksMapper)
-
     }
 
     suspend fun getTaskById(
@@ -61,6 +60,11 @@ class GigaTurnipRepository(
         id: Int?,
     ): Resource<Task> =
         getSingle({ api.getTaskById(token.toJwtToken(), id) }, tasksMapper)
+
+    suspend fun openPreviousTask(
+        token: String,
+        taskId: Int,
+    ): Response<ResponseBody> = api.openPreviousTask(token, taskId)
 
     suspend fun getTasks(
         token: String,

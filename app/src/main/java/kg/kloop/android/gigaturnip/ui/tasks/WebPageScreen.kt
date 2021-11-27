@@ -71,12 +71,19 @@ class WebAppInterface(
     private val onFileDelete: (String, String) -> Unit,
     private val onCancelWork: (String) -> Unit,
     private val onPreviewFile: (String) -> Unit,
+    private val onGoToPreviousTask: () -> Unit
 ) {
 
     @JavascriptInterface
     fun onFormSubmit(data: String) {
         Timber.d("CALLBACK onFromSubmit: $data")
         onSubmit(data)
+    }
+
+    @JavascriptInterface
+    fun onGoToPrevious() {
+        Timber.d("CALLBACK onGoPrevious")
+        onGoToPreviousTask()
     }
 
     @JavascriptInterface

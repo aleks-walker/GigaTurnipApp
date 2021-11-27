@@ -22,7 +22,6 @@ import androidx.navigation.compose.rememberNavController
 import kg.kloop.android.gigaturnip.AppDrawer
 import kg.kloop.android.gigaturnip.MainActivityViewModel
 import kg.kloop.android.gigaturnip.R
-import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.Toolbar
 import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.TasksViewModel
@@ -47,7 +46,7 @@ fun TasksScreenView(
     mainActivityViewModel: MainActivityViewModel,
     viewModel: TasksViewModel = hiltViewModel(),
     onFabClick: () -> Unit,
-    navigateToDetails: (Task) -> Unit,
+    navigateToDetails: (String) -> Unit,
     onNotificationsClick: () -> Unit,
     onLogOutClick: () -> Unit,
 ) {

@@ -66,6 +66,12 @@ interface GigaTurnipApi {
         @Query("stage") stageId: Int
     ): List<TaskDto>
 
+    @GET("tasks/{id}/open_previous/")
+    suspend fun openPreviousTask(
+        @Header("Authorization") token: String,
+        @Path("id") taskId: Int
+    ): Response<ResponseBody>
+
     @PATCH("tasks/{id}/")
     suspend fun updateTask(
         @Header("Authorization") token: String,

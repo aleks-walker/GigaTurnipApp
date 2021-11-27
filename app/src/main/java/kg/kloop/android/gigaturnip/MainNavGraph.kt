@@ -12,7 +12,6 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
-import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
@@ -25,7 +24,6 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
-import kg.kloop.android.gigaturnip.util.Constants.STAGE_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
 
 
@@ -99,13 +97,15 @@ fun MainNavGraph(
             }
         }
         composable(
-            route = TasksScreen.Details.route.plus("/{$TASK_ID}/{$STAGE_ID}"),
+            route = TasksScreen.Details.route.plus("/{$TASK_ID}"),
             arguments = listOf(
                 navArgument(TASK_ID) { type = NavType.StringType },
-                navArgument(STAGE_ID) { type = NavType.StringType },
+//                navArgument(STAGE_ID) { type = NavType.StringType },
             )
         ) {
-            TaskDetails(onBack = upPress(navController))
+            TaskDetails(
+                onBack = upPress(navController),
+                navigateToTask = navigateToDetails(navController))
         }
 
         composable(
@@ -131,10 +131,11 @@ private fun logOut(
     viewModel.setUser(null)
 }
 
-private fun navigateToDetails(navController: NavHostController) = { task: Task ->
+private fun navigateToDetails(navController: NavHostController) = { taskId: String ->
     navController.navigate(
         TasksScreen.Details.route
-            .plus("/${task.id}/${task.stage.id}")
+//            .plus("/${task.id}/${task.stage.id}")
+            .plus("/$taskId")
     )
 }
 private fun upPress(navController: NavHostController): () -> Unit = { navController.navigateUp() }

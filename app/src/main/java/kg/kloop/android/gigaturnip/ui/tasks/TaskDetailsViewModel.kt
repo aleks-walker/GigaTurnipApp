@@ -8,9 +8,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kg.kloop.android.gigaturnip.data.responses.TaskCompleteResponse
+import kg.kloop.android.gigaturnip.data.responses.TaskOpenPreviousResponse
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
 import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
@@ -37,11 +40,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import okhttp3.ResponseBody
+import retrofit2.Response
 import timber.log.Timber
 import javax.inject.Inject
 
 data class TaskDetailsUiState(
     val task: Task? = null,
+    val openTaskId: Int? = null,
     val previousTasks: JsonArray? = null,
     val completed: Boolean = false,
     val loading: Boolean = false,
@@ -79,6 +85,10 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun setPickedFile(pickedFile: WebViewPickedFile) {
         _pickedFile = pickedFile
+    }
+
+    fun setOpenTaskId(value: Int?) {
+        _uiState.update { it.copy(openTaskId = value) }
     }
 
     init {
@@ -224,14 +234,35 @@ class TaskDetailsViewModel @Inject constructor(
             val token = getTokenSynchronously { showErrorState() }
             token?.let { tkn ->
                 val response = repository.updateTask(tkn, taskId.toInt(), responses, true)
-                if (response.isSuccessful) _uiState.update { it.copy(completed = true) }
-                else showErrorState()
+//                Timber.d("response: ${response.body()?.string()}")
+                if (response.isSuccessful) {
+                    try {
+                        val parsedResponse = parseTackCompleteResponse(response)
+                        parsedResponse.nextTaskId?.let { taskId ->
+                            Timber.d("navigate forward: $taskId")
+                            _uiState.update { it.copy(openTaskId = taskId) }
+                        } ?: taskCompletedState()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        showErrorState()
+                    }
+                } else showErrorState()
             }
         }
     }
 
+    private fun parseTackCompleteResponse(response: Response<ResponseBody>): TaskCompleteResponse =
+        Gson().fromJson(
+            response.body()?.string(),
+            TaskCompleteResponse::class.java
+        )
+
+    private fun taskCompletedState() {
+        _uiState.update { it.copy(completed = true) }
+    }
+
     private fun showErrorState() {
-        _uiState.update { it.copy(showErrorMessage = true) }
+        _uiState.update { it.copy(loading = false, showErrorMessage = true) }
     }
 
     fun setCompleted(value: Boolean) {
@@ -261,6 +292,30 @@ class TaskDetailsViewModel @Inject constructor(
             }
         }
     }
+
+    fun openPreviousTask(task: Task) {
+        loadingState()
+        getTokenSynchronously { showErrorState() }?.let { token ->
+            viewModelScope.launch(Dispatchers.Default) {
+                val response = repository.openPreviousTask(token, task.id.toInt())
+                Timber.d("response: $response")
+                if (response.isSuccessful) {
+                    try {
+                        val openedTaskId = parseResponse(response).id
+                        _uiState.update { it.copy(openTaskId = openedTaskId) }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        showErrorState()
+                    }
+                } else showErrorState()
+            }
+        } ?: showErrorState()
+    }
+
+    private fun parseResponse(response: Response<ResponseBody>) = Gson().fromJson(
+        response.body()?.string(),
+        TaskOpenPreviousResponse::class.java
+    )
 
     fun setListenersReady(value: Boolean) {
         _uiState.update { it.copy(listenersReady = value) }
