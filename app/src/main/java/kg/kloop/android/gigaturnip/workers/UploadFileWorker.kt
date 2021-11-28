@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.KEY_FILENAME
@@ -75,7 +76,11 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
     private fun getStorageRef(
         uploadPath: String,
         fileName: String
-    ) = Firebase.storage.reference.child(uploadPath.plus("/$fileName"))
+    ): StorageReference {
+        // TODO: this is a crutch
+        val fileExtension = if (fileName.contains("video")) ".mp4" else ".jpg"
+        return Firebase.storage.reference.child(uploadPath.plus("/$fileName$fileExtension"))
+    }
 
 
 }

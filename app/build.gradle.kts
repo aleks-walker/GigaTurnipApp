@@ -14,8 +14,8 @@ android {
         applicationId = "kg.kloop.android.gigaturnip"
         minSdk = 23
         targetSdk = 31
-        versionCode = 13
-        versionName = "1.0.7"
+        versionCode = 15
+        versionName = "1.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
