@@ -10,8 +10,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.abedelazizshe.lightcompressorlibrary.CompressionProgressListener
-import com.abedelazizshe.lightcompressorlibrary.Compressor
 import com.abedelazizshe.lightcompressorlibrary.VideoQuality
+import com.abedelazizshe.lightcompressorlibrary.compressor.Compressor
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.util.Constants.CHANNEL_ID
@@ -105,6 +105,7 @@ fun compressFile(
         srcUri = uri,
         srcPath = null,
         destination = desFile.path,
+        streamableFile = null,
         listener = object : CompressionProgressListener {
             override fun onProgressChanged(percent: Float) {
                 Timber.d("Compress progress: ${percent.toInt()}")
@@ -118,8 +119,6 @@ fun compressFile(
         },
         configuration = Configuration(
             quality = VideoQuality.MEDIUM,
-            isMinBitRateEnabled = false,
-            keepOriginalResolution = false,
         )
     )
     return if (result.success) {

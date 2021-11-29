@@ -30,7 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.abedelazizshe.lightcompressorlibrary.Compressor
+import com.abedelazizshe.lightcompressorlibrary.compressor.Compressor
 import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState

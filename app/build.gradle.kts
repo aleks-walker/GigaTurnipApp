@@ -14,7 +14,7 @@ android {
         applicationId = "kg.kloop.android.gigaturnip"
         minSdk = 23
         targetSdk = 31
-        versionCode = 15
+        versionCode = 16
         versionName = "1.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -116,8 +116,8 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-beta01")
 
     //File compression
-    implementation("com.github.AbedElazizShe:LightCompressor:0.9.3")
-    implementation("com.googlecode.mp4parser:isoparser:1.1.22")
+    implementation("com.github.AbedElazizShe:LightCompressor:1.0.0")
+    implementation("com.googlecode.mp4parser:isoparser:1.0.6")
 
     //WorkManager
     implementation("androidx.work:work-runtime-ktx:2.7.1")
