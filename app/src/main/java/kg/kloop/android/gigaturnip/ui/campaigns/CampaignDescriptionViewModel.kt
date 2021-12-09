@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Campaign
-import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
+import kg.kloop.android.gigaturnip.repository.GigaTurnipRepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +24,7 @@ data class CampaignDescriptionUiState(
 
 @HiltViewModel
 class CampaignDescriptionViewModel @Inject constructor(
-    private val repository: GigaTurnipRepository
+    private val repository: GigaTurnipRepositoryImpl
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CampaignDescriptionUiState())
@@ -44,7 +43,10 @@ class CampaignDescriptionViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val response = repository.joinCampaign(getTokenSynchronously()!!, campaignId)
+                val response = repository.joinCampaign(
+                    repository.getTokenSynchronously()!!,
+                    campaignId
+                )
                 Timber.d("join response: $response")
                 _uiState.update { it.copy(loading = false, joined = true) }
             }

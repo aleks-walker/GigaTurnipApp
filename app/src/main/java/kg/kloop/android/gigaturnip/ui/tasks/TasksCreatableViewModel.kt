@@ -9,8 +9,7 @@ import kg.kloop.android.gigaturnip.data.responses.TaskResponseEntity
 import kg.kloop.android.gigaturnip.data.responses.toTask
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
-import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
+import kg.kloop.android.gigaturnip.repository.GigaTurnipRepositoryImpl
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,7 @@ data class TasksCreatableUiState(
 
 @HiltViewModel
 class TasksCreatableViewModel @Inject constructor(
-    private val repository: GigaTurnipRepository,
+    private val repository: GigaTurnipRepositoryImpl,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -63,7 +62,7 @@ class TasksCreatableViewModel @Inject constructor(
     }
 
     private suspend fun loadTasks() {
-        val token = getTokenSynchronously { errorState() }
+        val token = repository.getTokenSynchronously { errorState() }
         token?.let {
             val result = repository.getTasksStagesList(
                 it,
@@ -90,7 +89,7 @@ class TasksCreatableViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 _uiState.update { it.copy(creatingTask = true) }
-                val token = getTokenSynchronously()
+                val token = repository.getTokenSynchronously()
                 token?.let { tkn ->
                     val response = repository.createTask(tkn, stage.id.toInt())
                     if (response.isSuccessful) {

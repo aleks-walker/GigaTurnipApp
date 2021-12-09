@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Notification
-import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
+import kg.kloop.android.gigaturnip.repository.GigaTurnipRepositoryImpl
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +24,7 @@ data class NotificationDetailsUiState(
 
 @HiltViewModel
 class NotificationDetailsViewModel @Inject constructor(
-    private val repository: GigaTurnipRepository,
+    private val repository: GigaTurnipRepositoryImpl,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -65,7 +64,7 @@ class NotificationDetailsViewModel @Inject constructor(
         } else null
     }
 
-    private fun getToken(): String? = getTokenSynchronously(onError = {
+    private fun getToken(): String? = repository.getTokenSynchronously(onError = {
         _uiState.update { it.copy(loading = false, error = true) }
     })
 }

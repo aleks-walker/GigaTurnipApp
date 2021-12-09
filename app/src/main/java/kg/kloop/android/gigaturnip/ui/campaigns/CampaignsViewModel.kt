@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +40,7 @@ class CampaignsViewModel @Inject constructor(
         _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = getTokenSynchronously()
+                val token = repository.getTokenSynchronously()
                 token?.let {
                     val userCampaigns = repository.getCampaignsList(it).data.orEmpty()
                     val userSelectableCampaigns =

@@ -16,7 +16,6 @@ import kg.kloop.android.gigaturnip.data.responses.TaskCompleteResponse
 import kg.kloop.android.gigaturnip.data.responses.TaskOpenPreviousResponse
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
 import kg.kloop.android.gigaturnip.ui.tasks.screens.Path
 import kg.kloop.android.gigaturnip.ui.tasks.screens.getUploadPath
@@ -178,7 +177,7 @@ class TaskDetailsViewModel @Inject constructor(
         loadingState()
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val token = getTokenSynchronously { errorState() }
+                val token = repository.getTokenSynchronously { errorState() }
                 token?.let { loadTask(it) }
             }
         }
@@ -231,7 +230,7 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun completeTask(responses: String) {
         viewModelScope.launch(Dispatchers.Default) {
-            val token = getTokenSynchronously { showErrorState() }
+            val token = repository.getTokenSynchronously { showErrorState() }
             token?.let { tkn ->
                 val response = repository.updateTask(tkn, taskId.toInt(), responses, true)
 //                Timber.d("response: ${response.body()?.string()}")
@@ -282,7 +281,7 @@ class TaskDetailsViewModel @Inject constructor(
             updateJob?.cancel()
             updateJob = viewModelScope.launch(Dispatchers.Default) {
                 delay(INPUT_DELAY_IN_MILL)
-                val token = getTokenSynchronously()
+                val token = repository.getTokenSynchronously()
                 token?.let {
                     val response = repository.updateTask(it, taskId.toInt(), responses, false)
 //                  val updatedTask = task.copy(responses = JsonParser().parse(responses).asJsonObject)
@@ -296,7 +295,7 @@ class TaskDetailsViewModel @Inject constructor(
     fun openPreviousTask(task: Task) {
         loadingState()
         viewModelScope.launch(Dispatchers.Default) {
-            val token = getTokenSynchronously { showErrorState() }
+            val token = repository.getTokenSynchronously { showErrorState() }
             token?.let {
                 val response = repository.openPreviousTask(it, task.id.toInt())
                 if (response.isSuccessful) {

@@ -2,6 +2,8 @@ package kg.kloop.android.gigaturnip.util
 
 import android.annotation.SuppressLint
 import android.text.format.DateUtils
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -15,3 +17,8 @@ fun String.toTimeAgoFormat(): String {
         DateUtils.MINUTE_IN_MILLIS
     ).toString()
 }
+
+fun String.toRequestBodyWithMediaType() =
+    this.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+
+fun String.toJwtToken() = "JWT $this"

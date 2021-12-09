@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.repository.GigaTurnipRepository
-import kg.kloop.android.gigaturnip.ui.auth.getTokenSynchronously
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,25 +58,25 @@ class TasksViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getNotificationsCount(token: String): Int = repository.getNotifications(
+    suspend fun getNotificationsCount(token: String): Int = repository.getNotifications(
         token, campaignId,
         viewed = false
     ).data.orEmpty().size
 
-    private suspend fun getInProgressTasks(token: String): List<Task> = repository.getTasksList(
+    suspend fun getInProgressTasks(token: String): List<Task> = repository.getTasksList(
         token,
         false,
         campaignId
     ).data.orEmpty()
 
-    private suspend fun getFinishedTasks(token: String): List<Task> = repository.getTasksList(
+    suspend fun getFinishedTasks(token: String): List<Task> = repository.getTasksList(
         token,
         true,
         campaignId
     ).data.orEmpty()
 
     private fun getToken(): String? {
-        val token = getTokenSynchronously(onError = {
+        val token = repository.getTokenSynchronously(onError = {
             _uiState.update {
                 it.copy(
                     loading = false,

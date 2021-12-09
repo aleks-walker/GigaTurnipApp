@@ -1,177 +1,83 @@
 package kg.kloop.android.gigaturnip.repository
 
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import dagger.hilt.android.scopes.ActivityScoped
-import kg.kloop.android.gigaturnip.data.models.mappers.CampaignDtoMapper
-import kg.kloop.android.gigaturnip.data.models.mappers.NotificationDtoMapper
-import kg.kloop.android.gigaturnip.data.models.mappers.TaskDtoMapper
-import kg.kloop.android.gigaturnip.data.models.mappers.TaskStageDtoMapper
-import kg.kloop.android.gigaturnip.data.remote.GigaTurnipApi
-import kg.kloop.android.gigaturnip.data.utils.DomainMapper
 import kg.kloop.android.gigaturnip.domain.Campaign
 import kg.kloop.android.gigaturnip.domain.Notification
 import kg.kloop.android.gigaturnip.domain.Task
 import kg.kloop.android.gigaturnip.domain.TaskStage
 import kg.kloop.android.gigaturnip.util.Resource
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 
-@ActivityScoped
-class GigaTurnipRepository(
-    private val api: GigaTurnipApi,
-    private val campaignMapper: CampaignDtoMapper,
-    private val tasksMapper: TaskDtoMapper,
-    private val taskStageMapper: TaskStageDtoMapper,
-    private val notificationDtoMapper: NotificationDtoMapper
-) {
+interface GigaTurnipRepository {
 
-    suspend fun getCampaignsList(token: String): Resource<List<Campaign>> =
-        getList({ api.getCampaignsList(token.toJwtToken()) }, campaignMapper)
+    suspend fun getCampaignsList(token: String): Resource<List<Campaign>>
 
-    suspend fun getUserSelectableCampaignsList(token: String): Resource<List<Campaign>> =
-        getList({ api.getUserSelectableCampaignsList(token.toJwtToken()) }, campaignMapper)
+    suspend fun getUserSelectableCampaignsList(token: String): Resource<List<Campaign>>
 
-    suspend fun getCampaign(id: Int): Resource<Campaign> =
-        getSingle({ api.getCampaign(id) }, campaignMapper)
+    suspend fun getCampaign(id: Int): Resource<Campaign>
 
-    suspend fun joinCampaign(token: String, campaignId: String): Response<ResponseBody> =
-        api.joinCampaign(token.toJwtToken(), campaignId)
+    suspend fun joinCampaign(token: String, campaignId: String): Response<ResponseBody>
 
     suspend fun getTasksList(
         token: String,
         complete: Boolean,
         campaignId: String
-    ): Resource<List<Task>> {
-        return getList({
-            api.getTasksList(
-                token = token.toJwtToken(),
-                complete = complete,
-                campaignId = campaignId
-            )
-        }, tasksMapper)
-    }
+    ): Resource<List<Task>>
 
     suspend fun getTaskById(
         token: String,
         id: Int?,
-    ): Resource<Task> =
-        getSingle({ api.getTaskById(token.toJwtToken(), id) }, tasksMapper)
+    ): Resource<Task>
 
     suspend fun openPreviousTask(
         token: String,
         taskId: Int,
-    ): Response<ResponseBody> = api.openPreviousTask(token.toJwtToken(), taskId)
+    ): Response<ResponseBody>
 
     suspend fun getTasks(
         token: String,
         caseId: Int,
         stageId: Int
-    ): Resource<List<Task>> =
-        getList( { api.getTasks(token.toJwtToken(), caseId, stageId)}, tasksMapper)
+    ): Resource<List<Task>>
 
     suspend fun getPreviousTasks(
         token: String,
         taskId: Int
-    ): Resource<List<Task>> =
-        getList({ api.getPreviousTasksList(token.toJwtToken(), taskId) }, tasksMapper)
+    ): Resource<List<Task>>
 
-    suspend fun getTaskStage(id: Int): Resource<TaskStage> {
-        return getSingle({ api.getTaskStage(id) }, taskStageMapper)
-    }
+    suspend fun getTaskStage(id: Int): Resource<TaskStage>
 
     suspend fun updateTask(
         token: String,
         id: Int,
         responses: String,
         complete: Boolean
-    ): Response<ResponseBody> {
-        val body = makeRequestBody(responses, complete)
-        return api.updateTask(token.toJwtToken(), id, body)
-    }
+    ): Response<ResponseBody>
 
-    private fun makeRequestBody(
+    fun makeRequestBody(
         responses: String,
         complete: Boolean
-    ): RequestBody = JsonObject().apply {
-        addProperty("complete", complete)
-        add("responses", JsonParser().parse(responses).asJsonObject)
-    }.toString().toRequestBodyWithMediaType()
+    ): RequestBody
 
-    suspend fun createTask(token: String, stageId: Int): Response<ResponseBody> =
-        api.createTask(token.toJwtToken(), stageId)
+    suspend fun createTask(token: String, stageId: Int): Response<ResponseBody>
 
     suspend fun getTasksStagesList(
         token: String,
         campaignId: String
-    ): Resource<List<TaskStage>> {
-        return getList({
-            api.getTasksStagesList(
-                token = token.toJwtToken(),
-                campaignId = campaignId
-            )
-        }, taskStageMapper)
-
-    }
+    ): Resource<List<TaskStage>>
 
     suspend fun getNotifications(
         token: String,
         campaignId: String,
         viewed: Boolean = false,
         importance: Int? = null,
-    ): Resource<List<Notification>> = getList(
-        {
-            api.getNotifications(
-                token = token.toJwtToken(),
-                campaignId = campaignId,
-                viewed = viewed,
-                importance = importance
-            ).results.orEmpty()
-        },
-        mapper = notificationDtoMapper
-    )
+    ): Resource<List<Notification>>
 
     suspend fun getNotification(
         token: String,
         notificationId: Int,
-    ): Resource<Notification> = getSingle({
-        api.getNotification(
-            token.toJwtToken(),
-            notificationId = notificationId
-        )
-    }, notificationDtoMapper)
+    ): Resource<Notification>
 
-    private suspend fun <T, DomainModel> getSingle(
-        func: suspend () -> T,
-        mapper: DomainMapper<T, DomainModel>
-    ): Resource<DomainModel> {
-        val response = try {
-            func()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Resource.Error(e.message.toString())
-        }
-        return Resource.Success(mapper.mapToDomainModel(response))
-    }
-
-    private suspend fun <T, DomainModel> getList(
-        func: suspend () -> List<T>,
-        mapper: DomainMapper<T, DomainModel>,
-    ): Resource<List<DomainModel>> {
-        val response = try {
-            func()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Resource.Error(e.message.toString())
-        }
-        return Resource.Success(mapper.toDomainList(response))
-    }
-
-    private fun String.toRequestBodyWithMediaType() =
-        this.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-
-    private fun String.toJwtToken() = "JWT $this"
+    fun getTokenSynchronously(onError: () -> Unit = {}): String?
 }
