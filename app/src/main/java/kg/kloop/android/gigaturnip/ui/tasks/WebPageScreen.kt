@@ -71,7 +71,8 @@ class WebAppInterface(
     private val onFileDelete: (String, String) -> Unit,
     private val onCancelWork: (String) -> Unit,
     private val onPreviewFile: (String) -> Unit,
-    private val onGoToPreviousTask: () -> Unit
+    private val onGoToPreviousTask: () -> Unit,
+    private val onGoToRecordAudio: (WebViewPickedFile) -> Unit
 ) {
 
     @JavascriptInterface
@@ -124,6 +125,11 @@ class WebAppInterface(
     @JavascriptInterface
     fun previewFile(downloadUrl: String){
         onPreviewFile(downloadUrl)
+    }
+
+    @JavascriptInterface
+    fun recordAudio(key: String, isPrivate: Boolean) {
+        onGoToRecordAudio(WebViewPickedFile(key, isPrivate))
     }
 }
 

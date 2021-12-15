@@ -382,4 +382,8 @@ class TaskDetailsViewModel @Inject constructor(
         }
         return filesProgressInfo
     }
+
+    fun openRecordAudio() {
+
+    }
 }

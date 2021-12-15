@@ -144,7 +144,11 @@ private fun ScreenContent(
                             viewModel.removeFromFileProgressState(fieldId, fileName)
                         },
                         onPreviewFile = { storagePath -> showPreview(storagePath, context) },
-                        onGoToPreviousTask = { viewModel.openPreviousTask(uiState.task) }
+                        onGoToPreviousTask = { viewModel.openPreviousTask(uiState.task) },
+                        onGoToRecordAudio = { pickedFile ->
+                            viewModel.setPickedFile(pickedFile)
+                            viewModel.openRecordAudio()
+                        }
                     )
                 }
             }
@@ -264,7 +268,8 @@ private fun TaskDetailsScreenContent(
     onCancelWork: (String) -> Unit,
     onFileDelete: (String, String) -> Unit,
     onPreviewFile: (String) -> Unit,
-    onGoToPreviousTask: () -> Unit
+    onGoToPreviousTask: () -> Unit,
+    onGoToRecordAudio: (WebViewPickedFile) -> Unit
 ) {
     WebPageScreen(
         modifier = Modifier
@@ -281,7 +286,8 @@ private fun TaskDetailsScreenContent(
             onFileDelete = { fieldId, filePath -> onFileDelete(fieldId, filePath) },
             onCancelWork = { fileName -> onCancelWork(fileName) },
             onPreviewFile = { storagePath -> onPreviewFile(storagePath) },
-            onGoToPreviousTask = { onGoToPreviousTask() }
+            onGoToPreviousTask = { onGoToPreviousTask() },
+            onGoToRecordAudio = { pickedFile -> onGoToRecordAudio(pickedFile) }
         ),
         onUpdate = onUpdate,
     )
