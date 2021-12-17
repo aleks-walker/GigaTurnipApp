@@ -9,12 +9,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import dagger.hilt.android.AndroidEntryPoint
 import kg.kloop.android.gigaturnip.ui.auth.LoginScreen
 import kg.kloop.android.gigaturnip.ui.theme.GigaTurnipTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@ExperimentalPermissionsApi
 @Composable
 fun MainScreen(viewModel: MainActivityViewModel, navController: NavHostController) {
     val user = viewModel.user.observeAsState()

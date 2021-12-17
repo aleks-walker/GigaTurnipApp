@@ -1,46 +1,32 @@
-package kg.kloop.android.gigaturnip.ui.tasks.screens
+package kg.kloop.android.gigaturnip.ui.audiorecording
 
 import android.Manifest
-import android.content.ContentResolver
-import android.content.Context
-import android.media.MediaPlayer
-import android.net.Uri
-import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.squti.androidwaverecorder.WaveRecorder
-import com.google.accompanist.permissions.*
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import kg.kloop.android.gigaturnip.MainActivityViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
+import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.tasks.RecordAudioViewModel
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.DarkRed
 import kg.kloop.android.gigaturnip.ui.theme.Green500
 import kg.kloop.android.gigaturnip.ui.theme.LightGray500
-import java.io.File
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 @ExperimentalPermissionsApi
 @Composable
@@ -50,7 +36,10 @@ fun RecordAudioScreen (
 ) {
     Scaffold(
         topBar = {
-            DetailsToolbar(title = "Record Voice", onBack = onBack)
+            DetailsToolbar(
+                title = stringResource(id = R.string.audio_recording),
+                onBack = onBack
+            )
         }
     ) { RecordScreen(viewModel) }
 }
@@ -61,10 +50,7 @@ fun RecordScreen(
     viewModel: RecordAudioViewModel
 ) {
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
-
-    val timeState = remember { mutableStateOf("00:00") }
-    val isRecording = remember { mutableStateOf(false) }
-    val isPlaying = remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -73,33 +59,33 @@ fun RecordScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        if (isRecording.value) DisplayActionText("Recording...", DarkRed)
-        if (isPlaying.value) DisplayActionText("Playing...", Green500)
-        DisplayTimer(timeState)
+        if (uiState.isRecording) DisplayActionText(
+            stringResource(id = R.string.recording).plus("..."),
+            DarkRed
+        )
+        if (uiState.isPlaying) DisplayActionText(
+            stringResource(id = R.string.playing).plus("..."),
+            Green500
+        )
+        DisplayTimer(uiState.timeState)
         StartRecordButton(
             onClick = {
                 permissionState.launchPermissionRequest()
                 if (permissionState.hasPermission) {
-                    viewModel.startRecord(getTime = { timeState.value = it })
-                    isRecording.value = true
+                    viewModel.startRecording()
                 }
             }
         )
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 50.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            StopRecordButton(
-                onClick = {
-                    viewModel.stopRecord()
-                    isRecording.value = false
-                }
-            )
-            PlayAudioButton(
-                onClick = { viewModel.playAudio(isPlaying = { isPlaying.value = it }) }
-            )
-            UploadButton( onClick = { viewModel.uploadAudio() })
+            StopRecordButton(onClick = { viewModel.stopRecording() })
+            PlayAudioButton(onClick = { viewModel.playAudio() })
+            UploadButton(onClick = { viewModel.uploadAudio() })
         }
     }
 }
@@ -115,9 +101,9 @@ private fun DisplayActionText(text: String, textColor: Color) {
 }
 
 @Composable
-private fun DisplayTimer(timeState: MutableState<String>) {
+private fun DisplayTimer(time: String) {
     Text(
-        text = timeState.value,
+        text = time,
         style = TextStyle(fontSize = 20.sp, color = LightGray500),
         modifier = Modifier.padding(bottom = 30.dp)
     )
@@ -148,8 +134,8 @@ private fun StopRecordButton(onClick: () -> Unit) {
             .height(60.dp)
     ) {
         Icon(
-            painter = painterResource(id = kg.kloop.android.gigaturnip.R.drawable.ic_stop),
-            contentDescription = "stop record",
+            painter = painterResource(id = R.drawable.ic_stop),
+            contentDescription = stringResource(id = R.string.stop_recording),
             tint = DarkRed,
             modifier = Modifier
                 .width(45.dp)
@@ -168,8 +154,8 @@ fun PlayAudioButton(onClick: () -> Unit) {
             .height(60.dp)
     ) {
         Icon(
-            painter = painterResource(id = kg.kloop.android.gigaturnip.R.drawable.ic_play),
-            contentDescription = "play audio",
+            painter = painterResource(id = R.drawable.ic_play),
+            contentDescription = stringResource(id = R.string.play),
             tint = Green500,
             modifier = Modifier
                 .width(50.dp)
@@ -188,8 +174,8 @@ private fun UploadButton(onClick: () -> Unit) {
             .height(60.dp)
     ) {
         Icon(
-            painter = painterResource(id = kg.kloop.android.gigaturnip.R.drawable.ic_done),
-            contentDescription = "done",
+            painter = painterResource(id = R.drawable.ic_done),
+            contentDescription = stringResource(id = R.string.done),
             tint = Green500,
             modifier = Modifier
                 .width(50.dp)

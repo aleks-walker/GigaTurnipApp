@@ -13,13 +13,17 @@ import androidx.navigation.navigation
 import com.firebase.ui.auth.AuthUI
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.auth.FirebaseAuth
+import kg.kloop.android.gigaturnip.ui.audiorecording.RecordAudioScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
 import kg.kloop.android.gigaturnip.ui.notifications.NotificationDetailsScreen
 import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreen
 import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreenView
-import kg.kloop.android.gigaturnip.ui.tasks.screens.*
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
+import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
@@ -99,13 +103,12 @@ fun MainNavGraph(
             route = TasksScreen.Details.route.plus("/{$TASK_ID}"),
             arguments = listOf(
                 navArgument(TASK_ID) { type = NavType.StringType },
-//                navArgument(STAGE_ID) { type = NavType.StringType },
             )
         ) {
             TaskDetails(
                 onBack = upPress(navController),
                 navigateToTask = navigateToDetails(navController),
-                navController = navController)
+                navigateToAudioRecording = { navController.navigate(TaskDetails.RecordAudio.route) })
         }
 
         composable(
@@ -137,7 +140,6 @@ private fun logOut(
 private fun navigateToDetails(navController: NavHostController) = { taskId: String ->
     navController.navigate(
         TasksScreen.Details.route
-//            .plus("/${task.id}/${task.stage.id}")
             .plus("/$taskId")
     )
 }

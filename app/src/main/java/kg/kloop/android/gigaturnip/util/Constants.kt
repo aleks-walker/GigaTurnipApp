@@ -51,5 +51,10 @@ object Constants {
     const val FILE_EVENT = "android_file_event"
     const val AUDIO_FILE_EVENT = "android_audio_file_event"
 
+    // Audio recording
+    const val AUDIO_FILE_EXTENSION = ".wav"
+    const val TEMP_AUDIO_FILE_NAME = "tempAudioRecording$AUDIO_FILE_EXTENSION"
+    const val FILE_PROVIDER = ".fileprovider"
+
     const val INPUT_DELAY_IN_MILL = 2000L
 }

@@ -72,7 +72,7 @@ class WebAppInterface(
     private val onCancelWork: (String) -> Unit,
     private val onPreviewFile: (String) -> Unit,
     private val onGoToPreviousTask: () -> Unit,
-    private val onGoToRecordAudio: (WebViewPickedFile) -> Unit
+    private val onRecordAudio: (WebViewPickedFile) -> Unit
 ) {
 
     @JavascriptInterface
@@ -129,7 +129,7 @@ class WebAppInterface(
 
     @JavascriptInterface
     fun recordAudio(key: String, isPrivate: Boolean) {
-        onGoToRecordAudio(WebViewPickedFile(key, isPrivate))
+        onRecordAudio(WebViewPickedFile(key, isPrivate))
     }
 }
 

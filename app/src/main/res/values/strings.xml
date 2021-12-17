@@ -25,4 +25,10 @@
     <string name="error_occured">An error has occurred</string>
     <string name="returned">Returned</string>
     <string name="created">Created</string>
+    <string name="audio_recording">Audio Recording</string>
+    <string name="recording">Recording</string>
+    <string name="playing">Playing</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="play">Play</string>
+    <string name="done">Done</string>
 </resources>
