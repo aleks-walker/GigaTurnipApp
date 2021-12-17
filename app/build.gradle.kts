@@ -127,4 +127,12 @@ dependencies {
 
     //Custom tabs
     implementation("androidx.browser:browser:1.4.0")
+
+    //Accompanist permissions
+    implementation ("com.google.accompanist:accompanist-permissions:0.20.2")
+
+    //WaveRecorder
+    implementation ("com.github.squti:Android-Wave-Recorder:1.6.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8")
+
 }

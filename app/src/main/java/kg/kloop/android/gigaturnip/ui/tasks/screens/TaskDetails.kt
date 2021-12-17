@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -48,9 +49,15 @@ import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
 import timber.log.Timber
 
+sealed class TaskDetails (val route: String) {
+    object RecordAudio : TaskDetails("record_audio" )
+}
+
 @Composable
 fun TaskDetails(
     viewModel: TaskDetailsViewModel = hiltViewModel(),
+    audioViewModel: RecordAudioViewModel = hiltViewModel(),
+    navController: NavController,
     navigateToTask: (String) -> Unit,
     onBack: () -> Unit
 ) {
@@ -73,7 +80,7 @@ fun TaskDetails(
             uploadProgressInfos
         )
     }
-    ScreenContent(uiState, onBack, viewModel)
+    ScreenContent(uiState, onBack, viewModel, audioViewModel, navController)
 }
 
 @Composable
@@ -81,8 +88,12 @@ private fun ScreenContent(
     uiState: TaskDetailsUiState,
     onBack: () -> Unit,
     viewModel: TaskDetailsViewModel,
+    audioViewModel: RecordAudioViewModel,
+    navController: NavController,
 ) {
     val context = LocalContext.current
+    val uiAudioState by audioViewModel.uiState.collectAsState()
+
     Scaffold(
         topBar = {
             DetailsToolbar(
@@ -130,7 +141,7 @@ private fun ScreenContent(
                         onUpdate = { webview ->
                             Timber.d("WebView update")
                             if (uiState.listenersReady) {
-                                webViewInitialLoad(uiState, webview)
+                                webViewInitialLoad(uiState, webview, uiAudioState)
                                 viewModel.setListenersReady(false)
                             }
                             webViewFileProgressLoad(webview, uiState)
@@ -146,14 +157,19 @@ private fun ScreenContent(
                         onPreviewFile = { storagePath -> showPreview(storagePath, context) },
                         onGoToPreviousTask = { viewModel.openPreviousTask(uiState.task) },
                         onGoToRecordAudio = { pickedFile ->
-                            viewModel.setPickedFile(pickedFile)
-                            viewModel.openRecordAudio()
+                            audioViewModel.setPickedFile(pickedFile)
+                            navigateToRecordAudio(navController)
+//                            uiAudioState.storageFilePath
                         }
                     )
                 }
             }
         }
     }
+}
+
+fun navigateToRecordAudio(navController: NavController) {
+    navController.navigate(TaskDetails.RecordAudio.route)
 }
 
 private fun webViewFileProgressLoad(
@@ -169,7 +185,8 @@ private fun webViewFileProgressLoad(
 
 private fun webViewInitialLoad(
     uiState: TaskDetailsUiState,
-    webview: WebView
+    webview: WebView,
+    uiAudioUiState: RecordAudioUiState
 ) {
     val json = JsonObject().apply {
         add("jsonSchema", uiState.task?.stage?.jsonSchema?.toJsonObject())
@@ -189,6 +206,10 @@ private fun webViewInitialLoad(
     evaluateJs(
         webview, uiState.task?.responses.toString(),
         Constants.DATA_EVENT
+    )
+    evaluateJs(
+        webview, uiAudioUiState.storageFilePath.toString(),
+        Constants.AUDIO_FILE_EVENT
     )
     Timber.d("data state: ${uiState.task?.responses}")
 }

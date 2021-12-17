@@ -49,6 +49,7 @@ object Constants {
     const val SCHEMA_EVENT = "android_schema_event"
     const val DATA_EVENT = "android_data_event"
     const val FILE_EVENT = "android_file_event"
+    const val AUDIO_FILE_EVENT = "android_audio_file_event"
 
     const val INPUT_DELAY_IN_MILL = 2000L
 }

@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.firebase.ui.auth.AuthUI
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.auth.FirebaseAuth
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
@@ -18,15 +19,13 @@ import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreenView
 import kg.kloop.android.gigaturnip.ui.notifications.NotificationDetailsScreen
 import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreen
 import kg.kloop.android.gigaturnip.ui.notifications.NotificationsScreenView
-import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
-import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
-import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
-import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
+import kg.kloop.android.gigaturnip.ui.tasks.screens.*
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
 
 
+@ExperimentalPermissionsApi
 @Composable
 fun MainNavGraph(
     navController: NavHostController,
@@ -105,7 +104,8 @@ fun MainNavGraph(
         ) {
             TaskDetails(
                 onBack = upPress(navController),
-                navigateToTask = navigateToDetails(navController))
+                navigateToTask = navigateToDetails(navController),
+                navController = navController)
         }
 
         composable(
@@ -118,8 +118,11 @@ fun MainNavGraph(
                 navigateToTask = navigateToDetails(navController)
             )
         }
-    }
 
+        composable(TaskDetails.RecordAudio.route) {
+            RecordAudioScreen(onBack = upPress(navController))
+        }
+    }
 }
 
 private fun logOut(
