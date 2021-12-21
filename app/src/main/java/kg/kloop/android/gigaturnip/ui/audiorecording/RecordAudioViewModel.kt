@@ -91,31 +91,21 @@ class RecordAudioViewModel @Inject constructor(
         _uiState.update { it.copy(isPlaying = value) }
     }
 
-    private fun getFileUri(context: Context): Uri? {
-        val path = File(context.filesDir, TEMP_AUDIO_FILE_NAME)
-        return FileProvider.getUriForFile(
-            context,
-            BuildConfig.APPLICATION_ID + FILE_PROVIDER,
-            path
-        ) //  "com.example.gigaturnip.fileprovider"
-    }
-
-    //TODO: fix upload
     fun uploadAudio() {
-        // TODO: fix upload path
         val storageRef: StorageReference =
             FirebaseStorage.getInstance().reference.child(
                 "voiceRecords/"
                         + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
             )
-        val uploadTask = filePath.toUri().let { storageRef.putFile(it) }
-//        storageFilePath = storageRef.path //  /voiceRecords/1639579773735.wav
+        val uri: Uri = Uri.fromFile(File(filePath))
+        val uploadTask = storageRef.putFile(uri)
+//        storageFilePath = storageRef.path                                                             //  /voiceRecords/1639579773735.wav
 
         uploadTask.addOnSuccessListener {
             Timber.d("Upload successfully")
-        }.addOnFailureListener {
+        }.addOnFailureListener { exception ->
             // TODO: handle errors
-            Timber.d("Upload failure")
+            Timber.d("Upload failure: $exception")
         }
         mediaPlayer.release()
     }

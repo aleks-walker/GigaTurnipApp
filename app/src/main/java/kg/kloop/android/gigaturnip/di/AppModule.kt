@@ -56,7 +56,7 @@ object AppModule {
     @Named("audioFilePath")
     fun provideAudioFilePath(
         @ApplicationContext context: Context
-    ): String = "${context.filesDir?.absolutePath}/${TEMP_AUDIO_FILE_NAME}"      /* /data/data/com.example.gigaturnip/files/myRecord.wav  */
+    ): String = "${context.filesDir?.absolutePath}/${TEMP_AUDIO_FILE_NAME}"
 
     @Singleton
     @Provides
