@@ -50,6 +50,7 @@ import timber.log.Timber
 
 sealed class TaskDetails (val route: String) {
     object RecordAudio : TaskDetails("record_audio" )
+    object PlayAudio : TaskDetails("play_audio" )
 }
 
 @Composable
@@ -57,6 +58,7 @@ fun TaskDetails(
     viewModel: TaskDetailsViewModel = hiltViewModel(),
     navigateToTask: (String) -> Unit,
     navigateToAudioRecording: (WebViewPickedFile) -> Unit,
+    navigateToAudioPlaying: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -72,6 +74,10 @@ fun TaskDetails(
     uiState.recordAudio?.let {
         viewModel.setRecordAudio(null)
         navigateToAudioRecording(it)
+    }
+    uiState.audiofilePath?.let {
+        viewModel.setPlayAudio(null)
+        navigateToAudioPlaying(it)
     }
     if (uiState.completed) closeTask(viewModel) { onBack() }
     if (uiState.showErrorMessage) showErrorMessage(LocalContext.current, viewModel)
@@ -89,7 +95,7 @@ fun TaskDetails(
 private fun ScreenContent(
     uiState: TaskDetailsUiState,
     onBack: () -> Unit,
-    viewModel: TaskDetailsViewModel,
+    viewModel: TaskDetailsViewModel
 ) {
     val context = LocalContext.current
 
@@ -155,7 +161,8 @@ private fun ScreenContent(
                         },
                         onPreviewFile = { storagePath -> showPreview(storagePath, context) },
                         onGoToPreviousTask = { viewModel.openPreviousTask(uiState.task) },
-                        onRecordAudio = { viewModel.setRecordAudio(it) }
+                        onRecordAudio = { viewModel.setRecordAudio(it) },
+                        onPlayAudio = { viewModel.setPlayAudio(it) }
                     )
                 }
             }
@@ -280,7 +287,8 @@ private fun TaskDetailsScreenContent(
     onFileDelete: (String, String) -> Unit,
     onPreviewFile: (String) -> Unit,
     onGoToPreviousTask: () -> Unit,
-    onRecordAudio: (WebViewPickedFile) -> Unit
+    onRecordAudio: (WebViewPickedFile) -> Unit,
+    onPlayAudio: (String) -> Unit
 ) {
     WebPageScreen(
         modifier = Modifier
@@ -298,7 +306,8 @@ private fun TaskDetailsScreenContent(
             onCancelWork = { fileName -> onCancelWork(fileName) },
             onPreviewFile = { storagePath -> onPreviewFile(storagePath) },
             onGoToPreviousTask = { onGoToPreviousTask() },
-            onRecordAudio = { pickedFile -> onRecordAudio(pickedFile) }
+            onRecordAudio = { pickedFile -> onRecordAudio(pickedFile) },
+            onPlayAudio = { filePath -> onPlayAudio(filePath) }
         ),
         onUpdate = onUpdate,
     )

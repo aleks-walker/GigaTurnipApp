@@ -99,7 +99,7 @@ class RecordAudioViewModel @Inject constructor(
             )
         val uri: Uri = Uri.fromFile(File(filePath))
         val uploadTask = storageRef.putFile(uri)
-//        storageFilePath = storageRef.path                                                             //  /voiceRecords/1639579773735.wav
+        val storageFilePath = storageRef.path                                                             //  /voiceRecords/1639579773735.wav
 
         uploadTask.addOnSuccessListener {
             Timber.d("Upload successfully")

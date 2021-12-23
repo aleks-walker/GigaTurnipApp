@@ -33,7 +33,7 @@ import kg.kloop.android.gigaturnip.ui.theme.LightGray500
 fun RecordAudioScreen (
     viewModel: RecordAudioViewModel = hiltViewModel(),
     onBack: () -> Unit
-) {
+) {/*
     Scaffold(
         topBar = {
             DetailsToolbar(
@@ -48,7 +48,7 @@ fun RecordAudioScreen (
 @Composable
 fun RecordScreen(
     viewModel: RecordAudioViewModel
-) {
+) {*/
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
     val uiState by viewModel.uiState.collectAsState()
 
@@ -85,7 +85,10 @@ fun RecordScreen(
         ) {
             StopRecordButton(onClick = { viewModel.stopRecording() })
             PlayAudioButton(onClick = { viewModel.playAudio() })
-            UploadButton(onClick = { viewModel.uploadAudio() })
+            UploadButton(onClick = {
+                viewModel.uploadAudio()
+                onBack()
+            })
         }
     }
 }

@@ -13,6 +13,7 @@ import androidx.navigation.navigation
 import com.firebase.ui.auth.AuthUI
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.auth.FirebaseAuth
+import kg.kloop.android.gigaturnip.ui.audioplaying.PlayAudioScreen
 import kg.kloop.android.gigaturnip.ui.audiorecording.RecordAudioScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
@@ -108,7 +109,9 @@ fun MainNavGraph(
             TaskDetails(
                 onBack = upPress(navController),
                 navigateToTask = navigateToDetails(navController),
-                navigateToAudioRecording = { navController.navigate(TaskDetails.RecordAudio.route) })
+                navigateToAudioRecording = { navController.navigate(TaskDetails.RecordAudio.route) },
+                navigateToAudioPlaying = { navController.navigate(TaskDetails.PlayAudio.route) }
+            )
         }
 
         composable(
@@ -124,6 +127,10 @@ fun MainNavGraph(
 
         composable(TaskDetails.RecordAudio.route) {
             RecordAudioScreen(onBack = upPress(navController))
+        }
+
+        composable(TaskDetails.PlayAudio.route) {
+            PlayAudioScreen(onBack = upPress(navController))
         }
     }
 }

@@ -48,6 +48,7 @@ data class TaskDetailsUiState(
     val task: Task? = null,
     val openTaskId: Int? = null,
     val recordAudio: WebViewPickedFile? = null,
+    val audiofilePath: String? = null,
     val previousTasks: JsonArray? = null,
     val completed: Boolean = false,
     val loading: Boolean = false,
@@ -112,6 +113,10 @@ class TaskDetailsViewModel @Inject constructor(
 
     fun setRecordAudio(pickedFile: WebViewPickedFile?) {
         _uiState.update { it.copy(recordAudio = pickedFile) }
+    }
+
+    fun setPlayAudio(path: String?) {
+        _uiState.update { it.copy(audiofilePath = path) }
     }
 
     private fun makeUploadPath(): String = getPath(
