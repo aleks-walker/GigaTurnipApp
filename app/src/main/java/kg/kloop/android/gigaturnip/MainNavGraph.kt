@@ -25,6 +25,7 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
+import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_PATH
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
@@ -129,7 +130,9 @@ fun MainNavGraph(
             RecordAudioScreen(onBack = upPress(navController))
         }
 
-        composable(TaskDetails.PlayAudio.route) {
+        composable(route = TaskDetails.PlayAudio.route,
+            arguments = listOf(navArgument(AUDIO_FILE_PATH) { type = NavType.StringType })
+        ) {
             PlayAudioScreen(onBack = upPress(navController))
         }
     }

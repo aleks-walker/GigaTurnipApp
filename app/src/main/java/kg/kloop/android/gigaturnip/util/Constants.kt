@@ -14,6 +14,7 @@ object Constants {
     const val STAGE_TITLE = "stageTitle"
     const val TASK_ID = "taskId"
     const val NOTIFICATION_ID = "notificationId"
+    const val AUDIO_FILE_PATH = "audioFilePath"
 
 
     // Notification Channel constants
