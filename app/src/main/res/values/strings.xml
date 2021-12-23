@@ -31,4 +31,8 @@
     <string name="stop_recording">Stop recording</string>
     <string name="play">Play</string>
     <string name="done">Done</string>
+    <string name="save">Save</string>
+    <string name="start_recording">Start recording</string>
+    <string name="recording_icon">Recording icon</string>
+    <string name="rec">REC</string>
 </resources>

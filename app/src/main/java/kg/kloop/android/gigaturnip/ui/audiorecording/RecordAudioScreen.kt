@@ -33,22 +33,7 @@ import kg.kloop.android.gigaturnip.ui.theme.LightGray500
 fun RecordAudioScreen (
     viewModel: RecordAudioViewModel = hiltViewModel(),
     onBack: () -> Unit
-) {/*
-    Scaffold(
-        topBar = {
-            DetailsToolbar(
-                title = stringResource(id = R.string.audio_recording),
-                onBack = onBack
-            )
-        }
-    ) { RecordScreen(viewModel) }
-}
-
-@ExperimentalPermissionsApi
-@Composable
-fun RecordScreen(
-    viewModel: RecordAudioViewModel
-) {*/
+) {
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
     val uiState by viewModel.uiState.collectAsState()
 
@@ -59,32 +44,71 @@ fun RecordScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        if (uiState.isRecording) DisplayActionText(
-            stringResource(id = R.string.recording).plus("..."),
-            DarkRed
-        )
-        if (uiState.isPlaying) DisplayActionText(
-            stringResource(id = R.string.playing).plus("..."),
-            Green500
-        )
-        DisplayTimer(uiState.timeState)
-        StartRecordButton(
-            onClick = {
-                permissionState.launchPermissionRequest()
-                if (permissionState.hasPermission) {
-                    viewModel.startRecording()
+        Column(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(bottom = 200.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center) {
+            if (uiState.isRecording) {
+                Row(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_record),
+                        contentDescription = stringResource(id = R.string.recording_icon),
+                        tint = DarkRed,
+                        modifier = Modifier
+                            .width(15.dp)
+                            .height(15.dp)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.rec),
+                        style = MaterialTheme.typography.subtitle1,
+                        color = LightGray500
+                    )
                 }
             }
-        )
+            DisplayTimer(uiState.timeState)
+        }
+
         Row(
             modifier = Modifier
+                .wrapContentHeight()
                 .fillMaxWidth()
-                .padding(bottom = 50.dp),
+                .padding(bottom = 70.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            StopRecordButton(onClick = { viewModel.stopRecording() })
-            PlayAudioButton(onClick = { viewModel.playAudio() })
+            if (uiState.isPlaying) {
+                PlayAudioButton(
+                    onClick = { viewModel.stopPlayingAudio() },
+                    icon = R.drawable.ic_pause)
+            } else {
+                PlayAudioButton(
+                    onClick = { viewModel.startPlayingAudio() },
+                    icon = R.drawable.ic_play)
+            }
+
+            if (uiState.isRecording) {
+                StopRecordButton(onClick = { viewModel.stopRecording() })
+            } else {
+                StartRecordButton(
+                    onClick = {
+                        permissionState.launchPermissionRequest()
+                        if (permissionState.hasPermission) {
+                            viewModel.startRecording()
+                        }
+                    }
+                )
+            }
+
             UploadButton(onClick = {
                 viewModel.uploadAudio()
                 onBack()
@@ -93,38 +117,35 @@ fun RecordScreen(
     }
 }
 
-
-@Composable
-private fun DisplayActionText(text: String, textColor: Color) {
-    Text(
-        text = text,
-        style = TextStyle(color = textColor, fontSize = 24.sp),
-        modifier = Modifier.padding(bottom = 70.dp)
-    )
-}
-
 @Composable
 private fun DisplayTimer(time: String) {
     Text(
         text = time,
-        style = TextStyle(fontSize = 20.sp, color = LightGray500),
-        modifier = Modifier.padding(bottom = 30.dp)
+        style = MaterialTheme.typography.h4,
+        color = LightGray500
     )
 }
 
 @ExperimentalPermissionsApi
 @Composable
 private fun StartRecordButton(onClick: () -> Unit) {
-    Button(
+    IconButton(
         onClick = { onClick() },
-        shape = RoundedCornerShape(50),
-        colors = ButtonDefaults.buttonColors(backgroundColor = DarkRed),
         modifier = Modifier
-            .padding(bottom = 50.dp)
-            .width(70.dp)
-            .height(70.dp)
-            .border(width = 6.dp, shape = RoundedCornerShape(50), color = Color.White)
-    ) {}
+            .background(color = DarkRed, shape = RoundedCornerShape(50))
+            .width(65.dp)
+            .height(65.dp)
+            .border(width = 2.dp, shape = RoundedCornerShape(50), color = Color.White)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_mic),
+            contentDescription = stringResource(id = R.string.start_recording),
+            tint = LightGray500,
+            modifier = Modifier
+                .width(40.dp)
+                .height(40.dp)
+        )
+    }
 }
 
 @Composable
@@ -132,9 +153,9 @@ private fun StopRecordButton(onClick: () -> Unit) {
     IconButton(
         onClick = { onClick() },
         modifier = Modifier
-            .background(color = LightGray500, shape = RoundedCornerShape(30))
-            .width(60.dp)
-            .height(60.dp)
+            .background(color = LightGray500, shape = RoundedCornerShape(50))
+            .width(65.dp)
+            .height(65.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_stop),
@@ -148,41 +169,41 @@ private fun StopRecordButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun PlayAudioButton(onClick: () -> Unit) {
+fun PlayAudioButton(
+    onClick: () -> Unit,
+    icon: Int
+) {
     IconButton(
         onClick = { onClick() },
         modifier = Modifier
-            .background(color = LightGray500, shape = RoundedCornerShape(30))
+            .background(color = LightGray500, shape = RoundedCornerShape(50))
             .width(60.dp)
             .height(60.dp)
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_play),
+            painter = painterResource(id = icon),
             contentDescription = stringResource(id = R.string.play),
-            tint = Green500,
+            tint = Color.Black,
             modifier = Modifier
-                .width(50.dp)
-                .height(50.dp)
+                .width(40.dp)
+                .height(40.dp)
         )
     }
 }
 
 @Composable
 private fun UploadButton(onClick: () -> Unit) {
-    IconButton(
+    Button(
         onClick = { onClick() },
+        shape = RoundedCornerShape(50),
+        colors = ButtonDefaults.buttonColors(backgroundColor = LightGray500),
         modifier = Modifier
-            .background(color = LightGray500, shape = RoundedCornerShape(30))
+            .background(color = LightGray500, shape = RoundedCornerShape(50))
             .width(60.dp)
             .height(60.dp)
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_done),
-            contentDescription = stringResource(id = R.string.done),
-            tint = Green500,
-            modifier = Modifier
-                .width(50.dp)
-                .height(50.dp)
-        )
+        Text(
+            text = stringResource(id = R.string.save),
+            style = MaterialTheme.typography.h3)
     }
 }

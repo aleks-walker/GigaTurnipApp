@@ -25,4 +25,12 @@
     <string name="error_occured">Произошла ошибка</string>
     <string name="returned">Возвращено</string>
     <string name="created">Создано</string>
+    <string name="audio_recording">Аудиозапись</string>
+    <string name="recording">Запись</string>
+    <string name="playing">Воспроизведение</string>
+    <string name="stop_recording">Остановка записи</string>
+    <string name="play">Воспроизведение</string>
+    <string name="done">Готово</string>
+    <string name="save">Сохранить</string>
+    <string name="start_recording">Start recording</string>
 </resources>

@@ -74,16 +74,24 @@ class RecordAudioViewModel @Inject constructor(
         _uiState.update { it.copy(isRecording = value) }
     }
 
-    fun playAudio() {
+    fun startPlayingAudio() {
         setPlayingState(true)
         mediaPlayer.apply {
-            reset()
             setDataSource(filePath)
             prepare()
             start()
-            setOnCompletionListener {
-                setPlayingState(false)
-            }
+//            val curTime = timestamp
+//            _uiState.update {
+//                it.copy(timeState = curTime.toString())
+//            }
+        }
+    }
+
+    fun stopPlayingAudio() {
+        setPlayingState(false)
+        mediaPlayer.apply {
+            stop()
+            reset()
         }
     }
 
