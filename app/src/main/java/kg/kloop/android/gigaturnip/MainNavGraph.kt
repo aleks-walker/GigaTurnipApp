@@ -13,7 +13,6 @@ import androidx.navigation.navigation
 import com.firebase.ui.auth.AuthUI
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.auth.FirebaseAuth
-import kg.kloop.android.gigaturnip.ui.audioplaying.PlayAudioScreen
 import kg.kloop.android.gigaturnip.ui.audiorecording.RecordAudioScreen
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsDescriptionScreenView
 import kg.kloop.android.gigaturnip.ui.campaigns.CampaignsScreen
@@ -25,7 +24,8 @@ import kg.kloop.android.gigaturnip.ui.tasks.screens.TaskDetails
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksCreatable
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreen
 import kg.kloop.android.gigaturnip.ui.tasks.screens.TasksScreenView
-import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_PATH
+import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
@@ -102,7 +102,7 @@ fun MainNavGraph(
             }
         }
         composable(
-            route = TasksScreen.Details.route.plus("/{$TASK_ID}"),
+            route = TasksScreen.Details.route.plus("/{$TASK_ID}/{$AUDIO_FILE_KEY}/{$AUDIO_FILE_UPLOAD_PATH}"),
             arguments = listOf(
                 navArgument(TASK_ID) { type = NavType.StringType },
             )
@@ -110,8 +110,7 @@ fun MainNavGraph(
             TaskDetails(
                 onBack = upPress(navController),
                 navigateToTask = navigateToDetails(navController),
-                navigateToAudioRecording = { navController.navigate(TaskDetails.RecordAudio.route) },
-                navigateToAudioPlaying = { navController.navigate(TaskDetails.PlayAudio.route) }
+                navigateToAudioRecording = { navController.navigate(TaskDetails.RecordAudio.route.plus("/{AUDIO_FILE_UPLOAD_PATH}")) }
             )
         }
 
@@ -126,14 +125,12 @@ fun MainNavGraph(
             )
         }
 
-        composable(TaskDetails.RecordAudio.route) {
-            RecordAudioScreen(onBack = upPress(navController))
-        }
-
-        composable(route = TaskDetails.PlayAudio.route,
-            arguments = listOf(navArgument(AUDIO_FILE_PATH) { type = NavType.StringType })
+        composable(TaskDetails.RecordAudio.route.plus("/{AUDIO_FILE_UPLOAD_PATH}"),
+            arguments = listOf(
+//                navArgument(AUDIO_FILE_KEY) { type = NavType.StringType },
+                navArgument(AUDIO_FILE_UPLOAD_PATH) { type = NavType.StringType })
         ) {
-            PlayAudioScreen(onBack = upPress(navController))
+            RecordAudioScreen(onBack = upPress(navController))
         }
     }
 }

@@ -14,18 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
-import kg.kloop.android.gigaturnip.ui.tasks.RecordAudioViewModel
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.DarkRed
-import kg.kloop.android.gigaturnip.ui.theme.Green500
 import kg.kloop.android.gigaturnip.ui.theme.LightGray500
 
 @ExperimentalPermissionsApi
@@ -34,8 +30,28 @@ fun RecordAudioScreen (
     viewModel: RecordAudioViewModel = hiltViewModel(),
     onBack: () -> Unit
 ) {
+    Scaffold (
+        topBar = {
+            DetailsToolbar(
+                title = stringResource(id = R.string.audio_recording),
+                onBack =  onBack
+            )
+        }
+    ) {
+        RecordAudio(viewModel, onBack)
+    }
+}
+
+@ExperimentalPermissionsApi
+@Composable
+fun RecordAudio(
+    viewModel: RecordAudioViewModel,
+    onBack: () -> Unit
+) {
+
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
     val uiState by viewModel.uiState.collectAsState()
+    if (uiState.isUploaded) closeRecording(uiState) { onBack() }
 
     Column(
         modifier = Modifier
@@ -111,7 +127,6 @@ fun RecordAudioScreen (
 
             UploadButton(onClick = {
                 viewModel.uploadAudio()
-                onBack()
             })
         }
     }
@@ -124,6 +139,15 @@ private fun DisplayTimer(time: String) {
         style = MaterialTheme.typography.h4,
         color = LightGray500
     )
+}
+
+@Composable
+private fun closeRecording(
+    uiState: RecordAudioUiState,
+    onBack: () -> Unit
+) {
+    uiState.isUploaded = false
+    onBack()
 }
 
 @ExperimentalPermissionsApi
@@ -204,6 +228,8 @@ private fun UploadButton(onClick: () -> Unit) {
     ) {
         Text(
             text = stringResource(id = R.string.save),
-            style = MaterialTheme.typography.h3)
+            style = MaterialTheme.typography.h3,
+            color = Color.Black
+        )
     }
 }

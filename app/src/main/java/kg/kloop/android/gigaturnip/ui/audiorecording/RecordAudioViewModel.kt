@@ -1,19 +1,16 @@
-package kg.kloop.android.gigaturnip.ui.tasks
+package kg.kloop.android.gigaturnip.ui.audiorecording
 
-import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import androidx.core.content.FileProvider
-import androidx.core.net.toUri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.github.squti.androidwaverecorder.WaveRecorder
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kg.kloop.android.gigaturnip.BuildConfig
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
-import kg.kloop.android.gigaturnip.util.Constants.FILE_PROVIDER
-import kg.kloop.android.gigaturnip.util.Constants.TEMP_AUDIO_FILE_NAME
+import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
+import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,24 +26,29 @@ import javax.inject.Named
 data class RecordAudioUiState(
     val timeState: String = "00:00",
     val isRecording: Boolean = false,
-    val isPlaying: Boolean = false
+    val isPlaying: Boolean = false,
+    var isUploaded: Boolean = false
+)
+data class UploadPath(
+    val key: String,
+    val path: String
 )
 
 @HiltViewModel
 class RecordAudioViewModel @Inject constructor(
-    @Named("audioFilePath") private val filePath: String
+    @Named("audioFilePath") private val filePath: String,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private var _pickedFile: WebViewPickedFile? = null
+
+//    private var audioFileKey: String = savedStateHandle.get<String>(AUDIO_FILE_KEY)!!
+    private var audioFileUploadPath: String = savedStateHandle.get<String>(AUDIO_FILE_UPLOAD_PATH)!!
+//    private val uploadPath = UploadPath(audioFileKey, audioFileUploadPath)
 
     private val _uiState = MutableStateFlow(RecordAudioUiState())
     val uiState: StateFlow<RecordAudioUiState> = _uiState.asStateFlow()
 
     private val waveRecorder = WaveRecorder(filePath)
     private val mediaPlayer = MediaPlayer()
-
-    fun setPickedFile(pickedFile: WebViewPickedFile) {
-        _pickedFile = pickedFile
-    }
 
     fun startRecording() {
         setRecordingState(true)
@@ -75,24 +77,42 @@ class RecordAudioViewModel @Inject constructor(
     }
 
     fun startPlayingAudio() {
+        val timer = Timer()
         setPlayingState(true)
         mediaPlayer.apply {
             setDataSource(filePath)
             prepare()
             start()
-//            val curTime = timestamp
-//            _uiState.update {
-//                it.copy(timeState = curTime.toString())
-//            }
+        }
+        updateTime(timer)
+    }
+
+    private fun playingStop(){
+        setPlayingState(false)
+        mediaPlayer.apply {
+            reset()
+            stop()
         }
     }
 
-    fun stopPlayingAudio() {
-        setPlayingState(false)
-        mediaPlayer.apply {
-            stop()
-            reset()
+    private fun updateTime(timer: Timer) {
+        val dur = (mediaPlayer.duration/1000).toLong()
+        var i: Long = 0
+        val timerTask = object: TimerTask() {
+            override fun run() {
+                _uiState.update { it.copy(timeState = formatTimeUnit(i * 1000) ) }
+                i++
+                if (i > dur) {
+                    timer.cancel()
+                    playingStop()
+                }
+            }
         }
+        timer.schedule(timerTask, 1000, 1000)
+    }
+
+    fun stopPlayingAudio() {
+        playingStop()
     }
 
     private fun setPlayingState(value: Boolean) {
@@ -102,17 +122,18 @@ class RecordAudioViewModel @Inject constructor(
     fun uploadAudio() {
         val storageRef: StorageReference =
             FirebaseStorage.getInstance().reference.child(
-                "voiceRecords/"
-                        + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
+                audioFileUploadPath + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
             )
+        val storageFilePath = storageRef.path
         val uri: Uri = Uri.fromFile(File(filePath))
-        val uploadTask = storageRef.putFile(uri)
-        val storageFilePath = storageRef.path                                                             //  /voiceRecords/1639579773735.wav
+        val uploadTask = storageRef.putFile(uri)                                                             //  /voiceRecords/1639579773735.wav
 
         uploadTask.addOnSuccessListener {
             Timber.d("Upload successfully")
+            _uiState.update { it.copy(isUploaded = true) }
+//            return@addOnSuccessListener
+
         }.addOnFailureListener { exception ->
-            // TODO: handle errors
             Timber.d("Upload failure: $exception")
         }
         mediaPlayer.release()
