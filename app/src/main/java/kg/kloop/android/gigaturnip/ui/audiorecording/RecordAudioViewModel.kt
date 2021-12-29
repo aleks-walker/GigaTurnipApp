@@ -29,10 +29,6 @@ data class RecordAudioUiState(
     val isPlaying: Boolean = false,
     var isUploaded: Boolean = false
 )
-data class UploadPath(
-    val key: String,
-    val path: String
-)
 
 @HiltViewModel
 class RecordAudioViewModel @Inject constructor(
@@ -40,15 +36,17 @@ class RecordAudioViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-//    private var audioFileKey: String = savedStateHandle.get<String>(AUDIO_FILE_KEY)!!
+    private var audioFileKey: String = savedStateHandle.get<String>(AUDIO_FILE_KEY)!!
+    private lateinit var storagePath: String
     private var audioFileUploadPath: String = savedStateHandle.get<String>(AUDIO_FILE_UPLOAD_PATH)!!
-//    private val uploadPath = UploadPath(audioFileKey, audioFileUploadPath)
 
     private val _uiState = MutableStateFlow(RecordAudioUiState())
     val uiState: StateFlow<RecordAudioUiState> = _uiState.asStateFlow()
 
     private val waveRecorder = WaveRecorder(filePath)
     private val mediaPlayer = MediaPlayer()
+    private val timer = Timer()
+
 
     fun startRecording() {
         setRecordingState(true)
@@ -56,6 +54,10 @@ class RecordAudioViewModel @Inject constructor(
             startRecording()
             onTimeElapsed = { updateTimeElapsed(it) }
         }
+    }
+
+    fun getEventData(): Pair<String, String> {
+        return audioFileKey to storagePath
     }
 
     private fun updateTimeElapsed(timeElapsed: Long) {
@@ -76,26 +78,37 @@ class RecordAudioViewModel @Inject constructor(
         _uiState.update { it.copy(isRecording = value) }
     }
 
-    fun startPlayingAudio() {
-        val timer = Timer()
+    fun startAudioPlaying() {
         setPlayingState(true)
         mediaPlayer.apply {
             setDataSource(filePath)
             prepare()
             start()
         }
-        updateTime(timer)
+        updateTime()
     }
 
-    private fun playingStop(){
+    fun stopAudioPlaying(){
         setPlayingState(false)
         mediaPlayer.apply {
             reset()
             stop()
         }
+        timer.cancel()
     }
 
-    private fun updateTime(timer: Timer) {
+    private fun updateTime() {
+        //TODO: coroutines example
+//        viewModelScope.launch {
+//            val duration = mediaPlayer.duration.toLong()
+//            withTimeout(duration) {
+//                repeat(duration.div(1000).toInt() ){
+//                    _uiState.update { it.copy(timeState = formatTimeUnit(mediaPlayer.currentPosition.toLong()) ) }
+//                    delay(1000)
+//                }
+//            }
+//            stopAudioPlaying()
+//        }
         val dur = (mediaPlayer.duration/1000).toLong()
         var i: Long = 0
         val timerTask = object: TimerTask() {
@@ -104,34 +117,30 @@ class RecordAudioViewModel @Inject constructor(
                 i++
                 if (i > dur) {
                     timer.cancel()
-                    playingStop()
+                    stopAudioPlaying()
                 }
             }
         }
         timer.schedule(timerTask, 1000, 1000)
     }
 
-    fun stopPlayingAudio() {
-        playingStop()
-    }
-
     private fun setPlayingState(value: Boolean) {
         _uiState.update { it.copy(isPlaying = value) }
     }
 
+    // TODO: change to upload worker
     fun uploadAudio() {
         val storageRef: StorageReference =
             FirebaseStorage.getInstance().reference.child(
                 audioFileUploadPath + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
             )
-        val storageFilePath = storageRef.path
+        storagePath = storageRef.path
         val uri: Uri = Uri.fromFile(File(filePath))
         val uploadTask = storageRef.putFile(uri)                                                             //  /voiceRecords/1639579773735.wav
 
         uploadTask.addOnSuccessListener {
             Timber.d("Upload successfully")
             _uiState.update { it.copy(isUploaded = true) }
-//            return@addOnSuccessListener
 
         }.addOnFailureListener { exception ->
             Timber.d("Upload failure: $exception")

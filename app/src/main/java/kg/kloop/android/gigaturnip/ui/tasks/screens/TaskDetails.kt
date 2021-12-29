@@ -56,7 +56,7 @@ sealed class TaskDetails (val route: String) {
 fun TaskDetails(
     viewModel: TaskDetailsViewModel = hiltViewModel(),
     navigateToTask: (String) -> Unit,
-    navigateToAudioRecording: (String) -> Unit,
+    navigateToAudioRecording: (String, String) -> Unit,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -69,9 +69,9 @@ fun TaskDetails(
         closeTask(viewModel) { onBack() }
         navigateToTask(taskId.toString())
     }
-    uiState.recordAudio?.let {
+    uiState.recordAudio?.let { pickedFile ->
         viewModel.setRecordAudio(null)
-        navigateToAudioRecording(viewModel.makeUploadPath())  //it.key
+        navigateToAudioRecording(pickedFile.key, viewModel.makeUploadPath())
     }
     if (uiState.completed) closeTask(viewModel) { onBack() }
     if (uiState.showErrorMessage) showErrorMessage(LocalContext.current, viewModel)

@@ -104,11 +104,11 @@ fun RecordAudio(
         ) {
             if (uiState.isPlaying) {
                 PlayAudioButton(
-                    onClick = { viewModel.stopPlayingAudio() },
+                    onClick = { viewModel.stopAudioPlaying() },
                     icon = R.drawable.ic_pause)
             } else {
                 PlayAudioButton(
-                    onClick = { viewModel.startPlayingAudio() },
+                    onClick = { viewModel.startAudioPlaying() },
                     icon = R.drawable.ic_play)
             }
 

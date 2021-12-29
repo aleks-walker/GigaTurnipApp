@@ -29,6 +29,7 @@ import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.CAMPAIGN_ID
 import kg.kloop.android.gigaturnip.util.Constants.NOTIFICATION_ID
 import kg.kloop.android.gigaturnip.util.Constants.TASK_ID
+import kg.kloop.android.gigaturnip.util.encodeUrl
 
 
 @ExperimentalPermissionsApi
@@ -102,7 +103,7 @@ fun MainNavGraph(
             }
         }
         composable(
-            route = TasksScreen.Details.route.plus("/{$TASK_ID}/{$AUDIO_FILE_KEY}/{$AUDIO_FILE_UPLOAD_PATH}"),
+            route = TasksScreen.Details.route.plus("/{$TASK_ID}"),
             arguments = listOf(
                 navArgument(TASK_ID) { type = NavType.StringType },
             )
@@ -110,7 +111,11 @@ fun MainNavGraph(
             TaskDetails(
                 onBack = upPress(navController),
                 navigateToTask = navigateToDetails(navController),
-                navigateToAudioRecording = { navController.navigate(TaskDetails.RecordAudio.route.plus("/{AUDIO_FILE_UPLOAD_PATH}")) }
+                navigateToAudioRecording = { key, uploadPath ->
+                    navController.navigate(
+                        TaskDetails.RecordAudio.route.plus("/$key/${uploadPath.encodeUrl()}")
+                    )
+                }
             )
         }
 
@@ -125,9 +130,9 @@ fun MainNavGraph(
             )
         }
 
-        composable(TaskDetails.RecordAudio.route.plus("/{AUDIO_FILE_UPLOAD_PATH}"),
+        composable(TaskDetails.RecordAudio.route.plus("/{$AUDIO_FILE_KEY}/{$AUDIO_FILE_UPLOAD_PATH}"),
             arguments = listOf(
-//                navArgument(AUDIO_FILE_KEY) { type = NavType.StringType },
+                navArgument(AUDIO_FILE_KEY) { type = NavType.StringType },
                 navArgument(AUDIO_FILE_UPLOAD_PATH) { type = NavType.StringType })
         ) {
             RecordAudioScreen(onBack = upPress(navController))
