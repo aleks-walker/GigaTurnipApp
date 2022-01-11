@@ -32,7 +32,10 @@ data class RecordAudioUiState(
     val isRecording: Boolean = false,
     val isPlaying: Boolean = false,
     var isUploaded: Boolean = false,
-    var isFileEmpty: Boolean = false
+    var isFileEmpty: Boolean = false,
+    val showRecordingToast: Boolean = false,
+    val showPlayingToast: Boolean = false,
+    val showUploadingToast: Boolean = false,
 )
 
 @HiltViewModel
@@ -55,10 +58,15 @@ class RecordAudioViewModel @Inject constructor(
 
     fun startRecording() {
         setRecordingState(true)
+        setRecordingToast(true)
         waveRecorder.apply {
             startRecording()
             onTimeElapsed = { updateTimeElapsed(it) }
         }
+    }
+
+    fun setRecordingToast(value: Boolean) {
+        _uiState.update { it.copy(showRecordingToast = value) }
     }
 
     fun getEventData(): Pair<String, String> {
@@ -86,6 +94,7 @@ class RecordAudioViewModel @Inject constructor(
     fun startAudioPlaying() {
         if (file.exists()) {
             setPlayingState(true)
+            setPlayingToast(true)
             mediaPlayer.apply {
                 setDataSource(filePath)
                 prepare()
@@ -95,6 +104,10 @@ class RecordAudioViewModel @Inject constructor(
         } else {
             setFileState(true)
         }
+    }
+
+    fun setPlayingToast(value: Boolean) {
+        _uiState.update { it.copy(showPlayingToast = value) }
     }
 
     fun setFileState(value: Boolean) {
@@ -127,6 +140,10 @@ class RecordAudioViewModel @Inject constructor(
         _uiState.update { it.copy(isPlaying = value) }
     }
 
+    fun setUploadingToast(value: Boolean) {
+        _uiState.update { it.copy(showUploadingToast = value) }
+    }
+
     // TODO: change to upload worker
     fun uploadAudio() {
         val storageRef: StorageReference =
@@ -137,6 +154,7 @@ class RecordAudioViewModel @Inject constructor(
 
         try {
             if (file.exists()) {
+                setUploadingToast(true)
                 val uri: Uri = Uri.fromFile(File(filePath))
                 val uploadTask = storageRef.putFile(uri)
 

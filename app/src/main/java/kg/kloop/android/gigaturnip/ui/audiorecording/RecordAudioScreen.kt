@@ -115,6 +115,8 @@ fun RecordAudio(
                     icon = R.drawable.ic_play)
             }
             if (uiState.isFileEmpty) showEmptyFileToast(LocalContext.current, viewModel)
+            if (uiState.showRecordingToast) showRecordingToast(LocalContext.current, viewModel)
+            if (uiState.showPlayingToast) showPlayingToast(LocalContext.current, viewModel)
 
             if (uiState.isRecording) {
                 StopRecordButton(onClick = { viewModel.stopRecording() })
@@ -130,8 +132,24 @@ fun RecordAudio(
             }
 
             UploadButton(onClick = { viewModel.uploadAudio() })
+            if (uiState.showUploadingToast) showUploadingToast(LocalContext.current, viewModel)
         }
     }
+}
+
+fun showUploadingToast(context: Context, viewModel: RecordAudioViewModel) {
+    Toast.makeText(context, "Uploading", Toast.LENGTH_LONG).show()
+    viewModel.setUploadingToast(false)
+}
+
+fun showPlayingToast(context: Context, viewModel: RecordAudioViewModel) {
+    Toast.makeText(context, "Playing", Toast.LENGTH_LONG).show()
+    viewModel.setPlayingToast(false)
+}
+
+fun showRecordingToast(context: Context, viewModel: RecordAudioViewModel) {
+    Toast.makeText(context, "Recording", Toast.LENGTH_LONG).show()
+    viewModel.setRecordingToast(false)
 }
 
 fun showEmptyFileToast(context: Context, viewModel: RecordAudioViewModel) {
