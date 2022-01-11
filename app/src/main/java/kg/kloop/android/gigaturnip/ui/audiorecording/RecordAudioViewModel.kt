@@ -4,6 +4,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.github.squti.androidwaverecorder.WaveRecorder
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -11,10 +12,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import java.io.File
 import java.util.*
@@ -27,7 +31,8 @@ data class RecordAudioUiState(
     val timeState: String = "00:00",
     val isRecording: Boolean = false,
     val isPlaying: Boolean = false,
-    var isUploaded: Boolean = false
+    var isUploaded: Boolean = false,
+    var isFileEmpty: Boolean = false
 )
 
 @HiltViewModel
@@ -45,7 +50,7 @@ class RecordAudioViewModel @Inject constructor(
 
     private val waveRecorder = WaveRecorder(filePath)
     private val mediaPlayer = MediaPlayer()
-    private val timer = Timer()
+    private val file = File(filePath)
 
 
     fun startRecording() {
@@ -79,13 +84,21 @@ class RecordAudioViewModel @Inject constructor(
     }
 
     fun startAudioPlaying() {
-        setPlayingState(true)
-        mediaPlayer.apply {
-            setDataSource(filePath)
-            prepare()
-            start()
+        if (file.exists()) {
+            setPlayingState(true)
+            mediaPlayer.apply {
+                setDataSource(filePath)
+                prepare()
+                start()
+            }
+            updateTime()
+        } else {
+            setFileState(true)
         }
-        updateTime()
+    }
+
+    fun setFileState(value: Boolean) {
+        _uiState.update { it.copy(isFileEmpty = value) }
     }
 
     fun stopAudioPlaying(){
@@ -94,34 +107,20 @@ class RecordAudioViewModel @Inject constructor(
             reset()
             stop()
         }
-        timer.cancel()
     }
 
     private fun updateTime() {
         //TODO: coroutines example
-//        viewModelScope.launch {
-//            val duration = mediaPlayer.duration.toLong()
-//            withTimeout(duration) {
-//                repeat(duration.div(1000).toInt() ){
-//                    _uiState.update { it.copy(timeState = formatTimeUnit(mediaPlayer.currentPosition.toLong()) ) }
-//                    delay(1000)
-//                }
-//            }
-//            stopAudioPlaying()
-//        }
-        val dur = (mediaPlayer.duration/1000).toLong()
-        var i: Long = 0
-        val timerTask = object: TimerTask() {
-            override fun run() {
-                _uiState.update { it.copy(timeState = formatTimeUnit(i * 1000) ) }
-                i++
-                if (i > dur) {
-                    timer.cancel()
-                    stopAudioPlaying()
+        viewModelScope.launch {
+            val duration = mediaPlayer.duration.toLong()
+            withTimeout(duration + 2000) {
+                repeat((duration + 2000).div(1000).toInt() ){
+                    _uiState.update { it.copy(timeState = formatTimeUnit(mediaPlayer.currentPosition.toLong()) ) }
+                    delay(1000)
                 }
             }
+            stopAudioPlaying()
         }
-        timer.schedule(timerTask, 1000, 1000)
     }
 
     private fun setPlayingState(value: Boolean) {
@@ -135,17 +134,32 @@ class RecordAudioViewModel @Inject constructor(
                 audioFileUploadPath + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
             )
         storagePath = storageRef.path
-        val uri: Uri = Uri.fromFile(File(filePath))
-        val uploadTask = storageRef.putFile(uri)                                                             //  /voiceRecords/1639579773735.wav
 
-        uploadTask.addOnSuccessListener {
-            Timber.d("Upload successfully")
-            _uiState.update { it.copy(isUploaded = true) }
+        try {
+            if (file.exists()) {
+                val uri: Uri = Uri.fromFile(File(filePath))
+                val uploadTask = storageRef.putFile(uri)
 
-        }.addOnFailureListener { exception ->
-            Timber.d("Upload failure: $exception")
+                uploadTask.addOnSuccessListener {
+                    Timber.d("Upload successfully")
+                    _uiState.update { it.copy(isUploaded = true) }
+
+                }.addOnFailureListener { exception ->
+                    Timber.d("Upload failure: $exception")
+                }
+
+                val deleted = file.delete()
+                Timber.i("Deleted ${file.name} - $deleted")
+
+                mediaPlayer.release()
+                Timber.i("MediaPlayer released")
+            } else {
+                setFileState(true)
+            }
+
+        } catch (exception: Exception) {
+            Timber.e(exception)
         }
-        mediaPlayer.release()
     }
 
     private fun formatTimeUnit(timeInMilliseconds: Long): String {

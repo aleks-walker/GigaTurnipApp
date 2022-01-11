@@ -1,6 +1,8 @@
 package kg.kloop.android.gigaturnip.ui.audiorecording
 
 import android.Manifest
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -111,6 +114,7 @@ fun RecordAudio(
                     onClick = { viewModel.startAudioPlaying() },
                     icon = R.drawable.ic_play)
             }
+            if (uiState.isFileEmpty) showEmptyFileToast(LocalContext.current, viewModel)
 
             if (uiState.isRecording) {
                 StopRecordButton(onClick = { viewModel.stopRecording() })
@@ -125,11 +129,14 @@ fun RecordAudio(
                 )
             }
 
-            UploadButton(onClick = {
-                viewModel.uploadAudio()
-            })
+            UploadButton(onClick = { viewModel.uploadAudio() })
         }
     }
+}
+
+fun showEmptyFileToast(context: Context, viewModel: RecordAudioViewModel) {
+    Toast.makeText(context, "Please record some audio", Toast.LENGTH_LONG).show()
+    viewModel.setFileState(false)
 }
 
 @Composable
