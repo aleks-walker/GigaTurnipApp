@@ -8,9 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +23,7 @@ import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.DarkRed
+import kg.kloop.android.gigaturnip.ui.theme.Green500
 import kg.kloop.android.gigaturnip.ui.theme.LightGray500
 
 @ExperimentalPermissionsApi
@@ -55,6 +54,7 @@ fun RecordAudio(
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
     val uiState by viewModel.uiState.collectAsState()
     if (uiState.isUploaded) closeRecording(uiState) { onBack() }
+    var enabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -67,7 +67,7 @@ fun RecordAudio(
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
-                .padding(bottom = 200.dp),
+                .padding(bottom = 80.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center) {
             if (uiState.isRecording) {
@@ -96,22 +96,32 @@ fun RecordAudio(
             }
             DisplayTimer(uiState.timeState)
         }
+        Box(
+            modifier = Modifier
+                .height(40.dp)
+                .width(40.dp)
+        ) {
+            if (uiState.loading) CircularProgressIndicator(
+                modifier = Modifier.size(40.dp),
+                color = Green500,
+                strokeWidth = 4.dp)
+        }
 
         Row(
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
-                .padding(bottom = 70.dp),
+                .padding(top = 100.dp, bottom = 70.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (uiState.isPlaying) {
                 PlayAudioButton(
-                    onClick = { viewModel.stopAudioPlaying() },
+                    onClick = { if (enabled) viewModel.stopAudioPlaying() else {} },
                     icon = R.drawable.ic_pause)
             } else {
                 PlayAudioButton(
-                    onClick = { viewModel.startAudioPlaying() },
+                    onClick = { if (enabled) viewModel.startAudioPlaying() else {} },
                     icon = R.drawable.ic_play)
             }
             if (uiState.isFileEmpty) showEmptyFileToast(LocalContext.current, viewModel)
@@ -123,16 +133,21 @@ fun RecordAudio(
             } else {
                 StartRecordButton(
                     onClick = {
-                        permissionState.launchPermissionRequest()
-                        if (permissionState.hasPermission) {
-                            viewModel.startRecording()
-                        }
+                        if (enabled) {
+                            permissionState.launchPermissionRequest()
+                            if (permissionState.hasPermission) {
+                                viewModel.startRecording()
+                            }
+                        } else {}
                     }
                 )
             }
 
             UploadButton(onClick = { viewModel.uploadAudio() })
-            if (uiState.showUploadingToast) showUploadingToast(LocalContext.current, viewModel)
+            if (uiState.showUploadingToast) {
+                showUploadingToast(LocalContext.current, viewModel)
+                enabled = false
+            }
         }
     }
 }

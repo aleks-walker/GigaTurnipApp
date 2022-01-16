@@ -36,6 +36,7 @@ data class RecordAudioUiState(
     val showRecordingToast: Boolean = false,
     val showPlayingToast: Boolean = false,
     val showUploadingToast: Boolean = false,
+    var loading: Boolean = false
 )
 
 @HiltViewModel
@@ -154,6 +155,7 @@ class RecordAudioViewModel @Inject constructor(
 
         try {
             if (file.exists()) {
+                _uiState.update { it.copy(loading = true) }
                 setUploadingToast(true)
                 val uri: Uri = Uri.fromFile(File(filePath))
                 val uploadTask = storageRef.putFile(uri)
