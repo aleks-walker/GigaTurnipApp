@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.encodeUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -149,7 +150,7 @@ class RecordAudioViewModel @Inject constructor(
     fun uploadAudio() {
         val storageRef: StorageReference =
             FirebaseStorage.getInstance().reference.child(
-                audioFileUploadPath + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
+                audioFileUploadPath.encodeUrl() + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
             )
         storagePath = storageRef.path
 
@@ -163,13 +164,12 @@ class RecordAudioViewModel @Inject constructor(
                 uploadTask.addOnSuccessListener {
                     Timber.d("Upload successfully")
                     _uiState.update { it.copy(isUploaded = true) }
+                    val deleted = file.delete()
+                    Timber.i("Deleted ${file.name} - $deleted")
 
                 }.addOnFailureListener { exception ->
                     Timber.d("Upload failure: $exception")
                 }
-
-                val deleted = file.delete()
-                Timber.i("Deleted ${file.name} - $deleted")
 
                 mediaPlayer.release()
                 Timber.i("MediaPlayer released")
