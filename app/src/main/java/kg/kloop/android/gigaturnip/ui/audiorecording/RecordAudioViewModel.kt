@@ -1,17 +1,22 @@
 package kg.kloop.android.gigaturnip.ui.audiorecording
 
+import android.app.Application
 import android.media.MediaPlayer
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.*
 import com.github.squti.androidwaverecorder.WaveRecorder
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.Constants.TAG_AUDIO_UPLOAD
 import kg.kloop.android.gigaturnip.util.encodeUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +38,7 @@ data class RecordAudioUiState(
     val isRecording: Boolean = false,
     val isPlaying: Boolean = false,
     var isUploaded: Boolean = false,
-    var isFileEmpty: Boolean = false,
+    var fileState: Boolean = false,
     val showRecordingToast: Boolean = false,
     val showPlayingToast: Boolean = false,
     val showUploadingToast: Boolean = false,
@@ -43,7 +48,8 @@ data class RecordAudioUiState(
 @HiltViewModel
 class RecordAudioViewModel @Inject constructor(
     @Named("audioFilePath") private val filePath: String,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    application: Application
 ) : ViewModel() {
 
     private var audioFileKey: String = savedStateHandle.get<String>(AUDIO_FILE_KEY)!!
@@ -57,6 +63,13 @@ class RecordAudioViewModel @Inject constructor(
     private val mediaPlayer = MediaPlayer()
     private val file = File(filePath)
 
+    var audioUploadWorkProgress: LiveData<List<WorkInfo>>
+    private val workManager = WorkManager.getInstance(application)
+
+    init {
+        workManager.pruneWork()
+        audioUploadWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_AUDIO_UPLOAD)
+    }
 
     fun startRecording() {
         setRecordingState(true)
@@ -113,7 +126,7 @@ class RecordAudioViewModel @Inject constructor(
     }
 
     fun setFileState(value: Boolean) {
-        _uiState.update { it.copy(isFileEmpty = value) }
+        _uiState.update { it.copy(fileState = value) }
     }
 
     fun stopAudioPlaying(){
@@ -146,8 +159,7 @@ class RecordAudioViewModel @Inject constructor(
         _uiState.update { it.copy(showUploadingToast = value) }
     }
 
-    // TODO: change to upload worker
-    fun uploadAudio() {
+/*    fun uploadAudio() {
         val storageRef: StorageReference =
             FirebaseStorage.getInstance().reference.child(
                 audioFileUploadPath.encodeUrl() + System.currentTimeMillis() + AUDIO_FILE_EXTENSION
@@ -180,7 +192,7 @@ class RecordAudioViewModel @Inject constructor(
         } catch (exception: Exception) {
             Timber.e(exception)
         }
-    }
+    }*/
 
     private fun formatTimeUnit(timeInMilliseconds: Long): String {
         return try {
@@ -195,5 +207,47 @@ class RecordAudioViewModel @Inject constructor(
         } catch (e: Exception) {
             "00:00"
         }
+    }
+
+    fun uploadAudio() {
+        if (file.exists()) {
+            setUploadingToast(true)
+            val uri: Uri = Uri.fromFile(File(filePath))
+            upload(createData(uri.toString()))
+            mediaPlayer.apply {
+                reset()
+                release()
+            }
+            _uiState.update { it.copy(isUploaded = true) }
+        } else {
+            setFileState(true)
+        }
+    }
+
+    private fun upload(inputData: Data) {
+        val uploadRequest = OneTimeWorkRequestBuilder<UploadAudioFileWorker>()
+            .setInputData(inputData)
+            .addTag(TAG_AUDIO_UPLOAD)
+            .build()
+        val cleanupRequest = OneTimeWorkRequestBuilder<CleanupAudioFileWorker>()
+            .addTag(Constants.TAG_AUDIO_CLEANUP)
+            .build()
+
+        workManager.beginUniqueWork(
+            Constants.AUDIO_MANIPULATION_WORK_NAME,
+            ExistingWorkPolicy.APPEND,
+            uploadRequest
+        ).then(cleanupRequest)
+            .enqueue()
+    }
+
+    private  fun createData(audioFileUri: String): Data {
+        val builder = Data.Builder()
+        builder.apply {
+            putString(Constants.KEY_AUDIO_FILE_ID, audioFileKey)
+            putString(Constants.KEY_AUDIO_FILE_URI, audioFileUri)
+            putString(Constants.KEY_PATH_TO_UPLOAD_AUDIO, audioFileUploadPath)
+        }
+        return builder.build()
     }
 }

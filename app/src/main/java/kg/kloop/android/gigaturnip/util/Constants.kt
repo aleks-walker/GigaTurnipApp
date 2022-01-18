@@ -31,6 +31,9 @@ object Constants {
     // The name of the video manipulation work
     const val VIDEO_MANIPULATION_WORK_NAME = "video_manipulation_work"
 
+    // The name of the audio manipulation work
+    const val AUDIO_MANIPULATION_WORK_NAME = "audio_manipulation_work"
+
     // Other keys
     const val OUTPUT_PATH = "compress_video_outputs"
     const val KEY_FILE_URI = "KEY_FILE_URI"
@@ -38,12 +41,18 @@ object Constants {
     const val KEY_STORAGE_REF_PATH = "KEY_STORAGE_REF_PATH"
     const val KEY_FILENAME = "KEY_FILENAME"
     const val KEY_FILE_ID = "KEY_FILE_ID"
+    const val KEY_AUDIO_FILE_ID = "KEY_AUDIO_FILE_ID"
+    const val KEY_AUDIO_FILENAME = "KEY_AUDIO_FILENAME"
+    const val KEY_AUDIO_FILE_URI = "KEY_AUDIO_FILE_URI"
+    const val KEY_PATH_TO_UPLOAD_AUDIO = "KEY_PATH_TO_UPLOAD_AUDIO"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"
     const val TAG_COMPRESS = "TAG_COMPRESS"
     const val TAG_UPLOAD = "TAG_UPLOAD"
     const val TAG_CLEANUP = "TAG_CLEANUP"
+    const val TAG_AUDIO_UPLOAD = "TAG_AUDIO_UPLOAD"
+    const val TAG_AUDIO_CLEANUP = "TAG_AUDIO_CLEANUP"
 
     // Webview events
     const val RICH_TEXT_EVENT = "android_rich_text_event"
@@ -56,7 +65,6 @@ object Constants {
     // Audio recording
     const val AUDIO_FILE_EXTENSION = ".wav"
     const val TEMP_AUDIO_FILE_NAME = "tempAudioRecording$AUDIO_FILE_EXTENSION"
-    const val FILE_PROVIDER = ".fileprovider"
 
     const val INPUT_DELAY_IN_MILL = 2000L
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +56,7 @@ fun RecordAudio(
     val uiState by viewModel.uiState.collectAsState()
     if (uiState.isUploaded) closeRecording(uiState) { onBack() }
     var enabled by remember { mutableStateOf(true) }
+    val audioUploadProgressInfos by viewModel.audioUploadWorkProgress.observeAsState()
 
     Column(
         modifier = Modifier
@@ -96,7 +98,7 @@ fun RecordAudio(
             }
             DisplayTimer(uiState.timeState)
         }
-        Box(
+/*        Box(
             modifier = Modifier
                 .height(40.dp)
                 .width(40.dp)
@@ -105,7 +107,7 @@ fun RecordAudio(
                 modifier = Modifier.size(40.dp),
                 color = Green500,
                 strokeWidth = 4.dp)
-        }
+        }*/
 
         Row(
             modifier = Modifier
@@ -124,7 +126,7 @@ fun RecordAudio(
                     onClick = { if (enabled) viewModel.startAudioPlaying() else {} },
                     icon = R.drawable.ic_play)
             }
-            if (uiState.isFileEmpty) showEmptyFileToast(LocalContext.current, viewModel)
+            if (uiState.fileState) showEmptyFileToast(LocalContext.current, viewModel)
             if (uiState.showRecordingToast) showRecordingToast(LocalContext.current, viewModel)
             if (uiState.showPlayingToast) showPlayingToast(LocalContext.current, viewModel)
 
