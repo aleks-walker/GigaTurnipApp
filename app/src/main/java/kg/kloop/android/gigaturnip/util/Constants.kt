@@ -45,6 +45,7 @@ object Constants {
     const val KEY_AUDIO_FILENAME = "KEY_AUDIO_FILENAME"
     const val KEY_AUDIO_FILE_URI = "KEY_AUDIO_FILE_URI"
     const val KEY_PATH_TO_UPLOAD_AUDIO = "KEY_PATH_TO_UPLOAD_AUDIO"
+    const val KEY_AUDIO_STORAGE_REF_PATH = "KEY_AUDIO_STORAGE_REF_PATH"
 
     // Progress Data Key
     const val PROGRESS = "PROGRESS"
@@ -53,6 +54,7 @@ object Constants {
     const val TAG_CLEANUP = "TAG_CLEANUP"
     const val TAG_AUDIO_UPLOAD = "TAG_AUDIO_UPLOAD"
     const val TAG_AUDIO_CLEANUP = "TAG_AUDIO_CLEANUP"
+    const val AUDIO_PROGRESS = "AUDIO_PROGRESS"
 
     // Webview events
     const val RICH_TEXT_EVENT = "android_rich_text_event"

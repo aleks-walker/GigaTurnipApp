@@ -16,6 +16,11 @@ import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
+import kg.kloop.android.gigaturnip.util.Constants.AUDIO_MANIPULATION_WORK_NAME
+import kg.kloop.android.gigaturnip.util.Constants.KEY_AUDIO_FILE_ID
+import kg.kloop.android.gigaturnip.util.Constants.KEY_AUDIO_FILE_URI
+import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD_AUDIO
+import kg.kloop.android.gigaturnip.util.Constants.TAG_AUDIO_CLEANUP
 import kg.kloop.android.gigaturnip.util.Constants.TAG_AUDIO_UPLOAD
 import kg.kloop.android.gigaturnip.util.encodeUrl
 import kotlinx.coroutines.delay
@@ -230,11 +235,11 @@ class RecordAudioViewModel @Inject constructor(
             .addTag(TAG_AUDIO_UPLOAD)
             .build()
         val cleanupRequest = OneTimeWorkRequestBuilder<CleanupAudioFileWorker>()
-            .addTag(Constants.TAG_AUDIO_CLEANUP)
+            .addTag(TAG_AUDIO_CLEANUP)
             .build()
 
         workManager.beginUniqueWork(
-            Constants.AUDIO_MANIPULATION_WORK_NAME,
+            AUDIO_MANIPULATION_WORK_NAME,
             ExistingWorkPolicy.APPEND,
             uploadRequest
         ).then(cleanupRequest)
@@ -244,9 +249,9 @@ class RecordAudioViewModel @Inject constructor(
     private  fun createData(audioFileUri: String): Data {
         val builder = Data.Builder()
         builder.apply {
-            putString(Constants.KEY_AUDIO_FILE_ID, audioFileKey)
-            putString(Constants.KEY_AUDIO_FILE_URI, audioFileUri)
-            putString(Constants.KEY_PATH_TO_UPLOAD_AUDIO, audioFileUploadPath)
+            putString(KEY_AUDIO_FILE_ID, audioFileKey)
+            putString(KEY_AUDIO_FILE_URI, audioFileUri)
+            putString(KEY_PATH_TO_UPLOAD_AUDIO, audioFileUploadPath)
         }
         return builder.build()
     }
