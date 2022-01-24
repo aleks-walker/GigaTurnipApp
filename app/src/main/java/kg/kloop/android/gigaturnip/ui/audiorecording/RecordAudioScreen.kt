@@ -2,6 +2,7 @@ package kg.kloop.android.gigaturnip.ui.audiorecording
 
 import android.Manifest
 import android.content.Context
+import android.webkit.WebView
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,14 +19,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.work.Data
+import androidx.work.WorkInfo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
+import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
+import kg.kloop.android.gigaturnip.ui.tasks.screens.evaluateJs
+import kg.kloop.android.gigaturnip.ui.tasks.screens.isRunning
+import kg.kloop.android.gigaturnip.ui.tasks.screens.isSuccess
 import kg.kloop.android.gigaturnip.ui.theme.DarkBlue900
 import kg.kloop.android.gigaturnip.ui.theme.DarkRed
-import kg.kloop.android.gigaturnip.ui.theme.Green500
 import kg.kloop.android.gigaturnip.ui.theme.LightGray500
+import kg.kloop.android.gigaturnip.util.Constants
+import timber.log.Timber
 
 @ExperimentalPermissionsApi
 @Composable
@@ -54,9 +63,12 @@ fun RecordAudio(
 
     val permissionState = rememberPermissionState(permission = Manifest.permission.RECORD_AUDIO)
     val uiState by viewModel.uiState.collectAsState()
-    if (uiState.isUploaded) closeRecording(uiState) { onBack() }
     var enabled by remember { mutableStateOf(true) }
     val audioUploadProgressInfos by viewModel.audioUploadWorkProgress.observeAsState()
+    if (uiState.isUploaded) {
+        closeRecording(uiState) { onBack() }
+        sendAudioFileProgressToWebview(viewModel, audioUploadProgressInfos)
+    }
 
     Column(
         modifier = Modifier
@@ -152,6 +164,66 @@ fun RecordAudio(
             }
         }
     }
+}
+
+fun sendAudioFileProgressToWebview(
+    viewModel: RecordAudioViewModel,
+    audioUploadProgressInfos: List<WorkInfo>?
+) {
+    audioUploadProgressInfos?.forEach { audioUploadProgressInfo ->
+        updateWebView(audioUploadProgressInfo, viewModel)
+    }
+}
+
+private fun updateWebView(progressInfo: WorkInfo, viewModel: RecordAudioViewModel) {
+    if (isRunning(progressInfo) || isSuccess(progressInfo)) {
+        updateAudioFileProgress(
+            if (isRunning(progressInfo)) progressInfo.progress else progressInfo.outputData,
+            progressInfo.state.isFinished,
+            progressInfo.tags.last(),
+            viewModel
+        )
+    }
+}
+
+private fun updateAudioFileProgress(
+    inputData: Data,
+    isFinished: Boolean,
+    workTag: String,
+    viewModel: RecordAudioViewModel,
+) {
+    val audiofileProgress = FileProgress(
+        fileId = inputData.getString(Constants.KEY_AUDIO_FILE_ID).orEmpty(),
+        fileName = inputData.getString(Constants.KEY_AUDIO_FILENAME),
+        storagePath = inputData.getString(Constants.KEY_AUDIO_STORAGE_REF_PATH),
+        progress = inputData.getInt(Constants.AUDIO_PROGRESS, 0).toFloat(),
+        workTag = workTag,
+        isFinished = isFinished)
+    if (audiofileProgress.fileId.isNotBlank()
+        && !audiofileProgress.fileName.isNullOrBlank()
+    ) {
+        Timber.d("audio file progress: $audiofileProgress")
+        viewModel.updateAudioFileInfo(audiofileProgress)
+        setFileProgress(viewModel)
+    }
+}
+
+data class ProgressState(
+    var audiofileProgress: JsonObject? = JsonObject()
+)
+
+fun setFileProgress(viewModel: RecordAudioViewModel){
+    val progressState = ProgressState()
+    progressState.audiofileProgress = viewModel.uiState.value.fileProgressState
+}
+
+fun webViewAudioFileProgressLoad(webview: WebView) {
+    val progressState = ProgressState()
+    Timber.d("AUDIO FILE EVENT: ${progressState.audiofileProgress}")
+    evaluateJs(
+        webview, progressState.audiofileProgress.toString(),
+        Constants.AUDIO_FILE_EVENT
+    )
 }
 
 fun showUploadingToast(context: Context, viewModel: RecordAudioViewModel) {

@@ -38,6 +38,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
+import kg.kloop.android.gigaturnip.ui.audiorecording.webViewAudioFileProgressLoad
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.*
@@ -144,6 +145,7 @@ private fun ScreenContent(
                                 viewModel.setListenersReady(false)
                             }
                             webViewFileProgressLoad(webview, uiState)
+                            webViewAudioFileProgressLoad(webview)
                         },
                         onCancelWork = {
                             Compressor.isRunning = false
@@ -243,10 +245,10 @@ private fun updateWebView(progressInfo: WorkInfo, viewModel: TaskDetailsViewMode
     }
 }
 
-private fun isSuccess(progressInfo: WorkInfo) =
+fun isSuccess(progressInfo: WorkInfo) =
     progressInfo.state == WorkInfo.State.SUCCEEDED
 
-private fun isRunning(progressInfo: WorkInfo) =
+fun isRunning(progressInfo: WorkInfo) =
     progressInfo.state == WorkInfo.State.RUNNING
 
 private fun updateFileProgress(

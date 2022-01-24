@@ -11,7 +11,10 @@ import androidx.work.*
 import com.github.squti.androidwaverecorder.WaveRecorder
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
+import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
 import kg.kloop.android.gigaturnip.util.Constants
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
@@ -47,7 +50,8 @@ data class RecordAudioUiState(
     val showRecordingToast: Boolean = false,
     val showPlayingToast: Boolean = false,
     val showUploadingToast: Boolean = false,
-    var loading: Boolean = false
+    var loading: Boolean = false,
+    val fileProgressState: JsonObject? = JsonObject(),
 )
 
 @HiltViewModel
@@ -254,5 +258,51 @@ class RecordAudioViewModel @Inject constructor(
             putString(KEY_PATH_TO_UPLOAD_AUDIO, audioFileUploadPath)
         }
         return builder.build()
+    }
+
+    fun updateAudioFileInfo(fileProgress: FileProgress) {
+        val progressState = _uiState.value.fileProgressState
+        Timber.d("audio progress state before: $progressState")
+        progressState?.let {
+            if (progressState.get(fileProgress.fileId) == null) {
+                updateAudioUi(progressState.apply { add(fileProgress.fileId, JsonObject()) })
+            }
+            val progressData = appendToAudioProgressData(progressState, fileProgress)
+            Timber.d("audio progress data: $progressData")
+            val filesProgressInfo = setAudioProgressData(
+                fileProgress.fileId,
+                progressState,
+                progressData
+            )
+            Timber.d("audio files progress info: $filesProgressInfo")
+            updateAudioUi(filesProgressInfo)
+        }
+        Timber.d("audio progress state after: ${_uiState.value.fileProgressState}")
+    }
+
+    private fun updateAudioUi(fileInfo: JsonObject) {
+        _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
+    }
+
+    private fun appendToAudioProgressData(
+        progressState: JsonObject,
+        fileProgress: FileProgress
+    ): JsonObject? {
+        val progressData = progressState.getAsJsonObject(fileProgress.fileId)
+        progressData.apply {
+            add(fileProgress.fileName, fileProgress.toJsonObject())
+        }
+        return progressData
+    }
+
+    private fun setAudioProgressData(
+        fileId: String,
+        progressState: JsonObject,
+        progressData: JsonObject?
+    ): JsonObject {
+        val filesProgressInfo = progressState.apply {
+            add(fileId, progressData)
+        }
+        return filesProgressInfo
     }
 }
