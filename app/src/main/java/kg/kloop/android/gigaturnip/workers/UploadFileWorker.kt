@@ -16,6 +16,7 @@ import kg.kloop.android.gigaturnip.util.Constants.KEY_FILE_URI
 import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD
 import kg.kloop.android.gigaturnip.util.Constants.KEY_STORAGE_REF_PATH
 import kg.kloop.android.gigaturnip.util.Constants.PROGRESS
+import kg.kloop.android.gigaturnip.util.encodeUrl
 import kotlinx.coroutines.coroutineScope
 
 class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
@@ -78,8 +79,15 @@ class UploadFileWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
         fileName: String
     ): StorageReference {
         // TODO: this is a crutch
-        val fileExtension = if (fileName.contains("video")) ".mp4" else ".jpg"
-        return Firebase.storage.reference.child(uploadPath.plus("/$fileName$fileExtension"))
+//        val fileExtension = if (fileName.contains("video")) ".mp4" else ".jpg"
+        val fileExtension = when {
+            fileName.contains("video") -> ".mp4"
+            fileName.contains("tempAudioRecording") -> ".wav"
+            else -> ".jpg"
+        }
+        val name = (if (fileName.contains("tempAudioRecording")) fileName.plus(System.currentTimeMillis()) else fileName).toString()
+//        return Firebase.storage.reference.child(uploadPath.plus("/$fileName$fileExtension"))
+        return Firebase.storage.reference.child(uploadPath.encodeUrl().plus("/$name$fileExtension"))
     }
 
 

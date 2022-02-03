@@ -9,23 +9,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
 import com.github.squti.androidwaverecorder.WaveRecorder
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kg.kloop.android.gigaturnip.ui.tasks.screens.FileProgress
-import kg.kloop.android.gigaturnip.ui.tasks.screens.toJsonObject
 import kg.kloop.android.gigaturnip.util.Constants
-import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_EXTENSION
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_KEY
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_FILE_UPLOAD_PATH
 import kg.kloop.android.gigaturnip.util.Constants.AUDIO_MANIPULATION_WORK_NAME
-import kg.kloop.android.gigaturnip.util.Constants.KEY_AUDIO_FILE_ID
-import kg.kloop.android.gigaturnip.util.Constants.KEY_AUDIO_FILE_URI
-import kg.kloop.android.gigaturnip.util.Constants.KEY_PATH_TO_UPLOAD_AUDIO
 import kg.kloop.android.gigaturnip.util.Constants.TAG_AUDIO_CLEANUP
-import kg.kloop.android.gigaturnip.util.Constants.TAG_AUDIO_UPLOAD
-import kg.kloop.android.gigaturnip.util.encodeUrl
+import kg.kloop.android.gigaturnip.util.Constants.TAG_UPLOAD
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +24,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import timber.log.Timber
 import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -77,7 +67,7 @@ class RecordAudioViewModel @Inject constructor(
 
     init {
         workManager.pruneWork()
-        audioUploadWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_AUDIO_UPLOAD)
+        audioUploadWorkProgress = workManager.getWorkInfosByTagLiveData(TAG_UPLOAD)
     }
 
     fun startRecording() {
@@ -236,7 +226,7 @@ class RecordAudioViewModel @Inject constructor(
     private fun upload(inputData: Data) {
         val uploadRequest = OneTimeWorkRequestBuilder<UploadAudioFileWorker>()
             .setInputData(inputData)
-            .addTag(TAG_AUDIO_UPLOAD)
+            .addTag(TAG_UPLOAD)
             .build()
         val cleanupRequest = OneTimeWorkRequestBuilder<CleanupAudioFileWorker>()
             .addTag(TAG_AUDIO_CLEANUP)
@@ -253,56 +243,14 @@ class RecordAudioViewModel @Inject constructor(
     private  fun createData(audioFileUri: String): Data {
         val builder = Data.Builder()
         builder.apply {
-            putString(KEY_AUDIO_FILE_ID, audioFileKey)
-            putString(KEY_AUDIO_FILE_URI, audioFileUri)
-            putString(KEY_PATH_TO_UPLOAD_AUDIO, audioFileUploadPath)
+//            putString(KEY_AUDIO_FILE_ID, audioFileKey)
+//            putString(KEY_AUDIO_FILE_URI, audioFileUri)
+//            putString(KEY_PATH_TO_UPLOAD_AUDIO, audioFileUploadPath)
+            putString(Constants.KEY_FILE_ID, audioFileKey)
+            putString(Constants.KEY_FILE_URI, audioFileUri)
+            putString(Constants.KEY_PATH_TO_UPLOAD, audioFileUploadPath)
         }
         return builder.build()
     }
 
-    fun updateAudioFileInfo(fileProgress: FileProgress) {
-        val progressState = _uiState.value.fileProgressState
-        Timber.d("audio progress state before: $progressState")
-        progressState?.let {
-            if (progressState.get(fileProgress.fileId) == null) {
-                updateAudioUi(progressState.apply { add(fileProgress.fileId, JsonObject()) })
-            }
-            val progressData = appendToAudioProgressData(progressState, fileProgress)
-            Timber.d("audio progress data: $progressData")
-            val filesProgressInfo = setAudioProgressData(
-                fileProgress.fileId,
-                progressState,
-                progressData
-            )
-            Timber.d("audio files progress info: $filesProgressInfo")
-            updateAudioUi(filesProgressInfo)
-        }
-        Timber.d("audio progress state after: ${_uiState.value.fileProgressState}")
-    }
-
-    private fun updateAudioUi(fileInfo: JsonObject) {
-        _uiState.update { uiState -> uiState.copy(fileProgressState = fileInfo) }
-    }
-
-    private fun appendToAudioProgressData(
-        progressState: JsonObject,
-        fileProgress: FileProgress
-    ): JsonObject? {
-        val progressData = progressState.getAsJsonObject(fileProgress.fileId)
-        progressData.apply {
-            add(fileProgress.fileName, fileProgress.toJsonObject())
-        }
-        return progressData
-    }
-
-    private fun setAudioProgressData(
-        fileId: String,
-        progressState: JsonObject,
-        progressData: JsonObject?
-    ): JsonObject {
-        val filesProgressInfo = progressState.apply {
-            add(fileId, progressData)
-        }
-        return filesProgressInfo
-    }
 }

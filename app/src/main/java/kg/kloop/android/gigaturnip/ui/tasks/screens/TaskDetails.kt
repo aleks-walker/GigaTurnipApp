@@ -38,7 +38,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.JsonObject
 import kg.kloop.android.gigaturnip.R
 import kg.kloop.android.gigaturnip.ui.DetailsToolbar
-import kg.kloop.android.gigaturnip.ui.audiorecording.webViewAudioFileProgressLoad
 import kg.kloop.android.gigaturnip.ui.components.FullScreenLoading
 import kg.kloop.android.gigaturnip.ui.components.TryAgainScreen
 import kg.kloop.android.gigaturnip.ui.tasks.*
@@ -145,7 +144,6 @@ private fun ScreenContent(
                                 viewModel.setListenersReady(false)
                             }
                             webViewFileProgressLoad(webview, uiState)
-                            webViewAudioFileProgressLoad(webview)
                         },
                         onCancelWork = {
                             Compressor.isRunning = false
@@ -201,10 +199,6 @@ private fun webViewInitialLoad(
         webview, uiState.task?.responses.toString(),
         Constants.DATA_EVENT
     )
-//    evaluateJs(
-//        webview, uiAudioUiState.storageFilePath.toString(),
-//        Constants.AUDIO_FILE_EVENT
-//    )
     Timber.d("data state: ${uiState.task?.responses}")
 }
 
